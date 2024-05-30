@@ -1,0 +1,19 @@
+import { hexToArrayBuffer } from "@/internal/utils";
+import type { Cbor } from "@/lib/utils";
+import { decode as decodeCbor } from "cbor-js";
+
+export function decodeBalance(balanceCbor: Cbor) {
+  const decoded: unknown = decodeCbor(hexToArrayBuffer(balanceCbor));
+  if (typeof decoded === "number") {
+    return decoded;
+  }
+
+  if (Array.isArray(decoded)) {
+    const lovelace: unknown = decoded[0];
+    if (typeof lovelace === "number") {
+      return lovelace;
+    }
+  }
+
+  return 0;
+}
