@@ -8,7 +8,15 @@ const root = document.querySelector("#root");
 if (root) {
   ReactDOM.createRoot(root).render(
     <React.StrictMode>
-      <WeldProvider>
+      <WeldProvider
+        config={{
+          wallet: {
+            onError(error) {
+              console.log("weld error", error);
+            },
+          },
+        }}
+      >
         <DialogProvider>
           <App />
         </DialogProvider>
