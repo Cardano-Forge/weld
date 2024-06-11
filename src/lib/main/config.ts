@@ -5,9 +5,15 @@ export type WalletConfig = {
   allowMultipleConnections: boolean;
 };
 
+export type PersistenceConfig = {
+  enabled: boolean;
+  storage: Storage;
+};
+
 export type WeldConfig = {
   ignoreUnsafeUsageError: boolean;
   wallet: WalletConfig;
+  persistence: PersistenceConfig;
 };
 
 export const defaults: WeldConfig = {
@@ -17,5 +23,9 @@ export const defaults: WeldConfig = {
     pollInterval: 2000,
     updateOnWindowFocus: true,
     allowMultipleConnections: false,
+  },
+  persistence: {
+    enabled: true,
+    storage: localStorage,
   },
 };
