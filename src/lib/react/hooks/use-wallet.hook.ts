@@ -1,5 +1,6 @@
 import type { ExtendedWalletHandler } from "@/internal/extended";
 import { type WalletConfig, connect, disconnect, subscribe } from "@/lib/main";
+import { getPersistedValue } from "@/lib/main/persistence";
 import { type NetworkId, WalletDisconnectAccountError } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -34,7 +35,9 @@ export type UseWalletOpts = {
 };
 
 export function useWallet({ onError }: UseWalletOpts = {}): UseWalletReturnType {
-  const [isConnectingTo, setConnectingTo] = useState<string>();
+  const [isConnectingTo, setConnectingTo] = useState<string | undefined>(
+    getPersistedValue("connectedWallet"), // Prevent flicker by setting loading state immediately
+  );
   const [wallet, setWallet] = useState<Wallet>();
 
   const disconnectWallet = useCallback(() => {
@@ -147,6 +150,14 @@ export function useWallet({ onError }: UseWalletOpts = {}): UseWalletReturnType 
     });
     return () => sub.unsubscribe();
   }, [wallet, handleError]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Should only try to persist connection on first mount
+  useEffect(() => {
+    const persistedWallet = getPersistedValue("connectedWallet");
+    if (persistedWallet) {
+      connectWallet(persistedWallet);
+    }
+  }, []);
 
   return { wallet: state, connectWallet, disconnectWallet };
 }
