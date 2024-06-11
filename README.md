@@ -236,7 +236,7 @@ If you are not using the `useWallet` hook, you can use the `getPersistedValue` h
 function initApp() {
   const persistedWalletKey = getPersistedValue("connectedWallet");
   if (persistedWalletKey) {
-    connect("nami").then((handler) => {
+    connect(persistedWalletKey).then((handler) => {
       console.log("handler", handler);
     });
   }
