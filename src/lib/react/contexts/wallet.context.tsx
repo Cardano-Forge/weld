@@ -1,6 +1,6 @@
 import {
-  type UseWalletReturnType,
   type UseWalletOpts,
+  type UseWalletReturnType,
   useWallet,
 } from "@/lib/react/hooks/use-wallet.hook";
 import { createContext, useContext } from "react";
