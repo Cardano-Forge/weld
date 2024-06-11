@@ -4,6 +4,10 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { App } from "./app";
 
+import { ToastContainer, toast } from "react-toastify";
+
+import "react-toastify/dist/ReactToastify.min.css";
+
 const root = document.querySelector("#root");
 if (root) {
   ReactDOM.createRoot(root).render(
@@ -12,7 +16,11 @@ if (root) {
         config={{
           wallet: {
             onError(error) {
-              console.log("weld error", error);
+              if (error instanceof Error) {
+                toast.error(error.message);
+              } else {
+                toast.error("An unknown error occured");
+              }
             },
           },
         }}
@@ -21,6 +29,7 @@ if (root) {
           <App />
         </DialogProvider>
       </WeldProvider>
+      <ToastContainer position="bottom-right" />
     </React.StrictMode>,
   );
 }
