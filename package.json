@@ -1,6 +1,6 @@
 {
   "name": "@ada-anvil/weld",
-  "private": true,
+  "private": false,
   "version": "0.0.5",
   "type": "module",
   "main": "./main.cjs",
