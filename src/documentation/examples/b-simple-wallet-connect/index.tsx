@@ -15,12 +15,12 @@ if (root) {
       <WeldProvider
         config={{
           wallet: {
-            onError(error) {
-              if (error instanceof Error) {
-                toast.error(error.message);
-              } else {
-                toast.error("An unknown error occured");
-              }
+            onUpdateError(error) {
+              const message =
+                error instanceof Error
+                  ? error.message
+                  : "An unknown error occured while updating the wallet state";
+              toast.error(message, { toastId: "wallet-update" });
             },
           },
         }}
