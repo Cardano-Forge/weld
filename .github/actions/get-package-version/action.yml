@@ -1,0 +1,30 @@
+name: Get Package Version
+description: Retrieves a package's version at a specified commit
+inputs:
+  sha:
+    description: The desired commit's sha
+    required: false
+    default: ${{ github.sha }}
+  pkg-dir:
+    description: The relative path of the package.json's directory
+    required: true
+outputs:
+  version:
+    description: "The package's version"
+    value: ${{ steps.get-version.outputs.version }}
+runs:
+  using: "composite"
+  steps:
+    - name: Get package version
+      id: get-version
+      run: |
+        echo version=$(
+          curl -H 'Authorization: token ${{ github.token }}' \
+            --silent \
+            ${{ env.BASE_URL }}/${{ inputs.sha }}/${{ inputs.pkg-dir }}/package.json \
+            | jq '.version' \
+            | tr -d '"') \
+            >> $GITHUB_OUTPUT
+      shell: sh
+      env:
+        BASE_URL: https://raw.githubusercontent.com/${{ github.repository }}
