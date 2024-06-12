@@ -24,7 +24,8 @@
   - [Weld provider](#weld-provider)
   - [Initialization](#initialization)
 - [Usage](#usage)
-  - [Connection](#connection)
+  - [Wallet connection](#wallet-connection)
+  - [Error handling](#error-handling)
   - [Reactive Variable](#reactive-variable)
   - [Other Methods](#other-methods)
 - [Persistence](#persistence)
@@ -171,7 +172,7 @@ try {
   // handle connection error
 }
 ```
-
+#### Synchronous errors using React
 You can use one of two functions to connect a wallet using the `useWallet` React hook.
 If you just want to trigger the connection flow and don't care about the result, use the `connectWallet` function, which is guaranteed to never throw:
 ```typescript
