@@ -1,0 +1,47 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18.12.1
+          registry-url: https://registry.npmjs.org/
+
+      - run: npm ci
+
+      - run: npm run build
+
+      # Append -{{ ref_name }} to version number if not on production branch
+      - name: Add pre-release flag
+        if: github.ref_name != 'main'
+        run: |
+          full_version=$(echo "-${{ github.ref_name }}" | sed 's/\//-/g')
+          jq --arg v "${full_version}" '.version += $v' package.json > tmp.json
+          mv tmp.json package.json
+
+      - name: Publish to registry pre-release
+        if: github.ref_name != 'main'
+        working-directory: dist/
+        run: npm publish --tag ${{ github.ref_name }} --dry-run
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to registry
+        if: github.ref_name == 'main'
+        run: npm publish --dry-run
+        working-directory: dist/
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

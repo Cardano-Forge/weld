@@ -32,6 +32,8 @@ function copyPackageJson(): PluginOption {
       if (hasGenerated) return;
       hasGenerated = true;
       await copyFile("./package.json", "dist/package.json");
+      await copyFile("./README.md", "dist/README.md");
+      await copyFile("./LICENSE", "dist/LICENSE");
     },
   };
 }
@@ -39,6 +41,7 @@ function copyPackageJson(): PluginOption {
 export default defineConfig({
   resolve: {
     alias: {
+      "@/documentation": resolve(__dirname, "documentation"),
       "@": resolve(__dirname, "src"),
     },
   },
@@ -56,5 +59,9 @@ export default defineConfig({
       external: ["react", "react-dom", "@types/react", "@types/react-dom"],
     },
   },
-  plugins: [dts({ outDir: "dist/types" }), generateDtsEntryPoints(), copyPackageJson()],
+  plugins: [
+    dts({ outDir: "dist/types", exclude: ["documentation/**"] }),
+    generateDtsEntryPoints(),
+    copyPackageJson(),
+  ],
 });

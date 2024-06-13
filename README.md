@@ -16,26 +16,35 @@
 
 ## Table of Contents
 
+- [Table of Contents](#table-of-contents)
 - [Introduction](#introduction)
   - [Why Another Wallet Connector?](#why-another-wallet-connector)
   - [What's New?](#whats-new)
-  - [What's Not New](#whats-not-new)
-- [Get Started](#get-started)
+  - [What's not new](#whats-not-new)
+- [Get started](#get-started)
   - [Weld provider](#weld-provider)
   - [Initialization](#initialization)
 - [Usage](#usage)
   - [Wallet connection](#wallet-connection)
   - [Error handling](#error-handling)
-  - [Reactive Variable](#reactive-variable)
-  - [Other Methods](#other-methods)
+    - [Synchronous errors](#synchronous-errors)
+    - [Synchronous errors using React](#synchronous-errors-using-react)
+    - [Asynchronous errors](#asynchronous-errors)
+  - [Reactive variable](#reactive-variable)
+  - [Other methods](#other-methods)
 - [Persistence](#persistence)
   - [Automatic reconnection](#automatic-reconnection)
   - [Configuration](#configuration)
 - [Events](#events)
   - [Semantic](#semantic)
   - [Naming](#naming)
-  - [Events Table](#events-table)
-  - [Wildcard Usage](#wildcard-usage)
+  - [Events table](#events-table)
+  - [Wildcard usage](#wildcard-usage)
+  - [`weld:*`](#weld)
+  - [`weld:wallet.*`](#weldwallet)
+  - [`weld:wallet.balance.*`](#weldwalletbalance)
+  - [`weld:wallet.balance.update.*`](#weldwalletbalanceupdate)
+  - [`weld:wallet.balance.update.nami`](#weldwalletbalanceupdatenami)
 - [Examples](#examples)
 - [Methods](#methods)
   - [initialize](#initialize)
@@ -341,16 +350,16 @@ Events follow the specific naming convention `scope`.`namespace`.`type`, where t
 
 ### Events table
 
-| Scope | Namespace | Type| Parameters |
-|--|--|--|--|
-| wallet | connection | initiate | `undefined` |
-| wallet | connection | success | `{ handler: WalletHandler; }` |
-| wallet | connection | error | `{ error: unknown; }` |
-| wallet | update | error | `{ error: unknown; }` |
-| wallet | balance | update | `{ handler: WalletHandler; cbor: string; balanceLovelace: number \| undefined; }` |
-| wallet | reward-address | update | `{ handler: WalletHandler; rewardAddress: string; }` |
-| wallet | change-address | update | `{ handler: WalletHandler; changeAddress: string; }` |
-| wallet | network | update | `{ handler: WalletHandler; networkId: NetworkId; }` |
+| Scope  | Namespace      | Type     | Parameters                                                                        |
+| ------ | -------------- | -------- | --------------------------------------------------------------------------------- |
+| wallet | connection     | initiate | `undefined`                                                                       |
+| wallet | connection     | success  | `{ handler: WalletHandler; }`                                                     |
+| wallet | connection     | error    | `{ error: unknown; }`                                                             |
+| wallet | update         | error    | `{ error: unknown; }`                                                             |
+| wallet | balance        | update   | `{ handler: WalletHandler; cbor: string; balanceLovelace: number \| undefined; }` |
+| wallet | reward-address | update   | `{ handler: WalletHandler; rewardAddress: string; }`                              |
+| wallet | change-address | update   | `{ handler: WalletHandler; changeAddress: string; }`                              |
+| wallet | network        | update   | `{ handler: WalletHandler; networkId: NetworkId; }`                               |
 
 ### Wildcard usage
 
@@ -375,7 +384,7 @@ Listen to every events triggered on the `wallet` scope, the `balance` namespace,
 
 To run the examples, navigate to the project's root directory and execute `npm install`, then `npm run dev`.
 
-Alternatively, you can directly explore the code by browsing the <a href="/src/documentation/examples/">examples</a> folder.
+Alternatively, you can directly explore the code by browsing the <a href="/documentation/examples/">examples</a> folder.
 
 ## Methods
 
@@ -465,3 +474,17 @@ Signs data with the wallet's stake address.
 
 - **Parameters**: `payload: string`
 - **Returns**: `Promise<Signature>`
+
+
+---
+
+<p align="center">
+  |
+  <a href="https://ada-anvil.io">Ada Anvil</a>
+  |
+  <a href="CONTRIBUTING.md">Contributing</a>
+  |
+  <a href="https://discord.gg/RN4D7wzc"><img src=".github/discord.svg" alt="Discord">Discord</a>
+  |
+  <a href="https://x.com/ada_anvil"><img src=".github/x.svg" alt="X"> X (@ada_anvil)</a>
+</p>
