@@ -23,7 +23,9 @@
       "types": "./react.d.ts"
     }
   },
-  "files": ["**"],
+  "files": [
+    "**"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -66,5 +68,17 @@
   "dependencies": {
     "bech32": "^2.0.0",
     "cbor-js": "^0.1.0"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "homepage": "https://github.com/Cardano-Forge/universal-wallet-connector",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Cardano-Forge/universal-wallet-connector.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Cardano-Forge/universal-wallet-connector/issues"
   }
 }

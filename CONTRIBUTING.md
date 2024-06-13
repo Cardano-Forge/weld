@@ -14,11 +14,11 @@ Join our discord channel <a href="https://discord.gg/RN4D7wzc"><img src=".github
 
 ## Contributing
 
-1. Fork the project
-2. Create a Feature Branch
-3. Commit your changes
-4. Push your changes
-5. Create a PR
+1. Open a GitHub issue to track and discuss the feature/bug fix.
+2. Fork the project.
+3. Create a branch.
+4. Commit and push your changes.
+5. Create a PR to the upstream `main` branch.
 
 ### Local Development
 

@@ -2,50 +2,13 @@ name: Publish
 
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - "*"
+  release:
+    types: [published]
 
 jobs:
-  get-versions:
-    timeout-minutes: 5
-    runs-on: ubuntu-latest
-    env:
-      PKG_DIR: ./
-    outputs:
-      previous-version: ${{ steps.previous-version.outputs.version }}
-      updated-version: ${{ steps.updated-version.outputs.version }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Get previous version
-        id: previous-version
-        uses: ./.github/actions/get-package-version
-        with:
-          sha: ${{ github.event.before }}
-          pkg-dir: ${{ env.PKG_DIR }}
-
-      - name: Get updated version
-        id: updated-version
-        uses: ./.github/actions/get-package-version
-        with:
-          sha: ${{ github.sha }}
-          pkg-dir: ${{ env.PKG_DIR }}
-
-      - name: Print result
-        env:
-          PREV: ${{ steps.previous-version.outputs.version }}
-          UPDATED: ${{ steps.updated-version.outputs.version }}
-        run: |
-          echo Package directory: ${{ env.PKG_DIR }}
-          echo Previous version: ${{ env.PREV }}
-          echo Updated version: ${{ env.UPDATED }}
-
   publish:
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    needs: get-versions
-    if: github.event_name != 'push' || needs.get-versions.outputs.previous-version != needs.get-versions.outputs.updated-version
     permissions:
       packages: write
       contents: read
@@ -55,11 +18,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 18.12.1
-          registry-url: https://npm.pkg.github.com/
+          registry-url: https://registry.npmjs.org/
 
       - run: npm ci
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - run: npm run build
 
@@ -73,12 +34,12 @@ jobs:
 
       - name: Publish to registry pre-release
         if: github.ref_name != 'main'
-        run: npm publish --tag ${{ github.ref_name }}
+        run: npm publish --tag ${{ github.ref_name }} --dry-run
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to registry
         if: github.ref_name == 'main'
-        run: npm publish
+        run: npm publish --dry-run
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
