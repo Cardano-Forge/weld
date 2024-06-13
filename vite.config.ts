@@ -17,8 +17,11 @@ function generateDtsEntryPoints(): PluginOption {
       hasGenerated = true;
       await Promise.all(
         entryPoints.map((file) =>
-          writeFile(`${opts.dir}/${file}.d.ts`, `export * from "./types/lib/${file}";`),
-        ),
+          writeFile(
+            `${opts.dir}/${file}.d.ts`,
+            `export * from "./types/lib/${file}";`
+          )
+        )
       );
     },
   };
@@ -32,6 +35,8 @@ function copyPackageJson(): PluginOption {
       if (hasGenerated) return;
       hasGenerated = true;
       await copyFile("./package.json", "dist/package.json");
+      await copyFile("./README.md", "dist/README.md");
+      await copyFile("./LICENSE", "dist/LICENSE");
     },
   };
 }
@@ -45,17 +50,18 @@ export default defineConfig({
   },
   build: {
     lib: {
-      entry: entryPoints.reduce(
-        (acc, file) => {
-          acc[file] = resolve(__dirname, `src/lib/${file}/index.ts`);
-          return acc;
-        },
-        {} as Extract<LibraryOptions["entry"], Record<string, unknown>>,
-      ),
+      entry: entryPoints.reduce((acc, file) => {
+        acc[file] = resolve(__dirname, `src/lib/${file}/index.ts`);
+        return acc;
+      }, {} as Extract<LibraryOptions["entry"], Record<string, unknown>>),
     },
     rollupOptions: {
       external: ["react", "react-dom", "@types/react", "@types/react-dom"],
     },
   },
-  plugins: [dts({ outDir: "dist/types" }), generateDtsEntryPoints(), copyPackageJson()],
+  plugins: [
+    dts({ outDir: "dist/types" }),
+    generateDtsEntryPoints(),
+    copyPackageJson(),
+  ],
 });

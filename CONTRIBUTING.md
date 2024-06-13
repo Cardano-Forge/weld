@@ -22,16 +22,14 @@ Join our discord channel <a href="https://discord.gg/RN4D7wzc"><img src=".github
 
 ### Local Development
 
+The project is divided into two directories: `src/`, which contains the core library code, and `documentation/`, which includes the code for testing and developing features.
+
 *Install and start the development server*
 
 ```bash
 npm install
 npm run dev
 ```
+Then, navigate to : `http://localhost:5174`.
 
-*Generate the package*
-
-```bash
-npm run build
-npm run pack
-```
+This development environment launches a React app featuring examples found in `documentation/examples/`.
