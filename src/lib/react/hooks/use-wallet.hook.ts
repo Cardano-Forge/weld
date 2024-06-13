@@ -1,5 +1,6 @@
 import type { ExtendedWalletHandler } from "@/internal/extended";
 import { type WalletConfig, connect, disconnect, subscribe } from "@/lib/main";
+import { getPersistedValue } from "@/lib/main/persistence";
 import { type NetworkId, WalletDisconnectAccountError } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -25,16 +26,24 @@ export type UseWalletState =
 
 export type UseWalletReturnType = {
   wallet: UseWalletState;
-  connectWallet: (key: string, config?: Partial<WalletConfig>) => Promise<Wallet | undefined>;
+  connectWallet: (key: string, config?: Partial<WalletConfig & ConnectWalletCallbacks>) => void;
+  connectWalletAsync: (key: string, config?: Partial<WalletConfig>) => Promise<Wallet>;
   disconnectWallet: () => void;
 };
 
 export type UseWalletOpts = {
-  onError?(error: unknown): void;
+  onUpdateError?(error: unknown): void;
 };
 
-export function useWallet({ onError }: UseWalletOpts = {}): UseWalletReturnType {
-  const [isConnectingTo, setConnectingTo] = useState<string>();
+export type ConnectWalletCallbacks = {
+  onSuccess(wallet: Wallet): void;
+  onError(error: unknown): void;
+};
+
+export function useWallet({ onUpdateError }: UseWalletOpts = {}): UseWalletReturnType {
+  const [isConnectingTo, setConnectingTo] = useState<string | undefined>(
+    getPersistedValue("connectedWallet"), // Prevent flicker by setting loading state immediately
+  );
   const [wallet, setWallet] = useState<Wallet>();
 
   const disconnectWallet = useCallback(() => {
@@ -68,17 +77,12 @@ export function useWallet({ onError }: UseWalletOpts = {}): UseWalletReturnType 
       if (error instanceof WalletDisconnectAccountError) {
         disconnectWallet();
       }
-      if (onError) {
-        onError?.(error);
-      } else {
-        console.warn(error);
-      }
     },
-    [disconnectWallet, onError],
+    [disconnectWallet],
   );
 
-  const connectWallet = useCallback(
-    async (key: string, config?: Partial<WalletConfig>): Promise<Wallet | undefined> => {
+  const connectWalletAsync = useCallback(
+    async (key: string, config?: Partial<WalletConfig>): Promise<Wallet> => {
       try {
         setConnectingTo(key);
         const handler = await connect(key, config);
@@ -93,12 +97,28 @@ export function useWallet({ onError }: UseWalletOpts = {}): UseWalletReturnType 
         return wallet;
       } catch (error) {
         handleError(error);
-        return undefined;
+        throw error;
       } finally {
         setConnectingTo(undefined);
       }
     },
     [handleError],
+  );
+
+  const connectWallet = useCallback(
+    (
+      key: string,
+      { onSuccess, onError, ...config }: Partial<WalletConfig & ConnectWalletCallbacks> = {},
+    ) => {
+      connectWalletAsync(key, config)
+        .then((wallet) => {
+          onSuccess?.(wallet);
+        })
+        .catch((error) => {
+          onError?.(error);
+        });
+    },
+    [connectWalletAsync],
   );
 
   useEffect(() => {
@@ -140,13 +160,23 @@ export function useWallet({ onError }: UseWalletOpts = {}): UseWalletReturnType 
     };
   }, [wallet]);
 
+  // Subscribe to wallet update errors
   useEffect(() => {
     if (!wallet) return;
     const sub = subscribe(`weld:wallet.update.error.${wallet.handler.info.key}`, (event) => {
       handleError(event.data.error);
+      onUpdateError?.(event.data.error);
     });
     return () => sub.unsubscribe();
-  }, [wallet, handleError]);
+  }, [wallet, handleError, onUpdateError]);
 
-  return { wallet: state, connectWallet, disconnectWallet };
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Should only try to persist connection on first mount
+  useEffect(() => {
+    const persistedWallet = getPersistedValue("connectedWallet");
+    if (persistedWallet) {
+      connectWallet(persistedWallet);
+    }
+  }, []);
+
+  return { wallet: state, connectWallet, connectWalletAsync, disconnectWallet };
 }

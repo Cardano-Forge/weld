@@ -8,6 +8,7 @@ export type ExtendedWalletHandler<THandler extends WalletHandler = WalletHandler
 };
 
 class DefaultExtendedWalletHandler implements ExtendedWalletApi {
+  // @ts-ignore:next-line
   constructor(private _handler: WalletHandler) {}
 }
 

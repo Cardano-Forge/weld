@@ -166,10 +166,11 @@ export class DefaultWalletHandler implements WalletHandler {
     const balanceCbor = await this.getBalance();
     const balanceLovelace = decodeBalance(balanceCbor);
 
-    if (!balanceLovelace)
+    if (typeof balanceLovelace !== "number") {
       throw new WalletBalanceDecodeError(
         `Could not retrieve the ${this.info.displayName} wallet's lovelace balance from cbor`,
       );
+    }
 
     return balanceLovelace;
   }

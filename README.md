@@ -24,9 +24,13 @@
   - [Weld provider](#weld-provider)
   - [Initialization](#initialization)
 - [Usage](#usage)
-  - [Connection](#connection)
+  - [Wallet connection](#wallet-connection)
+  - [Error handling](#error-handling)
   - [Reactive Variable](#reactive-variable)
   - [Other Methods](#other-methods)
+- [Persistence](#persistence)
+  - [Automatic reconnection](#automatic-reconnection)
+  - [Configuration](#configuration)
 - [Events](#events)
   - [Semantic](#semantic)
   - [Naming](#naming)
@@ -115,17 +119,14 @@ useEffect(() => {
 
 Here are common use cases for an app utilizing this library.
 
-### Connection
+### Wallet connection
 
-Utilize the exported `SUPPORTED_WALLETS` constant to display the available wallets. Additionally, you can use the `getInstalledExtensions` method or the `useInstalledExtensionsContext` to identify installed extensions, even if they are not officially supported.
+Use the exported `SUPPORTED_WALLETS` constant to display the available wallets.
+Additionally, you can use the `getInstalledExtensions` method or the `useInstalledExtensionsContext` to identify installed extensions, even if they are not officially supported.
 
 ```typescript
 export const App = () => {
   const { wallet, connectWallet } = useWalletContext();
-
-  const handleConnectWallet = async (key: WalletKey) => {
-    await connectWallet(key);
-  };
 
   useEffect(() => {
     if (wallet.isConnected) {
@@ -143,7 +144,7 @@ export const App = () => {
                 key={key}
                 type="button"
                 className="btn btn-primary"
-                onClick={() => handleConnectWallet(key)}
+                onClick={() => connectWallet(key)}
               >
                 {displayName}
               </button>
@@ -156,12 +157,80 @@ export const App = () => {
 };
 ```
 
+### Error handling
+
+When using Weld, two types of errors can occur: **synchronous** errors and **asynchronous** ones.
+
+#### Synchronous errors
+
+Synchronous errors are the ones that get thrown by functions that you call explicitly, like `connect` and `disconnect`.
+They are regular rejections that can be caught and handled by using normal language constructs:
+```typescript
+try {
+  const handler = await connect(key);
+} catch (error) {
+  // handle connection error
+}
+```
+#### Synchronous errors using React
+You can use one of two functions to connect a wallet using the `useWallet` React hook.
+If you just want to trigger the connection flow and don't care about the result, use the `connectWallet` function, which is guaranteed to never throw:
+```typescript
+// Doesn't return the wallet and never throws
+connectWallet(key);
+```
+
+You can pass callbacks to the `connectWallet` function to handle success and error cases:
+```typescript
+connectWallet(key, {
+  onSuccess(wallet) {
+    console.log("wallet", wallet);
+  },
+  onError(error) {
+    console.log("error", error);
+  },
+});
+```
+
+Alternatively, you can use the `connectWalletAsync` function, which returns a promise containing the wallet handler and throws errors when they occur.
+```typescript
+try {
+  const wallet = await connectWalletAsync(key);
+  console.log("wallet", wallet);
+} catch (error) {
+  console.log("error", error);
+}
+```
+
+#### Asynchronous errors
+
+Asynchronous errors are the ones that occur during side effects like polling updates.
+Since they can occur anywhere and at any point, these errors cannot be caught by a try catch so we don't throw them as errors to prevent uncaught failure rejections.
+Instead, we send [events](#events) which contain the errors and that can be listened for using our event system:
+```typescript
+subscribe("weld:wallet.update.error.*", (event) => {
+  handleError(event.data.error);
+});
+```
+
+The `useWallet` React hook wraps the asynchronous error events that are related to the current wallet and allows you to pass callbacks to handle them without having to manage the event subscriptions manually:
+```typescript
+// If using the weld context
+<WeldProvider config={{ wallet: { onUpdateError: error => handleError(error) }}}>{children}</WeldProvider>
+
+// If using the wallet provider
+<WalletProvider config={{ onUpdateError: error => handleError(error)}}>{children}</WalletProvider>
+
+// If using the useWallet hook directly
+const { wallet } = useWallet({ onUpdateError: error => handleError(error) });
+```
+
 ### Reactive variable
 
 This very simple example would not be a real use case. But it shows that those values would be automatically updated if they are changing. This might seems trivial, but right now the default wallets API does not allow to achieve this easily. A valid use case for reactive variables are the connect button on a website header where the wallet icon is usally displayed as well as the balance.
 
 
-This sinple example may not reflect a practical use case, yet it demonstrates how these values are automatically updated upon change. While this may seem trivial, achieving this is not straightforward with the current default wallets API. 
+This simple example may not reflect a practical use case, yet it demonstrates how these values are automatically updated upon change. While this may seem trivial, achieving this is not straightforward with the current default wallets API. 
 
 A pertinent application for reactive variables would be the connect button on a website's header, where the wallet icon and balance are typically displayed.
 
@@ -220,6 +289,39 @@ export const App = () => {
   );
 };
 ```
+
+## Persistence
+
+Weld provides a flexible interface to handle wallet connection persistence.
+
+### Automatic reconnection
+When using the `useWallet` React hook, an attempt will be made to reconnect the persisted wallet on first mount.
+
+If you are not using the `useWallet` hook, you can use the `getPersistedValue` helper function to retrieve the persisted wallet and connect it during the initialization of your app:
+```typescript
+function initApp() {
+  const persistedWalletKey = getPersistedValue("connectedWallet");
+  if (persistedWalletKey) {
+    connect(persistedWalletKey).then((handler) => {
+      console.log("handler", handler);
+    });
+  }
+}
+```
+_Note: `getPersistedValue` always returns `undefined` when persistence is disabled._
+
+### Configuration
+
+By default, the user's wallet connection is persisted to [local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage).
+This behavior can be customized by providing a different [Storage](https://developer.mozilla.org/en-US/docs/Web/API/Storage) interface to the global configuration object:
+```typescript
+defaults.persistence.storage = sessionStorage;
+```
+The persistence features can be disabled through the global configuration object:
+```typescript
+defaults.persistence.enabled = false;
+```
+
 
 ## Events
 

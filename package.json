@@ -1,6 +1,6 @@
 {
   "name": "@ada-anvil/weld",
-  "private": true,
+  "private": false,
   "version": "0.0.5",
   "type": "module",
   "main": "./main.cjs",
@@ -45,6 +45,7 @@
     "postcss": "^8.4.38",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-toastify": "^10.0.5",
     "tailwindcss": "^3.4.3",
     "typescript": "^5.4.5",
     "vite": "^5.2.0",

@@ -1,10 +1,18 @@
+import type { UseWalletOpts } from "../hooks/use-wallet.hook";
 import { InstalledExtensionsProvider } from "./installed-extensions.context";
 import { WalletProvider } from "./wallet.context";
 
-export const WeldProvider = ({ children }: { children: React.ReactNode }) => {
+export type WeldProviderProps = {
+  children: React.ReactNode;
+  config?: {
+    wallet?: UseWalletOpts;
+  };
+};
+
+export const WeldProvider = ({ children, config }: WeldProviderProps) => {
   return (
     <InstalledExtensionsProvider>
-      <WalletProvider>{children}</WalletProvider>
+      <WalletProvider config={config?.wallet}>{children}</WalletProvider>
     </InstalledExtensionsProvider>
   );
 };

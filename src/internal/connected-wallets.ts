@@ -1,3 +1,6 @@
+import { defaults } from "@/lib/main/config";
+
+import { STORAGE_KEYS } from "@/lib/main/persistence";
 import type { ExtendedWalletHandler } from "./extended";
 import type { WalletHandler } from "./handler";
 
@@ -13,12 +16,18 @@ export function setConnectedWallet(key: string, handler: ExtendedWalletHandler):
   const existing = connectedWallets.get(key);
   cleanupHandler(existing);
   connectedWallets.set(key, handler);
+  if (defaults.persistence.enabled) {
+    defaults.persistence.storage.setItem(STORAGE_KEYS.connectedWallet, key);
+  }
 }
 
 export function deleteConnectedWallet(key: string): void {
   const existing = connectedWallets.get(key);
   cleanupHandler(existing);
   connectedWallets.delete(key);
+  if (defaults.persistence.enabled) {
+    defaults.persistence.storage.removeItem(STORAGE_KEYS.connectedWallet);
+  }
 }
 
 export function clearConnectedWallets(): void {
@@ -26,6 +35,9 @@ export function clearConnectedWallets(): void {
     cleanupHandler(handler);
   }
   connectedWallets.clear();
+  if (defaults.persistence.enabled) {
+    defaults.persistence.storage.removeItem(STORAGE_KEYS.connectedWallet);
+  }
 }
 
 export function getConnectedWallet(key: string): ExtendedWalletHandler | undefined {
