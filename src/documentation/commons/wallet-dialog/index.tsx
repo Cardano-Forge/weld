@@ -10,13 +10,15 @@ const WalletDialog = () => {
   const { installedExtensions } = useInstalledExtensionsContext();
 
   const handleConnectWallet = async (key: string) => {
-    const w = await connectWallet(key, {
+    connectWallet(key, {
       overwriteExistingConnection: false,
       allowMultipleConnections: true,
       updateOnWindowFocus: true,
       pollInterval: 2000,
+      onSuccess() {
+        close();
+      },
     });
-    if (w) close();
   };
 
   return (
