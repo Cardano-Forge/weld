@@ -30,6 +30,6 @@ The project is divided into two directories: `src/`, which contains the core lib
 npm install
 npm run dev
 ```
-Then, navigate to : `http://localhost:5174`.
+Then, navigate to : `http://localhost:5173`.
 
 This development environment launches a React app featuring examples found in `documentation/examples/`.

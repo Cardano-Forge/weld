@@ -24,7 +24,7 @@ jobs:
 
       - run: npm run build
 
-      # Append -{{ ref_name }} to version number if on not on production branch
+      # Append -{{ ref_name }} to version number if not on production branch
       - name: Add pre-release flag
         if: github.ref_name != 'main'
         run: |
