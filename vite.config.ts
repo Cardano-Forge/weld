@@ -39,6 +39,7 @@ function copyPackageJson(): PluginOption {
 export default defineConfig({
   resolve: {
     alias: {
+      "@/documentation": resolve(__dirname, "documentation"),
       "@": resolve(__dirname, "src"),
     },
   },

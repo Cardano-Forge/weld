@@ -384,7 +384,7 @@ Listen to every events triggered on the `wallet` scope, the `balance` namespace,
 
 To run the examples, navigate to the project's root directory and execute `npm install`, then `npm run dev`.
 
-Alternatively, you can directly explore the code by browsing the <a href="/src/documentation/examples/">examples</a> folder.
+Alternatively, you can directly explore the code by browsing the <a href="/documentation/examples/">examples</a> folder.
 
 ## Methods
 

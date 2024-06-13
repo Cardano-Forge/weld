@@ -21,7 +21,7 @@ if (root) {
               <li>
                 <a
                   className="card border p-4 hover:opacity-50 transition-opacity"
-                  href="/src/documentation/examples/a-wallet-state/index.html"
+                  href="/documentation/examples/a-wallet-state/index.html"
                 >
                   Wallet states
                 </a>
@@ -29,7 +29,7 @@ if (root) {
               <li>
                 <a
                   className="card border p-4 hover:opacity-50 transition-opacity"
-                  href="/src/documentation/examples/b-simple-wallet-connect/index.html"
+                  href="/documentation/examples/b-simple-wallet-connect/index.html"
                 >
                   Simple wallet connect
                 </a>
@@ -37,7 +37,7 @@ if (root) {
               <li>
                 <a
                   className="card border p-4 hover:opacity-50 transition-opacity"
-                  href="/src/documentation/examples/c-full-connection-flow/index.html"
+                  href="/documentation/examples/c-full-connection-flow/index.html"
                 >
                   Full connection flow
                 </a>
@@ -45,7 +45,7 @@ if (root) {
               <li>
                 <a
                   className="card border p-4 hover:opacity-50 transition-opacity"
-                  href="/src/documentation/examples/d-other-methods/index.html"
+                  href="/documentation/examples/d-other-methods/index.html"
                 >
                   Other methods
                 </a>

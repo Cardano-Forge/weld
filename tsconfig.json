@@ -23,8 +23,8 @@
     "noFallthroughCasesInSwitch": true,
 
     "baseUrl": ".",
-    "paths": { "@/*": ["src/*"] }
+    "paths": { "@/documentation/*": ["documentation/*"], "@/*": ["src/*"] }
   },
-  "include": ["src"],
+  "include": ["src", "documentation"],
   "exclude": ["node_modules", "dist"]
 }
