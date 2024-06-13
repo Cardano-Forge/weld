@@ -60,7 +60,7 @@ export default defineConfig({
     },
   },
   plugins: [
-    dts({ outDir: "dist/types" }),
+    dts({ outDir: "dist/types", exclude: ["documentation/**"] }),
     generateDtsEntryPoints(),
     copyPackageJson(),
   ],
