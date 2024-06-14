@@ -2,8 +2,15 @@ name: Publish
 
 on:
   workflow_dispatch:
-  release:
-    types: [published]
+    inputs:
+      bump:
+        type: choice
+        description: "Semver version"
+        required: true
+        options:
+          - patch
+          - minor
+          - major
 
 jobs:
   publish:
@@ -11,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       packages: write
-      contents: read
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -20,12 +27,37 @@ jobs:
           node-version: 18.12.1
           registry-url: https://registry.npmjs.org/
 
-      - run: npm ci
+      - name: Update versions
+        id: update-versions
+        uses: ./.github/actions/bump-version
+        with:
+          bump: ${{ inputs.bump }}
+
+      # Using npm install instead on ci to update the package-lock.json
+      - run: npm install
+
+      - name: Commit and push to main branch
+        if: github.ref_name == 'main'
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "username@users.noreply.github.com"
+          git commit -a -m "Update package.json to next ${{ inputs.bump }} version"
+          git tag -a ${{ steps.update-versions.outputs.version }} -m "Version ${{ steps.update-versions.outputs.version }}"
+          git push origin ${{ steps.update-versions.outputs.version }}
+          git push origin main
+
+      - name: Commit and push to pre-release branch
+        if: github.ref_name != 'main'
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "username@users.noreply.github.com"
+          git commit -a -m "Update package.json to next ${{ inputs.bump }} version"
+          git push origin ${{ github.ref_name }}
 
       - run: npm run build
 
       - name: Publish to registry
-        if: github.ref_name == 'main' || startsWith(github.ref, 'refs/tags/')
+        if: github.ref_name == 'main'
         run: npm publish
         working-directory: dist/
         env:
@@ -33,7 +65,7 @@ jobs:
 
       # Append -{{ ref_name }} to version number if not on production branch
       - name: Add pre-release flag
-        if: github.ref_name != 'main' && !startsWith(github.ref, 'refs/tags/')
+        if: github.ref_name != 'main'
         run: |
           full_version=$(echo "-${{ github.ref_name }}" | sed 's/\//-/g')
           jq --arg v "${full_version}" '.version += $v' package.json > tmp.json
@@ -41,7 +73,7 @@ jobs:
 
       - name: Publish to registry pre-release
         if: github.ref_name != 'main' && !startsWith(github.ref, 'refs/tags/')
-        working-directory: dist/
         run: npm publish --tag ${{ github.ref_name }}
+        working-directory: dist/
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
