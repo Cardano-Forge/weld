@@ -77,3 +77,13 @@ jobs:
         working-directory: dist/
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref_name == 'main'
+        with:
+          tag_name: ${{ steps.update-versions.outputs.version }}
+          generate_release_notes: true
+          make_latest: "true"
+          prerelease: false
+          draft: false
