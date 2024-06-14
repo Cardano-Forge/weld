@@ -1,14 +1,14 @@
-import core from "@actions/core";
 import { readFileSync, writeFileSync } from "node:fs";
+import core from "@actions/core";
 
 try {
   const bump = core.getInput("bump");
 
-  const file = `./package.json`;
+  const file = "./package.json";
   const pkg = JSON.parse(readFileSync(file));
 
   const version = pkg.version;
-  const [major, minor, patch] = version.split(".").map((v) => parseInt(v, 10));
+  const [major, minor, patch] = version.split(".").map((v) => Number.parseInt(v, 10));
 
   let newVersion = "";
 
@@ -28,13 +28,11 @@ try {
     pkg.version = newVersion;
 
     writeFileSync(file, JSON.stringify(pkg, null, 2));
-    console.log(
-      `Updated ${pkg.name} package version: ${version} -> ${newVersion}`
-    );
+    console.log(`Updated ${pkg.name} package version: ${version} -> ${newVersion}`);
     core.setOutput("version", newVersion);
   } else {
-    core.setFailed("Invalid bump value. Recieved: " + increment);
+    core.setFailed(`Invalid bump value. Recieved: ${increment}`);
   }
 } catch (error) {
-  core.setFailed("Error: " + error.message);
+  core.setFailed(`Error: ${error.message}`);
 }

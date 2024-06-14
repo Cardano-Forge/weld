@@ -23,9 +23,7 @@
       "types": "./react.d.ts"
     }
   },
-  "files": [
-    "**"
-  ],
+  "files": ["**"],
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
