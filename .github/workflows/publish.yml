@@ -65,9 +65,7 @@ jobs:
 
       - name: Publish to registry pre-release
         if: github.ref_name != 'main'
-        run: |
-          tag=$(echo "-${{ github.ref_name }}" | sed 's/\//-/g')
-          npm publish --tag ${tag}
+        run: npm publish --tag ${{ github.ref_name }}
         working-directory: dist/
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
