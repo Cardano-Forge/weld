@@ -1,3 +1,5 @@
+import { weldLocalStorage, type WeldStorage } from "./persistence";
+
 export type WalletConfig = {
   overwriteExistingConnection: boolean;
   pollInterval: number | false;
@@ -7,7 +9,7 @@ export type WalletConfig = {
 
 export type PersistenceConfig = {
   enabled: boolean;
-  storage: Storage;
+  storage: WeldStorage;
 };
 
 export type WeldConfig = {
@@ -26,6 +28,6 @@ export const defaults: WeldConfig = {
   },
   persistence: {
     enabled: true,
-    storage: localStorage,
+    storage: weldLocalStorage,
   },
 };

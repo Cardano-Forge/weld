@@ -1,5 +1,11 @@
 import { defaults } from "./config";
 
+export type WeldStorage = {
+  get(key: string): string | undefined;
+  set(key: string, value: string): void;
+  remove(key: string): void;
+};
+
 export const STORAGE_KEYS = {
   connectedWallet: "weld_connected-wallet",
 };
@@ -12,5 +18,20 @@ export function getPersistedValue(key: keyof typeof STORAGE_KEYS): string | unde
   if (!defaults.persistence.enabled) {
     return undefined;
   }
-  return defaults.persistence.storage.getItem(STORAGE_KEYS[key]) ?? undefined;
+  return defaults.persistence.storage.get(STORAGE_KEYS[key]) ?? undefined;
 }
+
+export const weldLocalStorage: WeldStorage = {
+  get(key) {
+    if (typeof window === "undefined") return undefined;
+    return window.localStorage.getItem(key) ?? undefined;
+  },
+  set(key, value) {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(key, value);
+  },
+  remove(key) {
+    if (typeof window === "undefined") return;
+    window.localStorage.removeItem(key);
+  },
+};

@@ -17,7 +17,7 @@ export function setConnectedWallet(key: string, handler: ExtendedWalletHandler):
   cleanupHandler(existing);
   connectedWallets.set(key, handler);
   if (defaults.persistence.enabled) {
-    defaults.persistence.storage.setItem(STORAGE_KEYS.connectedWallet, key);
+    defaults.persistence.storage.set(STORAGE_KEYS.connectedWallet, key);
   }
 }
 
@@ -26,7 +26,7 @@ export function deleteConnectedWallet(key: string): void {
   cleanupHandler(existing);
   connectedWallets.delete(key);
   if (defaults.persistence.enabled) {
-    defaults.persistence.storage.removeItem(STORAGE_KEYS.connectedWallet);
+    defaults.persistence.storage.remove(STORAGE_KEYS.connectedWallet);
   }
 }
 
@@ -36,7 +36,7 @@ export function clearConnectedWallets(): void {
   }
   connectedWallets.clear();
   if (defaults.persistence.enabled) {
-    defaults.persistence.storage.removeItem(STORAGE_KEYS.connectedWallet);
+    defaults.persistence.storage.remove(STORAGE_KEYS.connectedWallet);
   }
 }
 
