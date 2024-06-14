@@ -1,4 +1,4 @@
-import { type WeldStorage, weldLocalStorage } from "./persistence";
+import { type WeldStorage, defaultStorage } from "./persistence";
 
 export type WalletConfig = {
   overwriteExistingConnection: boolean;
@@ -28,6 +28,6 @@ export const defaults: WeldConfig = {
   },
   persistence: {
     enabled: true,
-    storage: weldLocalStorage,
+    storage: defaultStorage,
   },
 };

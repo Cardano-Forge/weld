@@ -21,20 +21,26 @@ export function getPersistedValue(key: keyof typeof STORAGE_KEYS): string | unde
   return defaults.persistence.storage.get(STORAGE_KEYS[key]) ?? undefined;
 }
 
-export const weldLocalStorage: WeldStorage = {
+export const defaultStorage: WeldStorage = {
   get(key) {
-    if (typeof window !== "undefined") {
-      return window.localStorage.getItem(key) ?? undefined;
+    try {
+      const arr = document?.cookie?.split("; ") ?? [];
+      for (const str of arr) {
+        const [k, v] = str.split("=");
+        if (k === key) {
+          return v;
+        }
+      }
+      return undefined;
+    } catch {
+      return undefined;
     }
   },
   set(key, value) {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(key, value);
-    }
+    const exp = new Date(Date.now() + 400 * 24 * 60 * 60 * 1000);
+    document.cookie = `${key}=${value}; expires=${exp.toUTCString()}; path=/;`;
   },
   remove(key) {
-    if (typeof window !== "undefined") {
-      window.localStorage.removeItem(key);
-    }
+    document.cookie = `${key}=; expires=${new Date(0).toUTCString()}; path=/;`;
   },
 };
