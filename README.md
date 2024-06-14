@@ -32,9 +32,6 @@
     - [Asynchronous errors](#asynchronous-errors)
   - [Reactive variable](#reactive-variable)
   - [Other methods](#other-methods)
-- [Persistence](#persistence)
-  - [Automatic reconnection](#automatic-reconnection)
-  - [Configuration](#configuration)
 - [Events](#events)
   - [Semantic](#semantic)
   - [Naming](#naming)
@@ -45,6 +42,9 @@
   - [`weld:wallet.balance.*`](#weldwalletbalance)
   - [`weld:wallet.balance.update.*`](#weldwalletbalanceupdate)
   - [`weld:wallet.balance.update.nami`](#weldwalletbalanceupdatenami)
+- [Persistence](#persistence)
+  - [Automatic reconnection](#automatic-reconnection)
+  - [Configuration](#configuration)
 - [Examples](#examples)
 - [Methods](#methods)
   - [initialize](#initialize)
@@ -299,38 +299,6 @@ export const App = () => {
 };
 ```
 
-## Persistence
-
-Weld provides a flexible interface to handle wallet connection persistence.
-
-### Automatic reconnection
-When using the `useWallet` React hook, an attempt will be made to reconnect the persisted wallet on first mount.
-
-If you are not using the `useWallet` hook, you can use the `getPersistedValue` helper function to retrieve the persisted wallet and connect it during the initialization of your app:
-```typescript
-function initApp() {
-  const persistedWalletKey = getPersistedValue("connectedWallet");
-  if (persistedWalletKey) {
-    connect(persistedWalletKey).then((handler) => {
-      console.log("handler", handler);
-    });
-  }
-}
-```
-_Note: `getPersistedValue` always returns `undefined` when persistence is disabled._
-
-### Configuration
-
-By default, the user's wallet connection is persisted to [local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage).
-This behavior can be customized by providing a different [Storage](https://developer.mozilla.org/en-US/docs/Web/API/Storage) interface to the global configuration object:
-```typescript
-defaults.persistence.storage = sessionStorage;
-```
-The persistence features can be disabled through the global configuration object:
-```typescript
-defaults.persistence.enabled = false;
-```
-
 
 ## Events
 
@@ -377,6 +345,40 @@ Listen to every events triggered on the `wallet` scope, the `balance` namespace 
 
 ### `weld:wallet.balance.update.nami`
 Listen to every events triggered on the `wallet` scope, the `balance` namespace, the `update` type and the specific `nami` key.
+
+
+## Persistence
+
+Weld provides a flexible interface to handle wallet connection persistence.
+
+### Automatic reconnection
+When using the `useWallet` React hook, an attempt will be made to reconnect the persisted wallet on first mount.
+
+If you are not using the `useWallet` hook, you can use the `getPersistedValue` helper function to retrieve the persisted wallet and connect it during the initialization of your app:
+```typescript
+function initApp() {
+  const persistedWalletKey = getPersistedValue("connectedWallet");
+  if (persistedWalletKey) {
+    connect(persistedWalletKey).then((handler) => {
+      console.log("handler", handler);
+    });
+  }
+}
+```
+_Note: `getPersistedValue` always returns `undefined` when persistence is disabled._
+
+### Configuration
+
+By default, the user's wallet connection is persisted to [local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage).
+This behavior can be customized by providing a different [Storage](https://developer.mozilla.org/en-US/docs/Web/API/Storage) interface to the global configuration object:
+```typescript
+defaults.persistence.storage = sessionStorage;
+```
+The persistence features can be disabled through the global configuration object:
+```typescript
+defaults.persistence.enabled = false;
+```
+
 
 ## Examples
 
