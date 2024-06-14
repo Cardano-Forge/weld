@@ -1,5 +1,5 @@
-const core = require("@actions/core");
-const { readFileSync, writeFileSync } = require("node:fs");
+import core from "@actions/core";
+import { readFileSync, writeFileSync } from "node:fs";
 
 try {
   const bump = core.getInput("bump");
