@@ -1,13 +1,10 @@
+import { STORAGE_KEYS } from "../server";
 import { defaults } from "./config";
 
 export type WeldStorage = {
   get(key: string): string | undefined;
   set(key: string, value: string): void;
   remove(key: string): void;
-};
-
-export const STORAGE_KEYS = {
-  connectedWallet: "weld_connected-wallet",
 };
 
 /**

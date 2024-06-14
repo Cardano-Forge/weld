@@ -461,7 +461,7 @@ Here is how you can do it in Next.js:
 1. Retrieve the persisted state from the cookie store on the server and pass it down to the useWallet hook to be used as initial value
 ```typescript
 import { cookies } from "next/headers";
-import { STORAGE_KEYS } from "@ada-anvil/weld";
+import { STORAGE_KEYS } from "@ada-anvil/weld/server";
 import { WeldProvider } from "@ada-anvil/weld/react";
 
 export default function RootLayout({ children }) {

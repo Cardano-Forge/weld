@@ -8,6 +8,8 @@ const entryPoints = Object.values(pkg.exports)
   .map((exp) => exp.import.replace("./", "").split(".")[0])
   .filter(Boolean);
 
+const serverModules = ["server"];
+
 function generateDtsEntryPoints(): PluginOption {
   let hasGenerated = false;
   return {
@@ -58,7 +60,14 @@ export default defineConfig({
     rollupOptions: {
       external: ["react", "react-dom", "@types/react", "@types/react-dom"],
       output: {
-        banner: '"use client";',
+        banner(chunk) {
+          const banners: string[] = [];
+          const isServer = serverModules.some((mod) => mod === chunk.name);
+          if (!isServer) {
+            banners.push('"use client";');
+          }
+          return banners.join("\n");
+        },
       },
     },
   },

@@ -1,6 +1,6 @@
 import { defaults } from "@/lib/main/config";
 
-import { STORAGE_KEYS } from "@/lib/main/persistence";
+import { STORAGE_KEYS } from "@/lib/server";
 import type { ExtendedWalletHandler } from "./extended";
 import type { WalletHandler } from "./handler";
 
