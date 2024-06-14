@@ -45,6 +45,14 @@ jobs:
           git push origin ${{ steps.update-versions.outputs.version }}
           git push origin main
 
+      # Append -{{ ref_name }} to version number if not on production branch
+      - name: Add pre-release flag
+        if: github.ref_name != 'main'
+        run: |
+          full_version=$(echo "-${{ github.ref_name }}" | sed 's/\//-/g')
+          jq --arg v "${full_version}" '.version += $v' package.json > tmp.json
+          mv tmp.json package.json
+
       - run: npm run build
 
       - name: Publish to registry
@@ -53,16 +61,6 @@ jobs:
         working-directory: dist/
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      # Append -{{ ref_name }} to version number if not on production branch
-      - name: Add pre-release flag
-        if: github.ref_name != 'main'
-        run: |
-          full_version=$(echo "-${{ github.ref_name }}" | sed 's/\//-/g')
-          echo Full Version ${full_version}
-          jq --arg v "${full_version}" '.version += $v' package.json > tmp.json
-          mv tmp.json package.json
-          cat package.json
 
       - name: Publish to registry pre-release
         if: github.ref_name != 'main'
