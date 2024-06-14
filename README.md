@@ -45,6 +45,7 @@
 - [Persistence](#persistence)
   - [Automatic reconnection](#automatic-reconnection)
   - [Configuration](#configuration)
+- [SSR support](#ssr-support)
 - [Examples](#examples)
 - [Methods](#methods)
   - [initialize](#initialize)
@@ -372,13 +373,125 @@ _Note: `getPersistedValue` always returns `undefined` when persistence is disabl
 By default, the user's wallet connection is persisted to [local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage).
 This behavior can be customized by providing a different [Storage](https://developer.mozilla.org/en-US/docs/Web/API/Storage) interface to the global configuration object:
 ```typescript
-defaults.persistence.storage = sessionStorage;
+defaults.persistence.storage = {
+  get(key) {
+    if (typeof window !== "undefined") {
+      return window.sessionStorage.getItem(key) ?? undefined;
+    }
+  },
+  set(key, value) {
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem(key, value);
+    }
+  },
+  remove(key) {
+    if (typeof window !== "undefined") {
+      window.sessionStorage.removeItem(key);
+    }
+  },
+};
 ```
 The persistence features can be disabled through the global configuration object:
 ```typescript
 defaults.persistence.enabled = false;
 ```
 
+_Note: When using a SSR framework, make sure to set configuration options inside a client side file_
+
+## SSR support
+
+Some frameworks like [Next.js](https://nextjs.org/) use an hybrid rendering strategy.
+In the context of Next.js in particular, this means that your components are first rendered on the server to produce an initial static html file,
+and rerendered on the client to attach event listeners and make the page interactive.
+This second rendering pass is what we call "component hydration". 
+
+When using Weld in such framworks, you might find that the framework throws hydration errors.
+This is because Weld's persistence feature uses window.localStorage by default, which is not defined on the server.
+
+### Fixing hydration errors
+
+To fix these hydration errors, there are a couple things you can do.
+
+#### Disable persistence
+
+```typescript
+import { defaults } from "@ada-anvil/weld";
+defaults.persistence.enabled = false;
+```
+
+_Drawback: User wallet connection will no longer be persisted (obviously)_ 
+
+#### Check if component is mounted when rendering based on wallet state
+
+In React, this might look something like this:
+```typescript
+import { useEffect, useState } from "react";
+import { useWalletContext } from "@ada-anvil/weld/react";
+
+function WalletState() {
+  const { wallet } = useWalletContext();
+  
+  const [isMounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+  
+  if (!isMounted || wallet.isConnectingTo) {
+    return "Connecting...";
+  }
+  
+  return wallet.isConnectedTo || "Not connected";
+}
+```
+
+_Drawback: You might see a flicker between what was rendered on the server and what is rendered on the client.
+Again, this is due to the fact that Weld uses localStorage to persist the user's last connected wallet and there is no way
+to retrieve this information when rendering on the server._ 
+
+#### Using cookies instead of localStorage 
+
+While this solution is a little bit more hands-on, we recommend it over the previous ones because it doesn't cause flickering
+and allows you to maintain the persistence feature.
+
+
+Here is how you can do it in Next.js:
+
+1. Retrieve the persisted state from the cookie store on the server and pass it down to the useWallet hook to be used as initial value
+```typescript
+import { cookies } from "next/headers";
+import { STORAGE_KEYS } from "@ada-anvil/weld";
+import { WeldProvider } from "@ada-anvil/weld/react";
+
+export default function RootLayout({ children }) {
+  const connectedWallet = cookies().get(STORAGE_KEYS.connectedWallet)?.value;
+  return (
+    <WeldProvider
+      config={{
+        wallet: {
+          initialState: { isConnectingTo: connectedWallet },
+        },
+      }}
+    >
+      {children}
+    </WeldProvider>
+  );
+}
+```
+
+2. Replace the default storage engine with the [js-cookie](https://github.com/js-cookie/js-cookie) library
+
+```bash
+npm install --save js-cookie
+npm install --save-dev @types/js-cookie
+```
+
+```typescript
+import Cookies from "js-cookie";
+import { defaults } from "@ada-anvil/weld";
+// Cookies implements the WeldStorage interface so we can set it directly
+defaults.persistence.storage = Cookies;
+```
 
 ## Examples
 
