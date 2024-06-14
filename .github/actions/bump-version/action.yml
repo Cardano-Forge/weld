@@ -1,0 +1,16 @@
+name: "Update package.json version"
+inputs:
+  bump:
+    type: choice
+    description: "Semver version"
+    required: true
+    options:
+      - patch
+      - minor
+      - major
+outputs:
+  version:
+    description: "The package version"
+runs:
+  using: "node20"
+  main: "index.js"

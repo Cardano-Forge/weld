@@ -133,7 +133,7 @@ Here are common use cases for an app utilizing this library.
 Use the exported `SUPPORTED_WALLETS` constant to display the available wallets.
 Additionally, you can use the `getInstalledExtensions` method or the `useInstalledExtensionsContext` to identify installed extensions, even if they are not officially supported.
 
-```typescript
+```tsx
 export const App = () => {
   const { wallet, connectWallet } = useWalletContext();
 
@@ -223,7 +223,7 @@ subscribe("weld:wallet.update.error.*", (event) => {
 ```
 
 The `useWallet` React hook wraps the asynchronous error events that are related to the current wallet and allows you to pass callbacks to handle them without having to manage the event subscriptions manually:
-```typescript
+```tsx
 // If using the weld context
 <WeldProvider config={{ wallet: { onUpdateError: error => handleError(error) }}}>{children}</WeldProvider>
 
@@ -243,7 +243,7 @@ This simple example may not reflect a practical use case, yet it demonstrates ho
 
 A pertinent application for reactive variables would be the connect button on a website's header, where the wallet icon and balance are typically displayed.
 
-```typescript
+```tsx
 import { useWalletContext } from "@/lib/react/contexts/wallet.context";
 
 export const App = () => {
@@ -267,7 +267,7 @@ export const App = () => {
 
 All default API functions are accessible and can be utilized via the `wallet.handler` class. If a function is unavailable, you can retrieve the default API by invoking the `wallet.handler.getDefaultApi` method.
 
-```typescript
+```tsx
 export const App = () => {
   const { wallet } = useWalletContext();
 
