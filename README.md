@@ -46,6 +46,7 @@
   - [Automatic reconnection](#automatic-reconnection)
   - [Configuration](#configuration)
 - [SSR support](#ssr-support)
+  - [Fixing hydration errors](#fixing-hydration-errors)
 - [Examples](#examples)
 - [Methods](#methods)
   - [initialize](#initialize)
