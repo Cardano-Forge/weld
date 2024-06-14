@@ -4,7 +4,7 @@ import { getPersistedValue } from "@/lib/main/persistence";
 import { type NetworkId, WalletDisconnectAccountError } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-type Wallet = {
+export type Wallet = {
   handler: ExtendedWalletHandler;
   balanceLovelace: number;
   networkId: NetworkId;
