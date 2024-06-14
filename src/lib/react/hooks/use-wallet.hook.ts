@@ -32,6 +32,10 @@ export type UseWalletReturnType = {
 };
 
 export type UseWalletOpts = {
+  initialState?: {
+    /** Can be used to force loading state during SSR and prevent flickers and/or hydration errors */
+    isConnectingTo?: string;
+  };
   onUpdateError?(error: unknown): void;
 };
 
@@ -40,9 +44,12 @@ export type ConnectWalletCallbacks = {
   onError(error: unknown): void;
 };
 
-export function useWallet({ onUpdateError }: UseWalletOpts = {}): UseWalletReturnType {
+export function useWallet({
+  initialState,
+  onUpdateError,
+}: UseWalletOpts = {}): UseWalletReturnType {
   const [isConnectingTo, setConnectingTo] = useState<string | undefined>(
-    getPersistedValue("connectedWallet"), // Prevent flicker by setting loading state immediately
+    initialState?.isConnectingTo ?? getPersistedValue("connectedWallet"),
   );
   const [wallet, setWallet] = useState<Wallet>();
 

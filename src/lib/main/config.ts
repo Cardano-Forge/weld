@@ -1,4 +1,4 @@
-import { weldLocalStorage, type WeldStorage } from "./persistence";
+import { type WeldStorage, weldLocalStorage } from "./persistence";
 
 export type WalletConfig = {
   overwriteExistingConnection: boolean;
