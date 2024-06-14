@@ -35,13 +35,13 @@ jobs:
       - name: Publish to registry pre-release
         if: github.ref_name != 'main'
         working-directory: dist/
-        run: npm publish --tag ${{ github.ref_name }} --dry-run
+        run: npm publish --tag ${{ github.ref_name }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to registry
         if: github.ref_name == 'main'
-        run: npm publish --dry-run
+        run: npm publish
         working-directory: dist/
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
