@@ -1,7 +1,10 @@
+import { STORAGE_KEYS } from "../server";
 import { defaults } from "./config";
 
-export const STORAGE_KEYS = {
-  connectedWallet: "weld_connected-wallet",
+export type WeldStorage = {
+  get(key: string): string | undefined;
+  set(key: string, value: string): void;
+  remove(key: string): void;
 };
 
 /**
@@ -12,5 +15,29 @@ export function getPersistedValue(key: keyof typeof STORAGE_KEYS): string | unde
   if (!defaults.persistence.enabled) {
     return undefined;
   }
-  return defaults.persistence.storage.getItem(STORAGE_KEYS[key]) ?? undefined;
+  return defaults.persistence.storage.get(STORAGE_KEYS[key]) ?? undefined;
 }
+
+export const defaultStorage: WeldStorage = {
+  get(key) {
+    try {
+      const arr = document?.cookie?.split("; ") ?? [];
+      for (const str of arr) {
+        const [k, v] = str.split("=");
+        if (k === key) {
+          return v;
+        }
+      }
+      return undefined;
+    } catch {
+      return undefined;
+    }
+  },
+  set(key, value) {
+    const exp = new Date(Date.now() + 400 * 24 * 60 * 60 * 1000);
+    document.cookie = `${key}=${value}; expires=${exp.toUTCString()}; path=/;`;
+  },
+  remove(key) {
+    document.cookie = `${key}=; expires=${new Date(0).toUTCString()}; path=/;`;
+  },
+};

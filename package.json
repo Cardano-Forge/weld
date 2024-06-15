@@ -21,6 +21,11 @@
       "import": "./react.js",
       "require": "./react.cjs",
       "types": "./react.d.ts"
+    },
+    "./server": {
+      "import": "./server.js",
+      "require": "./server.cjs",
+      "types": "./server.d.ts"
     }
   },
   "files": ["**"],
