@@ -42,18 +42,18 @@ export type WalletHandler = {
 };
 
 export class DefaultWalletHandler implements WalletHandler {
-  private _enabledApi: EnabledWalletApi;
-  private _prevBalance: string | undefined;
-  private _prevChangeAddress: string | undefined;
-  private _prevRewardAddress: string | undefined;
-  private _prevNetworkId: number | undefined;
-  private _listeners = new ListenerManager();
+  protected _enabledApi: EnabledWalletApi;
+  protected _prevBalance: string | undefined;
+  protected _prevChangeAddress: string | undefined;
+  protected _prevRewardAddress: string | undefined;
+  protected _prevNetworkId: number | undefined;
+  protected _listeners = new ListenerManager();
 
   constructor(
     public info: WalletInfo,
-    private _defaultApi: DefaultWalletApi,
+    protected _defaultApi: DefaultWalletApi,
     enabledApi: EnabledWalletApi,
-    private _config: WalletConfig,
+    protected _config: WalletConfig,
   ) {
     this._enabledApi = handleAccountChangeErrors(
       enabledApi,
@@ -283,8 +283,8 @@ export class DefaultWalletHandler implements WalletHandler {
     this._listeners.removeAll();
   }
 
-  private _isUpdating = false;
-  private async _update({ force = false } = {}): Promise<void> {
+  protected _isUpdating = false;
+  protected async _update({ force = false } = {}): Promise<void> {
     if (this._isUpdating && !force) return;
     try {
       this._isUpdating = true;
@@ -301,7 +301,7 @@ export class DefaultWalletHandler implements WalletHandler {
     }
   }
 
-  private _setup(): void {
+  protected _setup(): void {
     if (this._config.pollInterval) {
       this._listeners.addInterval(() => this._update(), this._config.pollInterval);
     }
@@ -310,7 +310,7 @@ export class DefaultWalletHandler implements WalletHandler {
     }
   }
 
-  private async _updateEnabledApi(): Promise<EnabledWalletApi> {
+  protected async _updateEnabledApi(): Promise<EnabledWalletApi> {
     const enabledApi = await enableWallet(this._defaultApi);
     if (!enabledApi) {
       // If wallet was enabled before and it fails to re-enable,
