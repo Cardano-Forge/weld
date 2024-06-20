@@ -21,7 +21,7 @@ To add a new wallet, you will need the following:
    - Maintain the correct file format and JSON structure.
    
    <details>
-   <summary>Example</summary>
+   <summary><b>Example</b></summary>
 
    ```typescript
    // ...
@@ -48,7 +48,7 @@ To add a new wallet, you will need the following:
    3. Register your custom connector in `src/internal/custom/index.ts`.
 
    <details>
-   <summary>Example</summary>
+   <summary><b>Example</b></summary>
 
    ```typescript
    import { eternl } from "./eternl";
@@ -63,3 +63,16 @@ To add a new wallet, you will need the following:
    </details>
 
    4. Add TypeScript code in the new directory and configure `index.ts` similarly to the `eternl` directory.
+
+5. **Test Wallet Integration**
+- Update and test the examples in the `documentation/examples/` directory to ensure the wallet integrates correctly.
+
+```bash
+npm install
+npm run dev
+```
+
+Then, navigate to : `http://localhost:5173`
+
+6. **Open a Pull Request**
+- Once everything is tested, open a PR on the *Cardano-Forge/universal-wallet-connector* repository.
