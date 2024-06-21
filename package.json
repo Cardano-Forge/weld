@@ -1,7 +1,7 @@
 {
   "name": "@ada-anvil/weld",
   "private": false,
-  "version": "0.0.8",
+  "version": "0.0.9",
   "type": "module",
   "main": "./main.cjs",
   "module": "./main.js",
@@ -28,7 +28,9 @@
       "types": "./server.d.ts"
     }
   },
-  "files": ["**"],
+  "files": [
+    "**"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
