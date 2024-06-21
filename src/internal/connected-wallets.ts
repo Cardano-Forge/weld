@@ -23,6 +23,9 @@ export function setConnectedWallet(key: string, handler: ExtendedWalletHandler):
 
 export function deleteConnectedWallet(key: string): void {
   const existing = connectedWallets.get(key);
+  if (!existing) {
+    return;
+  }
   cleanupHandler(existing);
   connectedWallets.delete(key);
   if (defaults.persistence.enabled) {
@@ -31,6 +34,9 @@ export function deleteConnectedWallet(key: string): void {
 }
 
 export function clearConnectedWallets(): void {
+  if (connectedWallets.size === 0) {
+    return;
+  }
   for (const handler of connectedWallets.values()) {
     cleanupHandler(handler);
   }
