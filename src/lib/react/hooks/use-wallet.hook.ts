@@ -48,9 +48,10 @@ export function useWallet({
   initialState,
   onUpdateError,
 }: UseWalletOpts = {}): UseWalletReturnType {
-  const [isConnectingTo, setConnectingTo] = useState<string | undefined>(
-    initialState?.isConnectingTo ?? getPersistedValue("connectedWallet"),
-  );
+  const initialIsConnectingTo = useMemo(() => {
+    return initialState?.isConnectingTo ?? getPersistedValue("connectedWallet");
+  }, [initialState?.isConnectingTo]);
+  const [isConnectingTo, setConnectingTo] = useState<string | undefined>(initialIsConnectingTo);
   const [wallet, setWallet] = useState<Wallet>();
 
   const disconnectWallet = useCallback(() => {
@@ -179,11 +180,10 @@ export function useWallet({
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Should only try to persist connection on first mount
   useEffect(() => {
-    const persistedWallet = getPersistedValue("connectedWallet");
-    if (persistedWallet) {
-      connectWallet(persistedWallet);
+    if (initialIsConnectingTo) {
+      connectWallet(initialIsConnectingTo);
     }
-  }, []);
+  }, [initialIsConnectingTo]);
 
   return { wallet: state, connectWallet, connectWalletAsync, disconnectWallet };
 }
