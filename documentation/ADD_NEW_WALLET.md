@@ -44,7 +44,7 @@ To add a new wallet, you will need the following:
    - If your wallet has a custom connector, perform these additional steps:
 
    1. Navigate to `src/internal/custom`.
-   2. Create a new directory named after your wallet `key`.
+   2. Create a new directory named after your wallet `key`, for example, `my_custom_wallet`.
    3. Register your custom connector in `src/internal/custom/index.ts`.
 
    <details>
@@ -63,6 +63,7 @@ To add a new wallet, you will need the following:
    </details>
 
    4. Add TypeScript code in the new directory and configure `index.ts` similarly to the `eternl` directory.
+      - *Note*: While any class that implements the `WalletHandler` interface can serve as a custom handler, we recommend extending the `DefaultWalletHandler` class. This class handles many essential functions, such as polling, event dispatching, and reconnecting on account change, which would otherwise need to be implemented manually.
 
 5. **Test Wallet Integration**
 - Update and test the examples in the `documentation/examples/` directory to ensure the wallet integrates correctly.
