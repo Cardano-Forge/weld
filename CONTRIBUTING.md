@@ -12,6 +12,11 @@
 
 Join our discord channel <a href="https://discord.gg/RN4D7wzc"><img src=".github/discord.svg" alt="Discord">Discord</a>
 
+## Adding a new wallet
+
+See here: [Add new wallet](./documentation/ADD_NEW_WALLET.md)
+
+
 ## Contributing
 
 1. Open a GitHub issue to track and discuss the feature/bug fix.
