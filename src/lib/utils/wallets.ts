@@ -30,6 +30,13 @@ export const SUPPORTED_WALLETS = [
   },
   {
     supported: true,
+    key: "tokeo",
+    displayName: "Tokeo",
+    icon: "https://tokeopay.io/tokeo.svg",
+    website: "https://tokeopay.io",
+  },
+  {
+    supported: true,
     key: "flint",
     displayName: "Flint",
     icon: "https://raw.githubusercontent.com/cardano-forge/universal-wallet-connector/main/images/wallets/flint.svg",
