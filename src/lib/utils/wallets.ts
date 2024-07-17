@@ -32,7 +32,7 @@ export const SUPPORTED_WALLETS = [
     supported: true,
     key: "tokeo",
     displayName: "Tokeo",
-    icon: "https://tokeopay.io/tokeo.svg",
+    icon: "https://raw.githubusercontent.com/cardano-forge/universal-wallet-connector/main/images/wallets/tokeo.svg",
     website: "https://tokeopay.io",
   },
   {
