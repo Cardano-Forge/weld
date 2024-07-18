@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
 import { AnvilIcon } from "../anvil-logo";
 import Logo from "../logo";
-import WalletDialog from "../wallet-dialog";
-import DialogTrigger from "../wallet-dialog/dialog-trigger";
 
 export const ExampleContainer = ({ children }: { children: ReactNode }) => {
   return (
@@ -12,7 +10,6 @@ export const ExampleContainer = ({ children }: { children: ReactNode }) => {
           <a href="/">
             <Logo type="logo-h" />
           </a>
-          <DialogTrigger />
         </div>
       </header>
       <section className="flex-1">
@@ -28,7 +25,6 @@ export const ExampleContainer = ({ children }: { children: ReactNode }) => {
           </div>
         </div>
       </footer>
-      <WalletDialog />
     </>
   );
 };

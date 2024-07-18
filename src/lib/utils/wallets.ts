@@ -4,10 +4,10 @@ type AbstractWalletInfo = {
   supported: true;
   key: string;
   icon: string;
-  website?: string;
+  website: string | undefined;
   displayName: string;
-  description?: string;
-  supportsTxChaining?: boolean;
+  description: string | undefined;
+  supportsTxChaining: boolean;
 };
 
 export const SUPPORTED_WALLETS = [
@@ -15,10 +15,11 @@ export const SUPPORTED_WALLETS = [
     supported: true,
     key: "eternl",
     displayName: "Eternl",
-    supportsTxChaining: true,
     icon: "https://raw.githubusercontent.com/cardano-forge/universal-wallet-connector/main/images/wallets/eternl.svg",
     website:
       "https://chrome.google.com/webstore/detail/eternl/kmhcihpebfmpgmihbkipmjlmmioameka?hl=en-US",
+    description: undefined,
+    supportsTxChaining: true,
   },
   {
     supported: true,
@@ -27,6 +28,8 @@ export const SUPPORTED_WALLETS = [
     icon: "https://raw.githubusercontent.com/cardano-forge/universal-wallet-connector/main/images/wallets/nami.svg",
     website:
       "https://chrome.google.com/webstore/detail/nami/lpfcbjknijpeeillifnkikgncikgfhdo?hl=en-US",
+    description: undefined,
+    supportsTxChaining: false,
   },
   {
     supported: true,
@@ -34,6 +37,8 @@ export const SUPPORTED_WALLETS = [
     displayName: "Tokeo",
     icon: "https://raw.githubusercontent.com/cardano-forge/universal-wallet-connector/main/images/wallets/tokeo.svg",
     website: "https://tokeopay.io",
+    description: undefined,
+    supportsTxChaining: false,
   },
   {
     supported: true,
@@ -42,6 +47,8 @@ export const SUPPORTED_WALLETS = [
     icon: "https://raw.githubusercontent.com/cardano-forge/universal-wallet-connector/main/images/wallets/flint.svg",
     website:
       "https://chrome.google.com/webstore/detail/flint-wallet/hnhobjmcibchnmglfbldbfabcgaknlkj?hl=en-US",
+    description: undefined,
+    supportsTxChaining: false,
   },
   {
     supported: true,
@@ -50,6 +57,8 @@ export const SUPPORTED_WALLETS = [
     icon: "https://raw.githubusercontent.com/cardano-forge/universal-wallet-connector/main/images/wallets/gerowallet.svg",
     website:
       "https://chrome.google.com/webstore/detail/gerowallet/bgpipimickeadkjlklgciifhnalhdjhe/overview",
+    description: undefined,
+    supportsTxChaining: false,
   },
   {
     supported: true,
@@ -58,6 +67,8 @@ export const SUPPORTED_WALLETS = [
     icon: "https://raw.githubusercontent.com/cardano-forge/universal-wallet-connector/main/images/wallets/typhoncip30.svg",
     website:
       "https://chrome.google.com/webstore/detail/typhon-wallet/kfdniefadaanbjodldohaedphafoffoh",
+    description: undefined,
+    supportsTxChaining: false,
   },
   {
     supported: true,
@@ -66,6 +77,8 @@ export const SUPPORTED_WALLETS = [
     icon: "https://raw.githubusercontent.com/cardano-forge/universal-wallet-connector/main/images/wallets/nufi.svg",
     website:
       "https://chrome.google.com/webstore/detail/nufi/gpnihlnnodeiiaakbikldcihojploeca?hl=en-US",
+    description: undefined,
+    supportsTxChaining: false,
   },
   {
     supported: true,
@@ -74,6 +87,8 @@ export const SUPPORTED_WALLETS = [
     icon: "https://raw.githubusercontent.com/cardano-forge/universal-wallet-connector/main/images/wallets/lace.svg",
     website:
       "https://chrome.google.com/webstore/detail/lace/gafhhkghbfjjkeiendhlofajokpaflmk?hl=en-US",
+    description: undefined,
+    supportsTxChaining: false,
   },
   {
     supported: true,
@@ -81,6 +96,8 @@ export const SUPPORTED_WALLETS = [
     displayName: "VESPR",
     icon: "https://raw.githubusercontent.com/cardano-forge/universal-wallet-connector/main/images/wallets/vespr.svg",
     website: "https://www.vespr.xyz/",
+    description: undefined,
+    supportsTxChaining: false,
   },
 ] as const satisfies AbstractWalletInfo[];
 
@@ -116,5 +133,8 @@ export function getWalletInfo(extension: WalletExtension): WalletInfo {
     key: extension.key,
     icon: extension.defaultApi.icon,
     displayName: extension.defaultApi.name,
+    description: undefined,
+    website: undefined,
+    supportsTxChaining: false,
   };
 }
