@@ -6,10 +6,10 @@ import {
   type WalletInfo,
   lovelaceToAda,
 } from "@/lib/utils";
-import type { WalletConfig } from "./config";
-import { connect as weldConnect } from "./connect";
-import { disconnect as weldDisconnect } from "./disconnect";
-import { subscribe } from "./subscribe";
+import type { WalletConfig } from "../config";
+import { connect as weldConnect } from "../connect";
+import { disconnect as weldDisconnect } from "../disconnect";
+import { subscribe } from "../subscribe";
 
 type WalletProps = WalletInfo & {
   isConnectingTo: string | undefined;
@@ -20,7 +20,7 @@ type WalletProps = WalletInfo & {
   networkId: NetworkId;
 };
 
-const initialState: WalletState = {
+const initialWalletState: WalletState = {
   isConnected: false,
   isConnectingTo: undefined,
   handler: undefined,
@@ -62,7 +62,10 @@ export type CreateWalletStoreOpts = Partial<Pick<WalletProps, "isConnectingTo">>
   onUpdateError?(error: unknown): void;
 };
 
-export function createWalletStore({ onUpdateError, ...initialProps }: CreateWalletStoreOpts = {}) {
+export function createWalletStore({
+  onUpdateError,
+  ...initialProps
+}: CreateWalletStoreOpts = {}): Store<WalletState & WalletApi> {
   return createStore<WalletState & WalletApi>((setState, getState) => {
     const subscriptions = new Set<{ unsubscribe(): void }>();
 
@@ -80,7 +83,7 @@ export function createWalletStore({ onUpdateError, ...initialProps }: CreateWall
         return;
       }
       weldDisconnect(state.handler.info.key);
-      setState(initialState);
+      setState(initialWalletState);
     };
 
     const handleError = (error: unknown) => {
@@ -171,9 +174,8 @@ export function createWalletStore({ onUpdateError, ...initialProps }: CreateWall
         return newState;
       } catch (error) {
         handleError(error);
-        throw error;
-      } finally {
         setState({ isConnectingTo: undefined });
+        throw error;
       }
     };
 
@@ -193,7 +195,7 @@ export function createWalletStore({ onUpdateError, ...initialProps }: CreateWall
     }
 
     return {
-      ...initialState,
+      ...initialWalletState,
       ...initialProps,
       connect,
       connectAsync,

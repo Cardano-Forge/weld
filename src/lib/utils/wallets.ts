@@ -1,7 +1,7 @@
 import type { WalletExtension } from "./extensions";
 
 type AbstractWalletInfo = {
-  supported: true;
+  supported: boolean;
   key: string;
   icon: string;
   website: string | undefined;
@@ -111,11 +111,7 @@ export type WalletInfo =
       supported: false;
     });
 
-export type SupportedWalletInfo = Extract<WalletInfo, { supported: true }>;
-
-export type UnsupportedWalletInfo = Extract<WalletInfo, { supported: false }>;
-
-export const supportedWalletsMap = new Map<WalletKey, SupportedWalletInfo>(
+export const supportedWalletsMap = new Map<WalletKey, WalletInfo>(
   SUPPORTED_WALLETS.map((config) => [config.key, config]),
 );
 

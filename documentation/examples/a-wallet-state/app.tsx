@@ -1,9 +1,9 @@
 import { ExampleContainer } from "@/documentation/commons/example-container";
-import { useWalletContext } from "@/lib/react/contexts/wallet.context";
+import { useWallet } from "@/lib/react";
 import { useEffect } from "react";
 
 export const App = () => {
-  const { wallet } = useWalletContext();
+  const wallet = useWallet();
 
   useEffect(() => {
     if (wallet.isConnected) {
@@ -37,7 +37,7 @@ export const App = () => {
               </div>
               <div>Lovelace:</div>
               <div className="py-2 px-4 text-xs bg-slate-100 rounded-md break-words">
-                {wallet.balanceLovelace}
+                {wallet.balance.ada.toFixed(2)}
               </div>
             </>
           )}

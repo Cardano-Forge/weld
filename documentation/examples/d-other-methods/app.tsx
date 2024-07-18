@@ -1,9 +1,9 @@
 import { ExampleContainer } from "@/documentation/commons/example-container";
-import { useWalletContext } from "@/lib/react/contexts/wallet.context";
+import { useWallet } from "@/lib/react";
 import { useEffect } from "react";
 
 export const App = () => {
-  const { wallet } = useWalletContext();
+  const wallet = useWallet();
 
   useEffect(() => {
     if (wallet.isConnected) {

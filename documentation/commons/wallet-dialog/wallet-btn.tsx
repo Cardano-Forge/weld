@@ -1,4 +1,4 @@
-import { useWalletContext } from "@/lib/react/contexts/wallet.context";
+import { useWallet } from "@/lib/react";
 import type { WalletInfo } from "@/lib/utils";
 import clsx from "clsx";
 
@@ -15,7 +15,7 @@ export const WalletBtn = ({
   className?: string;
   installed?: boolean;
 }) => {
-  const { wallet } = useWalletContext();
+  const isConnectedTo = useWallet((s) => s.key);
 
   const isLoading = info.key === isConnectingToKey;
 
@@ -50,7 +50,7 @@ export const WalletBtn = ({
     <button
       type="button"
       aria-busy={isLoading}
-      disabled={!!isConnectingToKey || wallet.isConnectedTo === info.key}
+      disabled={!!isConnectingToKey || isConnectedTo === info.key}
       onClick={() => onClick(info.key)}
       key={info.key}
       className={clsx("btn py-4 h-full", className)}

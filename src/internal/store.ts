@@ -12,7 +12,6 @@ export type Store<TState> = {
 export type StoreCreator<TState> = (
   setState: Store<TState>["setState"],
   getState: Store<TState>["getState"],
-  store: Store<TState>,
 ) => TState;
 
 export type ReadonlyStore<TState> = Omit<Store<TState>, "setState">;
@@ -53,7 +52,7 @@ export function createStore<TState extends object>(
 
   const store = { setState, getState, getInitialState, subscribe };
 
-  const initialState = createState(setState, getState, store);
+  const initialState = createState(setState, getState);
   state = initialState;
 
   return store;
