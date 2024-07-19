@@ -69,8 +69,13 @@ export function createWalletStore({
 }: CreateWalletStoreOpts = {}): Store<WalletState & WalletApi> {
   return createStore<WalletState & WalletApi>((setState, getState) => {
     const subscriptions = new Set<{ unsubscribe(): void }>();
+    let reconnectTimeout: NodeJS.Timeout | undefined = undefined;
 
     const cleanup: WalletApi["cleanup"] = () => {
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+        reconnectTimeout = undefined;
+      }
       if (subscriptions.size === 0) {
         return;
       }
@@ -212,9 +217,14 @@ export function createWalletStore({
         await connectAsyncRaw(key);
       } catch (error) {
         if (retryCount < 4) {
-          setTimeout(() => reconnect(key, retryCount + 1), 500);
+          if (reconnectTimeout) {
+            clearTimeout(reconnectTimeout);
+          }
+          reconnectTimeout = setTimeout(() => {
+            reconnect(key, retryCount + 1);
+          }, 500);
         } else {
-          console.log("giving up.");
+          console.log("last try");
           connect(key);
         }
       }
