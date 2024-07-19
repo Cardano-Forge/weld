@@ -1,21 +1,39 @@
 import type { ExtractStoreState, Store } from "@/internal/store";
 import { identity } from "@/internal/utils";
-import { createContext, useContext, useRef } from "react";
+import { createContext, useContext, useEffect, useRef } from "react";
 import { useShallow } from "./shallow";
 import { useStore } from "./store";
 
 export function createContextFromStore<TStore extends Store, TOpts = unknown>(
+  name: string,
   createStore: (opts?: TOpts) => TStore,
 ) {
   type TState = ExtractStoreState<TStore>;
 
   const defaultStore = createStore();
 
+  const requiresProvider = "cleanup" in defaultStore.getInitialState();
+  console.log(name, "requiresProvider", requiresProvider);
+
   const Context = createContext<TStore | undefined>(undefined);
 
   function provider({ children, ...props }: React.PropsWithChildren<TOpts>) {
-    const store = useRef(createStore(props as TOpts)).current;
-    return <Context.Provider value={store}>{children}</Context.Provider>;
+    const store = useRef(createStore(props as TOpts));
+    useEffect(() => {
+      return () => {
+        const state = store.current.getState() as unknown;
+        if (
+          typeof state === "object" &&
+          state !== null &&
+          "cleanup" in state &&
+          typeof state.cleanup === "function"
+        ) {
+          console.log(name, "final cleaning up");
+          state.cleanup();
+        }
+      };
+    }, []);
+    return <Context.Provider value={store.current}>{children}</Context.Provider>;
   }
 
   function hook(): TState;
@@ -28,9 +46,12 @@ export function createContextFromStore<TStore extends Store, TOpts = unknown>(
     selectorOrKey: ((state: TState) => unknown) | keyof TState = identity,
     ...additionalKeys: ReadonlyArray<keyof TState>
   ): unknown {
-    const store = useContext(Context) ?? defaultStore;
+    const contextStore = useContext(Context);
+    if (requiresProvider && !contextStore) {
+      throw new Error(`[WELD] ${name} hook cannot be used without a provider`);
+    }
     return useStore(
-      store,
+      contextStore ?? defaultStore,
       useShallow((state) => {
         if (typeof selectorOrKey === "function") {
           return selectorOrKey(state);
