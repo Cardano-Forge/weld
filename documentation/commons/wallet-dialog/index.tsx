@@ -1,4 +1,4 @@
-import { useExtensionsDerived, useWallet } from "@/lib/react";
+import { useExtensions, useWallet } from "@/lib/react";
 import { SUPPORTED_WALLETS } from "@/lib/utils";
 import { useDialogContext } from "../hooks/dialog.context";
 import { WalletBtn } from "./wallet-btn";
@@ -6,7 +6,7 @@ import { WalletBtn } from "./wallet-btn";
 const WalletDialog = () => {
   const wallet = useWallet("connect", "isConnectingTo");
   const { isOpen, close } = useDialogContext();
-  const supportedExtensions = useExtensionsDerived((s) => s.supported);
+  const supportedExtensions = useExtensions((s) => s.supported);
 
   const handleConnectWallet = async (key: string) => {
     wallet.connect(key, {

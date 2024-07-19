@@ -1,6 +1,7 @@
 export type StoreListener<T> = (state: T, prevState: T) => void;
 
-export type Store<TState> = {
+// biome-ignore lint/suspicious/noExplicitAny: Allow any store for generics
+export type Store<TState = any> = {
   getState: () => TState;
   getInitialState: () => TState;
   setState: (

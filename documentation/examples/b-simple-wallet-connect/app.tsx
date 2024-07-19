@@ -1,6 +1,5 @@
 import { ExampleContainer } from "@/documentation/commons/example-container";
-import { useExtensionsDerived } from "@/lib/react";
-import { useWallet } from "@/lib/react/wallet";
+import { useExtensions, useWallet } from "@/lib/react";
 import { SUPPORTED_WALLETS } from "@/lib/utils";
 import { useEffect } from "react";
 
@@ -11,15 +10,15 @@ const Connected = () => {
 };
 
 const ConnectingTo = () => {
-  const wallet = useWallet("isConnectingTo");
+  const isConnectingTo = useWallet("isConnectingTo");
   useEffect(() => console.log("isConnectingTo"));
-  return <div>Connecting to {wallet.isConnectingTo ?? "-"}</div>;
+  return <div>Connecting to {isConnectingTo ?? "-"}</div>;
 };
 
 const Description = () => {
-  const wallet = useWallet("description");
+  const description = useWallet("description");
   useEffect(() => console.log("description"));
-  return <div>Description {wallet.description ?? "-"}</div>;
+  return <div>Description {description ?? "-"}</div>;
 };
 
 const Balance = () => {
@@ -57,7 +56,7 @@ export const Wallet = () => {
 };
 
 export const Extensions = () => {
-  const extensions = useExtensionsDerived((state) => state.all);
+  const extensions = useExtensions((state) => state.all);
   console.log("extensions");
   return (
     <article className="card bg-base-100 shadow-xl max-w-[800px] mx-auto">
