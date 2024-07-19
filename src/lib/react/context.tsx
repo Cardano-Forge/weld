@@ -1,4 +1,4 @@
-import type { ExtractStoreState, Store } from "@/internal/store";
+import { type ExtractStoreState, type Store, hasLifeCycleMethods } from "@/internal/store";
 import { identity } from "@/internal/utils";
 import { createContext, useContext, useEffect, useRef } from "react";
 import { useShallow } from "./shallow";
@@ -10,29 +10,28 @@ export function createContextFromStore<TStore extends Store, TOpts = unknown>(
 ) {
   type TState = ExtractStoreState<TStore>;
 
-  const defaultStore = createStore();
-
-  const requiresProvider = "cleanup" in defaultStore.getInitialState();
-  console.log(name, "requiresProvider", requiresProvider);
+  let defaultStore: TStore | undefined = undefined;
+  function getDefaultStore(): TStore {
+    if (defaultStore) {
+      return defaultStore;
+    }
+    defaultStore = createStore();
+    return defaultStore;
+  }
 
   const Context = createContext<TStore | undefined>(undefined);
 
   function provider({ children, ...props }: React.PropsWithChildren<TOpts>) {
     const store = useRef(createStore(props as TOpts));
     useEffect(() => {
-      return () => {
-        const state = store.current.getState() as unknown;
-        if (
-          typeof state === "object" &&
-          state !== null &&
-          "cleanup" in state &&
-          typeof state.cleanup === "function"
-        ) {
-          console.log(name, "final cleaning up");
-          state.cleanup();
-        }
-      };
-    }, [name]);
+      const state = store.current.getState();
+      if (hasLifeCycleMethods(state)) {
+        state.__init?.();
+        return () => {
+          state.__cleanup?.();
+        };
+      }
+    }, []);
     return <Context.Provider value={store.current}>{children}</Context.Provider>;
   }
 
@@ -46,12 +45,17 @@ export function createContextFromStore<TStore extends Store, TOpts = unknown>(
     selectorOrKey: ((state: TState) => unknown) | keyof TState = identity,
     ...additionalKeys: ReadonlyArray<keyof TState>
   ): unknown {
-    const contextStore = useContext(Context);
-    if (requiresProvider && !contextStore) {
-      throw new Error(`[WELD] ${name} hook cannot be used without a provider`);
+    let store = useContext(Context);
+
+    if (!store) {
+      store = getDefaultStore();
+      if (hasLifeCycleMethods(store.getInitialState())) {
+        throw new Error(`[WELD] ${name} hook cannot be used without a provider`);
+      }
     }
+
     return useStore(
-      contextStore ?? defaultStore,
+      store,
       useShallow((state) => {
         if (typeof selectorOrKey === "function") {
           return selectorOrKey(state);

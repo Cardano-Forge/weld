@@ -58,3 +58,15 @@ export function createStore<TState extends object>(
 
   return store;
 }
+
+export type StoreLifeCycleMethods = {
+  __init?(): void;
+  __cleanup?(): void;
+};
+
+export function hasLifeCycleMethods(store: unknown): store is StoreLifeCycleMethods {
+  if (!store || typeof store !== "object" || store === null) return false;
+  if ("__init" in store && typeof store.__init === "function") return true;
+  if ("__cleanup" in store && typeof store.__cleanup === "function") return true;
+  return false;
+}

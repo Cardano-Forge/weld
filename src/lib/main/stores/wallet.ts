@@ -1,5 +1,5 @@
 import type { ExtendedWalletHandler } from "@/internal/extended";
-import { type Store, createStore } from "@/internal/store";
+import { type Store, type StoreLifeCycleMethods, createStore } from "@/internal/store";
 import {
   type NetworkId,
   WalletDisconnectAccountError,
@@ -47,7 +47,6 @@ type WalletApi = {
   connect(key: string, config?: Partial<WalletConfig & ConnectWalletCallbacks>): void;
   connectAsync: (key: string, config?: Partial<WalletConfig>) => Promise<ConnectedWalletState>;
   disconnect(): void;
-  cleanup(): void;
 };
 
 export type WalletState =
@@ -69,13 +68,8 @@ export function createWalletStore({
 }: CreateWalletStoreOpts = {}): Store<WalletState & WalletApi> {
   return createStore<WalletState & WalletApi>((setState, getState) => {
     const subscriptions = new Set<{ unsubscribe(): void }>();
-    let reconnectTimeout: NodeJS.Timeout | undefined = undefined;
 
-    const cleanup: WalletApi["cleanup"] = () => {
-      if (reconnectTimeout) {
-        clearTimeout(reconnectTimeout);
-        reconnectTimeout = undefined;
-      }
+    const unsubscribe = () => {
       if (subscriptions.size === 0) {
         return;
       }
@@ -86,7 +80,7 @@ export function createWalletStore({
     };
 
     const disconnect: WalletApi["disconnect"] = () => {
-      cleanup();
+      unsubscribe();
       const state = getState();
       if (!state.isConnected) {
         return;
@@ -102,7 +96,7 @@ export function createWalletStore({
     };
 
     const initializeSubscriptions = () => {
-      cleanup();
+      unsubscribe();
       subscriptions.add(
         subscribe("weld:wallet.balance.update.*", (event) => {
           const state = getState();
@@ -207,37 +201,52 @@ export function createWalletStore({
       ...initialProps,
       connect,
       connectAsync,
-      cleanup,
       disconnect,
+    };
+    if (!initialState.isConnectingTo && typeof window !== "undefined") {
+      initialState.isConnectingTo = getPersistedValue("connectedWallet");
+    }
+
+    let reconnectTimeout: NodeJS.Timeout | undefined = undefined;
+
+    const clearReconnectTimeout = () => {
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+        reconnectTimeout = undefined;
+      }
     };
 
     const reconnect = async (key: string, retryCount = 0) => {
       try {
-        console.log("retryCount", retryCount);
+        if (getState()?.isConnected) {
+          return;
+        }
         await connectAsyncRaw(key);
       } catch (error) {
         if (retryCount < 4) {
-          if (reconnectTimeout) {
-            clearTimeout(reconnectTimeout);
-          }
+          clearReconnectTimeout();
           reconnectTimeout = setTimeout(() => {
             reconnect(key, retryCount + 1);
           }, 500);
-        } else {
-          console.log("last try");
+        } else if (!getState()?.isConnected) {
           connect(key);
         }
       }
     };
 
-    const isServer = typeof window === "undefined";
-    if (!isServer) {
-      const persistedKey = initialProps.isConnectingTo ?? getPersistedValue("connectedWallet");
-      if (persistedKey) {
-        initialState.isConnectingTo = persistedKey;
-        reconnect(persistedKey);
+    const __init = () => {
+      if (initialState.isConnectingTo) {
+        reconnect(initialState.isConnectingTo);
       }
-    }
+    };
+
+    const __cleanup = () => {
+      clearReconnectTimeout();
+      unsubscribe();
+    };
+
+    (initialState as StoreLifeCycleMethods).__init = __init;
+    (initialState as StoreLifeCycleMethods).__cleanup = __cleanup;
 
     return initialState;
   });
