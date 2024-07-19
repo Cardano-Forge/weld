@@ -41,8 +41,8 @@ export function createContextFromStore<TStore extends Store, TOpts = unknown>(
         const res: Record<string, unknown> = {
           [selectorOrKey]: state[selectorOrKey as keyof TState],
         };
-        for (const key in additionalKeys) {
-          res[key] = state[key as keyof TState];
+        for (const key of additionalKeys) {
+          res[key as string] = state[key as keyof TState];
         }
         return res as TState;
       }),

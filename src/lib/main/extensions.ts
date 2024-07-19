@@ -12,31 +12,50 @@ export type InstalledExtension = {
 };
 
 export type InstalledExtensions = {
-  supported: Map<WalletKey, InstalledExtension>;
-  unsupported: Map<string, InstalledExtension>;
-  all: Map<string, InstalledExtension>;
+  map: {
+    supported: Map<WalletKey, InstalledExtension>;
+    unsupported: Map<string, InstalledExtension>;
+    all: Map<string, InstalledExtension>;
+  };
+  arr: {
+    supported: InstalledExtension[];
+    unsupported: InstalledExtension[];
+    all: InstalledExtension[];
+  };
 };
+
+export function newInstalledExtensions(): InstalledExtensions {
+  return {
+    map: {
+      supported: new Map<WalletKey, InstalledExtension>(),
+      unsupported: new Map<string, InstalledExtension>(),
+      all: new Map<string, InstalledExtension>(),
+    },
+    arr: {
+      supported: [],
+      unsupported: [],
+      all: [],
+    },
+  };
+}
 
 export async function getInstalledExtensions(): Promise<InstalledExtensions> {
   const walletExtensions = await getWalletExtensions();
-  const supported = new Map<WalletKey, InstalledExtension>();
-  const unsupported = new Map<string, InstalledExtension>();
-  const all = new Map<string, InstalledExtension>();
+  const res = newInstalledExtensions();
 
   for (const extension of walletExtensions) {
     const info = getWalletInfo(extension);
     const api: InstalledExtension = { info, defaultApi: extension.defaultApi };
-    all.set(info.key, api);
+    res.map.all.set(info.key, api);
+    res.arr.all.push(api);
     if (info.supported) {
-      supported.set(info.key, api);
+      res.map.supported.set(info.key, api);
+      res.arr.supported.push(api);
     } else {
-      unsupported.set(info.key, api);
+      res.map.unsupported.set(info.key, api);
+      res.arr.unsupported.push(api);
     }
   }
 
-  return {
-    supported,
-    unsupported,
-    all,
-  };
+  return res;
 }

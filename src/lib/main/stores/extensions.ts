@@ -1,19 +1,19 @@
 import { type Store, createStore } from "@/internal/store";
 import { getFailureReason } from "@/lib/utils";
-import { type InstalledExtensions, getInstalledExtensions } from "../extensions";
+import {
+  type InstalledExtensions,
+  getInstalledExtensions,
+  newInstalledExtensions,
+} from "../extensions";
 
-export type ExtensionsState = {
-  [TKey in keyof InstalledExtensions]: InstalledExtensions[TKey] | undefined;
-} & {
+export type ExtensionsState = InstalledExtensions & {
   isLoading: boolean;
   isFetching: boolean;
   error: string | undefined;
 };
 
 const initialExtensionsState: ExtensionsState = {
-  supported: undefined,
-  unsupported: undefined,
-  all: undefined,
+  ...newInstalledExtensions(),
   isLoading: true,
   isFetching: false,
   error: undefined,
@@ -33,11 +33,10 @@ export function createExtensionsStore(): Store<ExtensionsState & ExtensionsApi> 
       }
       setState({ isFetching: true });
       getInstalledExtensions()
-        .then(({ supported, unsupported, all }) => {
+        .then(({ map, arr }) => {
           setState({
-            supported,
-            unsupported,
-            all,
+            map,
+            arr,
             isLoading: false,
             isFetching: false,
             error: undefined,
@@ -46,9 +45,7 @@ export function createExtensionsStore(): Store<ExtensionsState & ExtensionsApi> 
         .catch((error) => {
           const message = getFailureReason(error) ?? "Could not retrieve user wallets";
           setState({
-            supported: undefined,
-            unsupported: undefined,
-            all: undefined,
+            ...newInstalledExtensions(),
             isLoading: false,
             isFetching: false,
             error: message,

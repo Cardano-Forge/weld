@@ -56,18 +56,21 @@ export const Wallet = () => {
 };
 
 export const Extensions = () => {
-  const extensions = useExtensions((state) => state.all);
-  console.log("extensions");
+  const extensions = useExtensions((state) => state.arr.all);
+  const update = useExtensions("update");
+  useEffect(() => console.log("extensions updated"));
   return (
     <article className="card bg-base-100 shadow-xl max-w-[800px] mx-auto">
       <div className="card-body text-center">
         Installed extensions
         <ul>
-          {extensions &&
-            Array.from(extensions.values()).map((ext) => (
-              <li key={ext.info.key}>{ext.info.displayName}</li>
-            ))}
+          {extensions.map((ext) => (
+            <li key={ext.info.key}>{ext.info.displayName}</li>
+          ))}
         </ul>
+        <button type="button" onClick={() => update()}>
+          Update extensions
+        </button>
       </div>
     </article>
   );
@@ -76,8 +79,8 @@ export const Extensions = () => {
 export const App = () => {
   return (
     <ExampleContainer>
-      {/* <Extensions /> */}
-      <Wallet />
+      <Extensions />
+      {/* <Wallet /> */}
     </ExampleContainer>
   );
 };
