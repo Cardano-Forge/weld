@@ -71,6 +71,9 @@ export function createWalletStore({
     const subscriptions = new Set<{ unsubscribe(): void }>();
 
     const cleanup: WalletApi["cleanup"] = () => {
+      if (subscriptions.size === 0) {
+        return;
+      }
       for (const subscription of subscriptions) {
         subscription.unsubscribe();
       }
@@ -147,32 +150,36 @@ export function createWalletStore({
       );
     };
 
+    const connectAsyncRaw: WalletApi["connectAsync"] = async (key, config) => {
+      setState({ isConnectingTo: key });
+
+      const handler = await weldConnect(key, config);
+      const balanceLovelace = await handler.getBalanceLovelace();
+      const newState: ConnectedWalletState = {
+        isConnected: true,
+        isConnectingTo: undefined,
+        handler,
+        balance: {
+          lovelace: balanceLovelace,
+          ada: lovelaceToAda(balanceLovelace),
+        },
+        networkId: await handler.getNetworkId(),
+        rewardAddress: await handler.getStakeAddress(),
+        changeAddress: await handler.getChangeAddress(),
+        ...handler.info,
+      };
+
+      handler.initialize();
+      initializeSubscriptions();
+
+      setState(newState);
+
+      return newState;
+    };
+
     const connectAsync: WalletApi["connectAsync"] = async (key, config) => {
       try {
-        setState({ isConnectingTo: key });
-
-        const handler = await weldConnect(key, config);
-        const balanceLovelace = await handler.getBalanceLovelace();
-        const newState: ConnectedWalletState = {
-          isConnected: true,
-          isConnectingTo: undefined,
-          handler,
-          balance: {
-            lovelace: balanceLovelace,
-            ada: lovelaceToAda(balanceLovelace),
-          },
-          networkId: await handler.getNetworkId(),
-          rewardAddress: await handler.getStakeAddress(),
-          changeAddress: await handler.getChangeAddress(),
-          ...handler.info,
-        };
-
-        handler.initialize();
-        initializeSubscriptions();
-
-        setState(newState);
-
-        return newState;
+        return await connectAsyncRaw(key, config);
       } catch (error) {
         handleError(error);
         setState({ isConnectingTo: undefined });
@@ -199,12 +206,26 @@ export function createWalletStore({
       disconnect,
     };
 
+    const reconnect = async (key: string, retryCount = 0) => {
+      try {
+        console.log("retryCount", retryCount);
+        await connectAsyncRaw(key);
+      } catch (error) {
+        if (retryCount < 4) {
+          setTimeout(() => reconnect(key, retryCount + 1), 500);
+        } else {
+          console.log("giving up.");
+          connect(key);
+        }
+      }
+    };
+
     const isServer = typeof window === "undefined";
     if (!isServer) {
       const persistedKey = initialProps.isConnectingTo ?? getPersistedValue("connectedWallet");
       if (persistedKey) {
         initialState.isConnectingTo = persistedKey;
-        connect(persistedKey);
+        reconnect(persistedKey);
       }
     }
 
