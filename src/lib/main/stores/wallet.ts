@@ -190,13 +190,7 @@ export function createWalletStore({
         });
     };
 
-    const isServer = typeof window === "undefined";
-    if (!isServer) {
-      const persisted = initialProps.isConnectingTo ?? getPersistedValue("connectedWallet");
-      if (persisted) connect(persisted);
-    }
-
-    return {
+    const initialState: WalletState & WalletApi = {
       ...initialWalletState,
       ...initialProps,
       connect,
@@ -204,5 +198,16 @@ export function createWalletStore({
       cleanup,
       disconnect,
     };
+
+    const isServer = typeof window === "undefined";
+    if (!isServer) {
+      const persistedKey = initialProps.isConnectingTo ?? getPersistedValue("connectedWallet");
+      if (persistedKey) {
+        initialState.isConnectingTo = persistedKey;
+        connect(persistedKey);
+      }
+    }
+
+    return initialState;
   });
 }
