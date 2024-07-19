@@ -32,7 +32,7 @@ export function createContextFromStore<TStore extends Store, TOpts = unknown>(
           state.cleanup();
         }
       };
-    }, []);
+    }, [name]);
     return <Context.Provider value={store.current}>{children}</Context.Provider>;
   }
 
