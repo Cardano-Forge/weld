@@ -1,10 +1,35 @@
 import { ExampleContainer } from "@/documentation/commons/example-container";
-import { useExtensions } from "@/lib/react";
+import { useExtensionsDerived } from "@/lib/react";
 import { useWallet } from "@/lib/react/wallet";
 import { SUPPORTED_WALLETS } from "@/lib/utils";
+import { useEffect } from "react";
+
+const Connected = () => {
+  const isConnected = useWallet((state) => state.isConnected);
+  useEffect(() => console.log("isConnected"));
+  return <div>Connected: {isConnected}</div>;
+};
+
+const ConnectingTo = () => {
+  const wallet = useWallet("isConnectingTo");
+  useEffect(() => console.log("isConnectingTo"));
+  return <div>Connecting to: {wallet.isConnectingTo}</div>;
+};
+
+const Description = () => {
+  const wallet = useWallet("description");
+  useEffect(() => console.log("description"));
+  return <div>Description: {wallet.description}</div>;
+};
+
+const Balance = () => {
+  const balance = useWallet((state) => state.balance?.ada.toFixed(2));
+  useEffect(() => console.log("balance"));
+  return <div>Balance: {balance}</div>;
+};
 
 export const Wallet = () => {
-  const wallet = useWallet();
+  const connect = useWallet((state) => state.connect);
   return (
     <article className="card bg-base-100 shadow-xl max-w-[800px] mx-auto">
       <div className="card-body text-center">
@@ -14,16 +39,17 @@ export const Wallet = () => {
               key={key}
               type="button"
               className="btn btn-primary"
-              onClick={() => wallet.connect(key)}
+              onClick={() => connect(key)}
             >
               {displayName}
             </button>
           ))}
         </div>
         <div className="flex flex-col gap-2">
-          <div>Connected: {wallet.isConnected}</div>
-          <div>Connecting to: {wallet.isConnectingTo ?? "-"}</div>
-          <div>Connected to: {wallet.displayName ?? "-"}</div>
+          <Connected />
+          <ConnectingTo />
+          <Description />
+          <Balance />
         </div>
       </div>
     </article>
@@ -31,14 +57,15 @@ export const Wallet = () => {
 };
 
 export const Extensions = () => {
-  const extensions = useExtensions();
+  const extensions = useExtensionsDerived((state) => state.all);
+  console.log("extensions");
   return (
     <article className="card bg-base-100 shadow-xl max-w-[800px] mx-auto">
       <div className="card-body text-center">
         Installed extensions:
         <ul>
-          {extensions.all &&
-            Array.from(extensions.all.values()).map((ext) => (
+          {extensions &&
+            Array.from(extensions.values()).map((ext) => (
               <li key={ext.info.key}>{ext.info.displayName}</li>
             ))}
         </ul>
@@ -51,7 +78,7 @@ export const App = () => {
   return (
     <ExampleContainer>
       <Extensions />
-      <Wallet />
+      {/* <Wallet /> */}
     </ExampleContainer>
   );
 };

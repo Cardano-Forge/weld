@@ -22,35 +22,32 @@ export function WalletProvider({
 }
 
 export function useWallet(): ExtractStoreState<WalletStore>;
-export function useWallet<TStore extends string | number | boolean | undefined | null>(
+export function useWallet<TStore>(
   selector: (state: ExtractStoreState<WalletStore>) => TStore,
 ): TStore;
-export function useWallet<TStore>(
-  selector: (state: ExtractStoreState<WalletStore>) => TStore = identity,
-): TStore {
-  const store = useContext(WalletContext) ?? defaultWalletStore;
-  return useStore(store, selector);
-}
-
-export function useWalletDerived<TStore extends object>(
-  selector: (state: ExtractStoreState<WalletStore>) => TStore = identity,
-): TStore {
-  const store = useContext(WalletContext) ?? defaultWalletStore;
-  return useStore(store, useShallow(selector));
-}
-
-export function useWalletPick<TKeys extends ReadonlyArray<keyof ExtractStoreState<WalletStore>>>(
+export function useWallet<TKeys extends ReadonlyArray<keyof ExtractStoreState<WalletStore>>>(
   ...keys: [...TKeys]
-): { [K in TKeys[number]]: ExtractStoreState<WalletStore>[K] } {
+): { [K in TKeys[number]]: ExtractStoreState<WalletStore>[K] };
+export function useWallet(
+  selectorOrKeys:
+    | ((state: ExtractStoreState<WalletStore>) => unknown)
+    | keyof ExtractStoreState<WalletStore> = identity,
+  ...keys: ReadonlyArray<keyof ExtractStoreState<WalletStore>>
+): unknown {
   const store = useContext(WalletContext) ?? defaultWalletStore;
   return useStore(
     store,
-    useShallow((s) => {
-      const res: Record<string, unknown> = {};
-      for (const key in keys) {
-        res[key] = s[key as keyof typeof s];
+    useShallow((state) => {
+      if (typeof selectorOrKeys === "function") {
+        return selectorOrKeys(state);
       }
-      return res as typeof s;
+      const res: Record<string, unknown> = {
+        [selectorOrKeys]: state[selectorOrKeys as keyof typeof state],
+      };
+      for (const key in keys) {
+        res[key] = state[key as keyof typeof state];
+      }
+      return res as typeof state;
     }),
   );
 }
