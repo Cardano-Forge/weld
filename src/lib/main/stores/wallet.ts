@@ -9,6 +9,7 @@ import {
 import type { WalletConfig } from "../config";
 import { connect as weldConnect } from "../connect";
 import { disconnect as weldDisconnect } from "../disconnect";
+import { getPersistedValue } from "../persistence";
 import { subscribe } from "../subscribe";
 
 type WalletProps = WalletInfo & {
@@ -190,8 +191,9 @@ export function createWalletStore({
     };
 
     const isServer = typeof window === "undefined";
-    if (initialProps.isConnectingTo && !isServer) {
-      connect(initialProps.isConnectingTo);
+    if (!isServer) {
+      const persisted = initialProps.isConnectingTo ?? getPersistedValue("connectedWallet");
+      if (persisted) connect(persisted);
     }
 
     return {
