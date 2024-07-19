@@ -142,15 +142,23 @@ export async function getWalletExtensions(): Promise<WalletExtension[]> {
     }
   }
 
-  return Object.entries(windowCardano).flatMap(([key, defaultApi]) => {
-    if (isDefaultWalletApi(defaultApi)) {
-      return {
-        key,
-        defaultApi,
-      };
-    }
-    return [];
-  });
+  return Object.entries(windowCardano)
+    .flatMap(([key, defaultApi]) => {
+      if (isDefaultWalletApi(defaultApi)) {
+        return {
+          key,
+          defaultApi,
+        };
+      }
+      return [];
+    })
+    .sort((a, b) => {
+      const keyA = a.key.toLowerCase();
+      const keyB = b.key.toLowerCase();
+      if (keyA < keyB) return -1;
+      if (keyB < keyA) return 1;
+      return 0;
+    });
 }
 
 export type EnableWalletOpts = {
