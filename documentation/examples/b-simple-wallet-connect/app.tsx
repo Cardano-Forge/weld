@@ -5,27 +5,27 @@ import { SUPPORTED_WALLETS } from "@/lib/utils";
 import { useEffect } from "react";
 
 const Connected = () => {
-  const isConnected = useWallet((state) => state.isConnected);
+  const connectedTo = useWallet((state) => state.key);
   useEffect(() => console.log("isConnected"));
-  return <div>Connected: {isConnected}</div>;
+  return <div>Connected {connectedTo ?? "-"}</div>;
 };
 
 const ConnectingTo = () => {
   const wallet = useWallet("isConnectingTo");
   useEffect(() => console.log("isConnectingTo"));
-  return <div>Connecting to: {wallet.isConnectingTo}</div>;
+  return <div>Connecting to {wallet.isConnectingTo ?? "-"}</div>;
 };
 
 const Description = () => {
   const wallet = useWallet("description");
   useEffect(() => console.log("description"));
-  return <div>Description: {wallet.description}</div>;
+  return <div>Description {wallet.description ?? "-"}</div>;
 };
 
 const Balance = () => {
   const balance = useWallet((state) => state.balance?.ada.toFixed(2));
   useEffect(() => console.log("balance"));
-  return <div>Balance: {balance}</div>;
+  return <div>Balance {balance ?? "-"}</div>;
 };
 
 export const Wallet = () => {
@@ -45,7 +45,7 @@ export const Wallet = () => {
             </button>
           ))}
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col items-start my-4 gap-2">
           <Connected />
           <ConnectingTo />
           <Description />
@@ -62,7 +62,7 @@ export const Extensions = () => {
   return (
     <article className="card bg-base-100 shadow-xl max-w-[800px] mx-auto">
       <div className="card-body text-center">
-        Installed extensions:
+        Installed extensions
         <ul>
           {extensions &&
             Array.from(extensions.values()).map((ext) => (
@@ -77,8 +77,8 @@ export const Extensions = () => {
 export const App = () => {
   return (
     <ExampleContainer>
-      <Extensions />
-      {/* <Wallet /> */}
+      {/* <Extensions /> */}
+      <Wallet />
     </ExampleContainer>
   );
 };
