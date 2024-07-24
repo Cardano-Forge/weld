@@ -1,27 +1,14 @@
 import type { WalletKey } from "@/lib/utils";
 
-import {
-  clearConnectedWallets,
-  getConnectedWallet,
-  setConnectedWallet,
-} from "@/internal/connected-wallets";
 import { getDefaultWalletConnector } from "@/internal/connector";
 import {
   type WalletHandlerByKey,
   customWalletConnectors,
   hasCustomConnector,
 } from "@/internal/custom";
-import { type ExtendedWalletHandler, extend } from "@/internal/extended";
 import type { WalletHandler } from "@/internal/handler";
 import { UNSAFE_LIB_USAGE_ERROR, isBrowser } from "@/internal/utils/browser";
 import { type WalletConfig, defaults } from "./config";
-
-function getConnectConfig(overrides: Partial<WalletConfig> = {}): WalletConfig {
-  return {
-    ...defaults.wallet,
-    ...overrides,
-  };
-}
 
 /**
  * Connect and enable a user wallet extension
@@ -32,40 +19,24 @@ function getConnectConfig(overrides: Partial<WalletConfig> = {}): WalletConfig {
 export async function connect<T extends WalletKey>(
   key: T,
   config?: Partial<WalletConfig>,
-): Promise<ExtendedWalletHandler<WalletHandlerByKey[T]>>;
-export async function connect(
-  key: string,
-  config?: Partial<WalletConfig>,
-): Promise<ExtendedWalletHandler>;
+): Promise<WalletHandlerByKey[T]>;
+export async function connect(key: string, config?: Partial<WalletConfig>): Promise<WalletHandler>;
 export async function connect(
   key: string,
   configOverrides?: Partial<WalletConfig>,
-): Promise<ExtendedWalletHandler> {
+): Promise<WalletHandler> {
   if (!isBrowser() && !defaults.ignoreUnsafeUsageError) {
     console.error(UNSAFE_LIB_USAGE_ERROR);
   }
 
-  const config = getConnectConfig(configOverrides);
+  const config: WalletConfig = {
+    ...defaults.wallet,
+    ...configOverrides,
+  };
 
-  const connectedWallet = getConnectedWallet(key);
-  if (connectedWallet && !config.overwriteExistingConnection) {
-    return connectedWallet;
-  }
-
-  if (!config.allowMultipleConnections) {
-    clearConnectedWallets();
-  }
-
-  let handler: WalletHandler;
   if (hasCustomConnector(key)) {
-    handler = await customWalletConnectors[key](key, config);
-  } else {
-    handler = await getDefaultWalletConnector()(key, config);
+    return customWalletConnectors[key](key, config);
   }
 
-  const extendedHandler = extend(handler);
-
-  setConnectedWallet(key, extendedHandler);
-
-  return extendedHandler;
+  return getDefaultWalletConnector()(key, config);
 }

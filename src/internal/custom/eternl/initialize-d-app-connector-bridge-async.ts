@@ -1,4 +1,4 @@
-import { deferredPromise } from "@/internal/utils";
+import { deferredPromise } from "@/internal/utils/deferred-promise";
 import type { DefaultWalletApi } from "@/lib/utils";
 import { initCardanoDAppConnectorBridge } from "./initialize-d-app-connector-bridge";
 

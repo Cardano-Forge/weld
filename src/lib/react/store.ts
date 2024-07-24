@@ -1,5 +1,5 @@
 import type { ExtractStoreState, ReadonlyStore } from "@/internal/store";
-import { identity } from "@/internal/utils";
+import { identity } from "@/internal/utils/identity";
 import { useSyncExternalStoreWithSelector } from "use-sync-external-store/with-selector";
 
 export function useStore<TStore extends ReadonlyStore<unknown>>(

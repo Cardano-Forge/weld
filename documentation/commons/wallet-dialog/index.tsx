@@ -10,8 +10,6 @@ const WalletDialog = () => {
 
   const handleConnectWallet = async (key: string) => {
     wallet.connect(key, {
-      overwriteExistingConnection: false,
-      allowMultipleConnections: true,
       updateOnWindowFocus: true,
       pollInterval: 2000,
       onSuccess() {

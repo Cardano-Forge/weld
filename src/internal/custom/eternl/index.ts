@@ -1,6 +1,6 @@
 import { getDefaultWalletConnector } from "@/internal/connector";
 import { DefaultWalletHandler } from "@/internal/handler";
-import { deferredPromise } from "@/internal/utils";
+import { deferredPromise } from "@/internal/utils/deferred-promise";
 import { initializeDAppConnectorBridgeAsync } from "./initialize-d-app-connector-bridge-async";
 
 export class EternlWalletHandler extends DefaultWalletHandler {

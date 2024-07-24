@@ -42,7 +42,9 @@ export class DefaultWalletHandler implements WalletHandler {
     protected _defaultApi: DefaultWalletApi,
     protected _enabledApi: EnabledWalletApi,
     protected _config: WalletConfig,
-  ) {}
+  ) {
+    this.initialize();
+  }
 
   get apiVersion() {
     return this._defaultApi.apiVersion;
@@ -53,7 +55,7 @@ export class DefaultWalletHandler implements WalletHandler {
    */
   async initialize(): Promise<boolean> {
     // No initialization needed for default wallet handler
-    // meant to be extended on custom implementations
+    // Meant to be extended on custom implementations
     return Promise.resolve(true);
   }
 

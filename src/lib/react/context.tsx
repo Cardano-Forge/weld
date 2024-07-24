@@ -1,5 +1,5 @@
 import { type ExtractStoreState, type Store, hasLifeCycleMethods } from "@/internal/store";
-import { identity } from "@/internal/utils";
+import { identity } from "@/internal/utils/identity";
 import { createContext, useContext, useEffect, useRef } from "react";
 import { useShallow } from "./shallow";
 import { useStore } from "./store";
