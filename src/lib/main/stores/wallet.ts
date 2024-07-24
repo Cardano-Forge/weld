@@ -56,7 +56,8 @@ export type WalletState =
 export type ConnectedWalletState = Extract<WalletState, { isConnected: true }>;
 export type DiconnectedWalletState = Extract<WalletState, { isConnected: false }>;
 
-export type WalletStore = Store<WalletState & WalletApi>;
+export type WalletStoreState = WalletState & WalletApi;
+export type WalletStore = Store<WalletStoreState>;
 
 export type CreateWalletStoreOpts = Partial<Pick<WalletProps, "isConnectingTo">> & {
   onUpdateError?(error: unknown): void;
@@ -65,8 +66,8 @@ export type CreateWalletStoreOpts = Partial<Pick<WalletProps, "isConnectingTo">>
 export function createWalletStore({
   onUpdateError,
   ...initialProps
-}: CreateWalletStoreOpts = {}): Store<WalletState & WalletApi> {
-  return createStore<WalletState & WalletApi>((setState, getState) => {
+}: CreateWalletStoreOpts = {}): WalletStore {
+  return createStore<WalletStoreState>((setState, getState) => {
     const subscriptions = new Set<{ unsubscribe(): void }>();
 
     const unsubscribe = () => {
@@ -196,7 +197,7 @@ export function createWalletStore({
         });
     };
 
-    const initialState: WalletState & WalletApi = {
+    const initialState: WalletStoreState & StoreLifeCycleMethods = {
       ...initialWalletState,
       ...initialProps,
       connect,
@@ -234,19 +235,16 @@ export function createWalletStore({
       }
     };
 
-    const __init = () => {
+    initialState.__init = () => {
       if (initialState.isConnectingTo) {
         reconnect(initialState.isConnectingTo);
       }
     };
 
-    const __cleanup = () => {
+    initialState.__cleanup = () => {
       clearReconnectTimeout();
       unsubscribe();
     };
-
-    (initialState as StoreLifeCycleMethods).__init = __init;
-    (initialState as StoreLifeCycleMethods).__cleanup = __cleanup;
 
     return initialState;
   });

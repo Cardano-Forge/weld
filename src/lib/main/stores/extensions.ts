@@ -23,10 +23,11 @@ export type ExtensionsApi = {
   update(): void;
 };
 
-export type ExtensionsStore = Store<ExtensionsState & ExtensionsApi>;
+export type ExtensionsStoreState = ExtensionsState & ExtensionsApi;
+export type ExtensionsStore = Store<ExtensionsStoreState>;
 
-export function createExtensionsStore(): Store<ExtensionsState & ExtensionsApi> {
-  return createStore<ExtensionsState & ExtensionsApi>((setState, getState) => {
+export function createExtensionsStore(): ExtensionsStore {
+  return createStore<ExtensionsStoreState>((setState, getState) => {
     const update = () => {
       if (getState()?.isFetching) {
         return;
@@ -53,14 +54,16 @@ export function createExtensionsStore(): Store<ExtensionsState & ExtensionsApi> 
         });
     };
 
-    const isServer = typeof window === "undefined";
-    if (!isServer) {
-      update();
-    }
+    const __init = () => {
+      if (typeof window !== "undefined") {
+        update();
+      }
+    };
 
     return {
       ...initialExtensionsState,
       update,
+      __init,
     };
   });
 }

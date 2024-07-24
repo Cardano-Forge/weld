@@ -1,3 +1,8 @@
+export type StoreLifeCycleMethods = {
+  __init?(): void;
+  __cleanup?(): void;
+};
+
 export type StoreListener<T> = (state: T, prevState: T) => void;
 
 // biome-ignore lint/suspicious/noExplicitAny: Allow any store for generics
@@ -8,12 +13,12 @@ export type Store<TState = any> = {
     partial: TState | Partial<TState> | ((state: TState) => TState | Partial<TState>),
   ) => void;
   subscribe: (listener: StoreListener<TState>) => () => void;
-};
+} & StoreLifeCycleMethods;
 
 export type StoreCreator<TState> = (
   setState: Store<TState>["setState"],
   getState: Store<TState>["getState"],
-) => TState;
+) => TState & StoreLifeCycleMethods;
 
 export type ReadonlyStore<TState> = Omit<Store<TState>, "setState">;
 
@@ -58,11 +63,6 @@ export function createStore<TState extends object>(
 
   return store;
 }
-
-export type StoreLifeCycleMethods = {
-  __init?(): void;
-  __cleanup?(): void;
-};
 
 export function hasLifeCycleMethods(store: unknown): store is StoreLifeCycleMethods {
   if (!store || typeof store !== "object" || store === null) return false;
