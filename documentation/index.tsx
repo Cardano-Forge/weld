@@ -48,6 +48,14 @@ if (root) {
                 Other methods
               </a>
             </li>
+            <li>
+              <a
+                className="card border p-4 hover:opacity-50 transition-opacity"
+                href="/documentation/examples/e-vanilla-js/index.html"
+              >
+                Vanilla JS
+              </a>
+            </li>
           </ul>
         </ExampleContainer>
       </DialogProvider>
