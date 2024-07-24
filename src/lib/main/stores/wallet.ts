@@ -2,6 +2,7 @@ import type { WalletHandler } from "@/internal/handler";
 import { type Store, type StoreLifeCycleMethods, createStore } from "@/internal/store";
 import {
   type NetworkId,
+  WalletConnectionAbortedError,
   WalletDisconnectAccountError,
   type WalletInfo,
   lovelaceToAda,
@@ -117,7 +118,7 @@ export function createWalletStore(
         const handler = await weldConnect(key, config);
 
         if (signal.aborted) {
-          throw new Error("connection aborted");
+          throw new WalletConnectionAbortedError();
         }
 
         const updateState = async () => {
@@ -143,7 +144,7 @@ export function createWalletStore(
         const newState = await updateState();
 
         if (signal.aborted) {
-          throw new Error("connection aborted");
+          throw new WalletConnectionAbortedError();
         }
 
         if (config.pollInterval) {

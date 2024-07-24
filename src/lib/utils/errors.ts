@@ -24,6 +24,13 @@ export class WalletConnectionError extends Error {
   }
 }
 
+export class WalletConnectionAbortedError extends Error {
+  constructor(message?: string | undefined) {
+    super(message);
+    this.name = "Anvil Weld - WalletConnectionAbortedError";
+  }
+}
+
 export class WalletBalanceDecodeError extends Error {
   constructor(message?: string | undefined) {
     super(message);
