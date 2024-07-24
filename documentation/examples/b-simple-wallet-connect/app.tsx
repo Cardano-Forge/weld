@@ -1,5 +1,5 @@
 import { ExampleContainer } from "@/documentation/commons/example-container";
-import { WalletProvider, useExtensions, useWallet } from "@/lib/react";
+import { useExtensions, useWallet } from "@/lib/react";
 import { SUPPORTED_WALLETS } from "@/lib/utils";
 import { useEffect } from "react";
 
@@ -78,11 +78,9 @@ export const Extensions = () => {
 
 export const App = () => {
   return (
-    <WalletProvider>
-      <ExampleContainer>
-        <Extensions />
-        <Wallet />
-      </ExampleContainer>
-    </WalletProvider>
+    <ExampleContainer>
+      <Extensions />
+      <Wallet />
+    </ExampleContainer>
   );
 };
