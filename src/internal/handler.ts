@@ -1,4 +1,3 @@
-import { dispatchEvent } from "@/internal/events";
 import type { WalletConfig } from "@/lib/main/config";
 import {
   type AddressBech32,
@@ -10,17 +9,13 @@ import {
   type NetworkId,
   type Signature,
   WalletBalanceDecodeError,
-  WalletDisconnectAccountError,
   type WalletInfo,
   type WalletKey,
-  enableWallet,
 } from "@/lib/utils";
 import { hexToBech32 } from "@/lib/utils/hex-to-bech32";
 import { hexToView } from "@/lib/utils/hex-to-view";
 import { viewToString } from "@/lib/utils/view-to-string";
 import cbor from "cbor-js";
-import { handleAccountChangeErrors } from "./account-change";
-import { ListenerManager } from "./listener-manager";
 import { decodeBalance } from "./utils/decode-balance";
 
 export type WalletHandler = {
@@ -42,33 +37,19 @@ export type WalletHandler = {
 };
 
 export class DefaultWalletHandler implements WalletHandler {
-  protected _enabledApi: EnabledWalletApi;
-  protected _prevBalance: string | undefined;
-  protected _prevChangeAddress: string | undefined;
-  protected _prevRewardAddress: string | undefined;
-  protected _prevNetworkId: number | undefined;
-  protected _listeners = new ListenerManager();
-
   constructor(
     public info: WalletInfo,
     protected _defaultApi: DefaultWalletApi,
-    enabledApi: EnabledWalletApi,
+    protected _enabledApi: EnabledWalletApi,
     protected _config: WalletConfig,
-  ) {
-    this._enabledApi = handleAccountChangeErrors(
-      enabledApi,
-      () => this._updateEnabledApi(),
-      () => this._defaultApi.isEnabled(),
-    );
-    this._setup();
-  }
+  ) {}
 
   get apiVersion() {
     return this._defaultApi.apiVersion;
   }
   /**
    * Initializes the handler when it is needed for certain wallets.
-   * @returns {Promise<boolean>} True if the initialization is completed, otherwise false.
+   * @returns True if the initialization is completed, otherwise false.
    */
   async initialize(): Promise<boolean> {
     // No initialization needed for default wallet handler
@@ -78,88 +59,43 @@ export class DefaultWalletHandler implements WalletHandler {
 
   /**
    * Gets the change address for the wallet.
-   * @returns {Promise<AddressBech32>} The change address in Bech32 format.
+   * @returns The change address in Bech32 format.
    */
   async getChangeAddress(): Promise<AddressBech32> {
-    let changeAddress = await this._enabledApi.getChangeAddress();
+    const changeAddress = await this._enabledApi.getChangeAddress();
     const networkId = await this._enabledApi.getNetworkId();
-
-    changeAddress = hexToBech32(changeAddress, "addr", networkId);
-
-    if (changeAddress !== this._prevChangeAddress) {
-      dispatchEvent(this.info.key, "wallet", "change-address", "update", {
-        handler: this,
-        changeAddress,
-      });
-      this._prevChangeAddress = changeAddress;
-    }
-
-    return changeAddress;
+    return hexToBech32(changeAddress, "addr", networkId);
   }
 
   /**
    * Gets the stake address for the wallet.
-   * @returns {Promise<AddressBech32>} The stake address in Bech32 format.
+   * @returns The stake address in Bech32 format.
    */
   async getStakeAddress(): Promise<AddressBech32> {
     const rewardAddresses = await this._enabledApi.getRewardAddresses();
     const networkId = await this._enabledApi.getNetworkId();
-
-    const rewardAddress = hexToBech32(rewardAddresses[0], "stake", networkId);
-
-    if (rewardAddress !== this._prevRewardAddress) {
-      dispatchEvent(this.info.key, "wallet", "reward-address", "update", {
-        handler: this,
-        rewardAddress,
-      });
-      this._prevRewardAddress = rewardAddress;
-    }
-
-    return rewardAddress;
+    return hexToBech32(rewardAddresses[0], "stake", networkId);
   }
 
   /**
    * Gets the network ID for the wallet.
-   * @returns {Promise<NetworkId>} The network ID.
+   * @returns The network ID.
    */
   async getNetworkId(): Promise<NetworkId> {
-    const networkId = await this._enabledApi.getNetworkId();
-
-    if (networkId !== this._prevNetworkId) {
-      dispatchEvent(this.info.key, "wallet", "network", "update", {
-        handler: this,
-        networkId,
-      });
-      this._prevNetworkId = networkId;
-    }
-
-    return networkId;
+    return this._enabledApi.getNetworkId();
   }
 
   /**
    * Gets the balance for the wallet in CBOR format.
-   * @returns {Promise<Cbor>} The balance in CBOR format.
+   * @returns The balance in CBOR format.
    */
   async getBalance(): Promise<Cbor> {
-    const balanceCbor = await this._enabledApi.getBalance();
-
-    if (balanceCbor !== this._prevBalance) {
-      const balanceLovelace = decodeBalance(balanceCbor);
-
-      dispatchEvent(this.info.key, "wallet", "balance", "update", {
-        handler: this,
-        cbor: balanceCbor,
-        balanceLovelace: balanceLovelace,
-      });
-      this._prevBalance = balanceCbor;
-    }
-
-    return balanceCbor;
+    return this._enabledApi.getBalance();
   }
 
   /**
    * Gets the balance for the wallet in Lovelace.
-   * @returns {Promise<Lovelace>} The balance in Lovelace.
+   * @returns The balance in Lovelace.
    * @throws {WalletBalanceDecodeError} If the balance cannot be decoded.
    */
   async getBalanceLovelace(): Promise<Lovelace> {
@@ -177,7 +113,7 @@ export class DefaultWalletHandler implements WalletHandler {
 
   /**
    * Gets the balance of assets for the wallet.
-   * @returns {Promise<BalanceByPolicies>} The balance by policies.
+   * @returns The balance by policies.
    */
   async getBalanceAssets(): Promise<BalanceByPolicies> {
     const balance = await this.getBalance();
@@ -218,7 +154,7 @@ export class DefaultWalletHandler implements WalletHandler {
 
   /**
    * Gets the default API for the wallet.
-   * @returns {DefaultWalletApi} The default wallet API.
+   * @returns The default wallet API.
    */
   getDefaultApi(): DefaultWalletApi {
     return this._defaultApi;
@@ -226,7 +162,7 @@ export class DefaultWalletHandler implements WalletHandler {
 
   /**
    * Checks if the wallet is connected.
-   * @returns {Promise<boolean>} True if the wallet is connected, otherwise false.
+   * @returns True if the wallet is connected, otherwise false.
    */
   async isConnected(): Promise<boolean> {
     return this._defaultApi.isEnabled();
@@ -234,8 +170,8 @@ export class DefaultWalletHandler implements WalletHandler {
 
   /**
    * Checks if the wallet is connected to a specific wallet key.
-   * @param {WalletKey} wallet - The wallet key to check.
-   * @returns {Promise<boolean>} True if connected to the specified wallet key, otherwise false.
+   * @param wallet - The wallet key to check.
+   * @returns True if connected to the specified wallet key, otherwise false.
    */
   async isConnectedTo(wallet: WalletKey): Promise<boolean> {
     if (this.info.key !== wallet) return false;
@@ -244,7 +180,7 @@ export class DefaultWalletHandler implements WalletHandler {
 
   /**
    * Gets the UTXOs for the wallet.
-   * @returns {Promise<string[] | undefined>} The UTXOs.
+   * @returns The UTXOs.
    */
   async getUtxos(): Promise<string[] | undefined> {
     return this._enabledApi.getUtxos();
@@ -252,9 +188,9 @@ export class DefaultWalletHandler implements WalletHandler {
 
   /**
    * Signs a transaction.
-   * @param {string} tx - The transaction to sign.
-   * @param {boolean} [partialSign=true] - Whether to partially sign the transaction.
-   * @returns {Promise<string>} The signed transaction.
+   * @param tx - The transaction to sign.
+   * @param [partialSign=true] - Whether to partially sign the transaction.
+   * @returns The signed transaction.
    */
   async signTx(tx: string, partialSign = true): Promise<string> {
     return this._enabledApi.signTx(tx, partialSign);
@@ -262,8 +198,8 @@ export class DefaultWalletHandler implements WalletHandler {
 
   /**
    * Submits a transaction.
-   * @param {string} tx - The transaction to submit.
-   * @returns {Promise<string>}
+   * @param tx - The transaction to submit.
+   * @returns
    */
   async submitTx(tx: string): Promise<string> {
     return this._enabledApi.submitTx(tx);
@@ -271,62 +207,11 @@ export class DefaultWalletHandler implements WalletHandler {
 
   /**
    * Signs data with the wallet's stake address.
-   * @param {string} payload - The data to sign.
-   * @returns {Promise<Signature>} The signed data.
+   * @param payload - The data to sign.
+   * @returns The signed data.
    */
   async signData(payload: string): Promise<Signature> {
     const stake = await this.getStakeAddress();
     return this._enabledApi.signData(stake, payload);
-  }
-
-  _cleanup(): void {
-    this._listeners.removeAll();
-  }
-
-  protected _isUpdating = false;
-  protected async _update({ force = false } = {}): Promise<void> {
-    if (this._isUpdating && !force) return;
-    try {
-      this._isUpdating = true;
-      await Promise.all([
-        this.getBalance(),
-        this.getNetworkId(),
-        this.getStakeAddress(),
-        this.getChangeAddress(),
-      ]);
-    } catch (error) {
-      dispatchEvent(this.info.key, "wallet", "update", "error", { error });
-    } finally {
-      this._isUpdating = false;
-    }
-  }
-
-  protected _setup(): void {
-    if (this._config.pollInterval) {
-      this._listeners.addInterval(() => this._update(), this._config.pollInterval);
-    }
-    if (this._config.updateOnWindowFocus) {
-      this._listeners.addEvent("window", "focus", () => this._update());
-    }
-  }
-
-  protected async _updateEnabledApi(): Promise<EnabledWalletApi> {
-    const enabledApi = await enableWallet(this._defaultApi);
-    if (!enabledApi) {
-      // If wallet was enabled before and it fails to re-enable,
-      // we assume the account was disconnected from within the wallet extension
-      const message = `Could not update the ${this.info.displayName} wallet's API`;
-      throw new WalletDisconnectAccountError(message);
-    }
-
-    this._enabledApi = handleAccountChangeErrors(
-      enabledApi,
-      () => this._updateEnabledApi(),
-      () => this._defaultApi.isEnabled(),
-    );
-
-    void this._update({ force: true });
-
-    return this._enabledApi;
   }
 }
