@@ -32,14 +32,14 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "lint": "biome lint --apply .",
+    "lint": "biome lint --write .",
     "format": "biome format --write .",
-    "check": "biome check --apply .",
+    "check": "biome check --write .",
     "pack": "cd dist && npm pack && mv *.tgz .."
   },
   "devDependencies": {
     "@actions/core": "^1.10.1",
-    "@biomejs/biome": "1.7.2",
+    "@biomejs/biome": "^1.8.3",
     "@tailwindcss/typography": "^0.5.13",
     "@types/cbor-js": "^0.1.1",
     "@types/node": "^20.12.7",
@@ -56,7 +56,7 @@
     "tailwindcss": "^3.4.3",
     "typescript": "^5.4.5",
     "vite": "^5.2.0",
-    "vite-plugin-dts": "^3.9.0"
+    "vite-plugin-dts": "^2.3.0"
   },
   "peerDependencies": {
     "@types/react": ">=17.0.0",

@@ -99,7 +99,7 @@ export const SUPPORTED_WALLETS = [
     description: undefined,
     supportsTxChaining: false,
   },
-] as const satisfies AbstractWalletInfo[];
+] as const satisfies readonly AbstractWalletInfo[];
 
 export type WalletKey = (typeof SUPPORTED_WALLETS)[number]["key"];
 
