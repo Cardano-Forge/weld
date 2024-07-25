@@ -1,9 +1,10 @@
-// src: https://github.com/pmndrs/zustand/blob/main/src/vanilla/shallow.ts
+// adapted from https://github.com/pmndrs/zustand/blob/main/src/vanilla/shallow.ts
 
-export function shallow<T>(objA: T, objB: T) {
+export function compare<T>(objA: T, objB: T, depth = 1) {
   if (Object.is(objA, objB)) {
     return true;
   }
+
   if (typeof objA !== "object" || objA === null || typeof objB !== "object" || objB === null) {
     return false;
   }
@@ -31,14 +32,24 @@ export function shallow<T>(objA: T, objB: T) {
   }
 
   const keysA = Object.keys(objA);
+
   if (keysA.length !== Object.keys(objB).length) {
     return false;
   }
+
   for (const keyA of keysA) {
-    if (
-      !Object.prototype.hasOwnProperty.call(objB, keyA as string) ||
-      !Object.is(objA[keyA as keyof T], objB[keyA as keyof T])
-    ) {
+    if (!Object.prototype.hasOwnProperty.call(objB, keyA as string)) {
+      return false;
+    }
+
+    const valueA = objA[keyA as keyof T];
+    const valueB = objB[keyA as keyof T];
+
+    if (depth > 0) {
+      if (!compare(valueA, valueB, depth - 1)) {
+        return false;
+      }
+    } else if (!Object.is(valueA, valueB)) {
       return false;
     }
   }

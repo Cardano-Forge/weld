@@ -1,3 +1,7 @@
+// adapted from https://github.com/pmndrs/zustand/blob/main/src/vanilla.ts
+
+import { compare } from "./compare";
+
 export type StoreLifeCycleMethods = {
   __init?(): void;
   __cleanup?(): void;
@@ -13,6 +17,10 @@ export type Store<TState = any> = {
     partial: TState | Partial<TState> | ((state: TState) => TState | Partial<TState>),
   ) => void;
   subscribe: (listener: StoreListener<TState>) => () => void;
+  subscribeWithSelector: <TSlice>(
+    selector: (state: TState) => TSlice,
+    listener: StoreListener<TSlice>,
+  ) => () => void;
 } & StoreLifeCycleMethods;
 
 export type StoreCreator<TState> = (
@@ -31,14 +39,14 @@ export function createStore<TState extends object>(
   const listeners = new Set<StoreListener<TState>>();
 
   const setState: Store<TState>["setState"] = (partial) => {
-    const next = typeof partial === "function" ? partial(state) : partial;
-    if (!Object.is(next, state)) {
+    const partialNext = typeof partial === "function" ? partial(state) : partial;
+    const next =
+      typeof partialNext !== "object" || partialNext === null
+        ? partialNext
+        : Object.assign({}, state, partialNext);
+    if (!compare(next, state)) {
       const prev = state;
-      if (typeof next !== "object" || next === null) {
-        state = next;
-      } else {
-        state = Object.assign({}, state, next);
-      }
+      state = next;
       for (const listener of listeners) {
         listener(state, prev);
       }
@@ -56,7 +64,23 @@ export function createStore<TState extends object>(
     };
   };
 
-  const store = { setState, getState, getInitialState, subscribe };
+  const subscribeWithSelector: Store<TState>["subscribeWithSelector"] = (selector, listener) => {
+    let currSlice = selector(state);
+    const globalListener = (next: TState) => {
+      const nextSlice = selector(next);
+      if (!compare(currSlice, nextSlice)) {
+        const prevSlice = currSlice;
+        currSlice = nextSlice;
+        listener(currSlice, prevSlice);
+      }
+    };
+    listeners.add(globalListener);
+    return () => {
+      listeners.delete(globalListener);
+    };
+  };
+
+  const store = { setState, getState, getInitialState, subscribe, subscribeWithSelector };
 
   const initialState = createState(setState, getState);
   state = initialState;

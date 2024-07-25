@@ -1,7 +1,7 @@
 import { type ExtractStoreState, type Store, hasLifeCycleMethods } from "@/internal/store";
 import { identity } from "@/internal/utils/identity";
 import { createContext, useContext, useEffect, useRef } from "react";
-import { useShallow } from "./shallow";
+import { useCompare } from "./compare";
 import { useStore } from "./store";
 
 export function createContextFromStore<TStore extends Store, TOpts = unknown>(
@@ -56,7 +56,7 @@ export function createContextFromStore<TStore extends Store, TOpts = unknown>(
 
     return useStore(
       store,
-      useShallow((state) => {
+      useCompare((state) => {
         if (typeof selectorOrKey === "function") {
           return selectorOrKey(state);
         }
