@@ -51,7 +51,8 @@ export default defineConfig({
     lib: {
       entry: entryPoints.reduce(
         (acc, file) => {
-          acc[file] = resolve(__dirname, `src/lib/${file}/index.ts`);
+          const ext = file === "react" ? "tsx" : "ts";
+          acc[file] = resolve(__dirname, `src/lib/${file}/index.${ext}`);
           return acc;
         },
         {} as Extract<LibraryOptions["entry"], Record<string, unknown>>,

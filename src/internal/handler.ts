@@ -20,7 +20,6 @@ import { decodeBalance } from "./utils/decode-balance";
 
 export type WalletHandler = {
   info: WalletInfo;
-  initialize(): Promise<boolean>;
   getChangeAddress(): Promise<string>;
   getStakeAddress(): Promise<string>;
   getNetworkId(): Promise<NetworkId>;
@@ -42,21 +41,10 @@ export class DefaultWalletHandler implements WalletHandler {
     protected _defaultApi: DefaultWalletApi,
     protected _enabledApi: EnabledWalletApi,
     protected _config: WalletConfig,
-  ) {
-    this.initialize();
-  }
+  ) {}
 
   get apiVersion() {
     return this._defaultApi.apiVersion;
-  }
-  /**
-   * Initializes the handler when it is needed for certain wallets.
-   * @returns True if the initialization is completed, otherwise false.
-   */
-  async initialize(): Promise<boolean> {
-    // No initialization needed for default wallet handler
-    // Meant to be extended on custom implementations
-    return Promise.resolve(true);
   }
 
   /**

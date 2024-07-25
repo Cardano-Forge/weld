@@ -1,24 +1,26 @@
-import type { WalletKey } from "@/lib/utils";
+import type { WalletKey } from "@/lib/utils/wallets";
 
-import type { WalletConnector } from "@/internal/connector";
-import type { WalletHandler } from "@/internal/handler";
+import type { DefaultWalletHandler, WalletHandler } from "@/internal/handler";
 
+import type { AnyFunction } from "../utils/types";
 import { eternl } from "./eternl";
+import type { CustomWallet } from "./type";
 
-export const customWalletConnectors = {
+export const customWallets = {
   eternl,
-} satisfies Partial<Record<WalletKey, WalletConnector>>;
+} satisfies Partial<Record<WalletKey, CustomWallet>>;
 
-export type CustomWalletConnectors = typeof customWalletConnectors;
-export type CustomWalletKey = keyof CustomWalletConnectors;
+export type CustomWallets = typeof customWallets;
+export type CustomWalletKey = keyof CustomWallets;
 
-export function hasCustomConnector(key: string): key is CustomWalletKey {
-  return !!customWalletConnectors[key as CustomWalletKey];
+export function hasCustomImplementation(key: string): key is CustomWalletKey {
+  return !!customWallets[key as CustomWalletKey];
 }
 
-export type CustomHandler<TKey extends CustomWalletKey> = Awaited<
-  ReturnType<CustomWalletConnectors[TKey]>
->;
+export type CustomHandler<TKey extends CustomWalletKey> =
+  CustomWallets[TKey]["connector"] extends AnyFunction
+    ? Awaited<ReturnType<CustomWallets[TKey]["connector"]>>
+    : DefaultWalletHandler;
 
 export type WalletHandlerByKey = {
   [TKey in CustomWalletKey]: CustomHandler<TKey>;

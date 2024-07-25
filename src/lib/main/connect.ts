@@ -1,11 +1,7 @@
 import type { WalletKey } from "@/lib/utils";
 
 import { getDefaultWalletConnector } from "@/internal/connector";
-import {
-  type WalletHandlerByKey,
-  customWalletConnectors,
-  hasCustomConnector,
-} from "@/internal/custom";
+import { type WalletHandlerByKey, customWallets, hasCustomImplementation } from "@/internal/custom";
 import type { WalletHandler } from "@/internal/handler";
 import { UNSAFE_LIB_USAGE_ERROR, isBrowser } from "@/internal/utils/browser";
 import { type WalletConfig, defaults } from "./config";
@@ -34,8 +30,8 @@ export async function connect(
     ...configOverrides,
   };
 
-  if (hasCustomConnector(key)) {
-    return customWalletConnectors[key](key, config);
+  if (hasCustomImplementation(key)) {
+    return customWallets[key].connector(key, config);
   }
 
   return getDefaultWalletConnector()(key, config);

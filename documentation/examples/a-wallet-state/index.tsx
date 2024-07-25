@@ -1,5 +1,5 @@
 import { DialogProvider } from "@/documentation/commons/hooks/dialog.context";
-import { WalletProvider } from "@/lib/react";
+import { WeldProvider } from "@/lib/react";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { App } from "./app";
@@ -9,9 +9,9 @@ if (root) {
   ReactDOM.createRoot(root).render(
     <React.StrictMode>
       <DialogProvider>
-        <WalletProvider>
+        <WeldProvider>
           <App />
-        </WalletProvider>
+        </WeldProvider>
       </DialogProvider>
     </React.StrictMode>,
   );

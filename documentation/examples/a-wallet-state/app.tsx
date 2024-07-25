@@ -1,15 +1,8 @@
 import { ExampleContainer } from "@/documentation/commons/example-container";
 import { useWallet } from "@/lib/react";
-import { useEffect } from "react";
 
 export const App = () => {
   const wallet = useWallet();
-
-  useEffect(() => {
-    if (wallet.isConnected) {
-      wallet.handler.initialize();
-    }
-  }, [wallet]);
 
   return (
     <ExampleContainer>

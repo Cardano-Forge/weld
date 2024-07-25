@@ -1,40 +1,40 @@
-import { getDefaultWalletConnector } from "@/internal/connector";
-import { DefaultWalletHandler } from "@/internal/handler";
+import { createCustomWallet } from "@/internal/custom/type";
 import { deferredPromise } from "@/internal/utils/deferred-promise";
 import { initializeDAppConnectorBridgeAsync } from "./initialize-d-app-connector-bridge-async";
 
-export class EternlWalletHandler extends DefaultWalletHandler {
-  private _initState:
-    | { status: "idle" | "initialized" }
-    | { status: "loading"; promise: Promise<boolean> } = {
-    status: "idle",
-  };
+type InitStatus =
+  | { status: "idle" | "initialized" }
+  | { status: "loading"; promise: Promise<void> };
 
-  private async _initializeBridge(): Promise<boolean> {
-    try {
-      const walletApi = await initializeDAppConnectorBridgeAsync();
-      if (walletApi.name === "eternl") {
-        window.cardano.eternl = walletApi;
-        return true;
-      }
-      return false;
-    } catch {
+let state: InitStatus = { status: "idle" };
+
+async function initializeBridge(): Promise<boolean> {
+  try {
+    if (typeof window === "undefined") {
       return false;
     }
-  }
-
-  async initialize() {
-    if (this._initState.status === "loading") {
-      // Already initializing, return the exisring promise
-      return this._initState.promise;
+    const walletApi = await initializeDAppConnectorBridgeAsync();
+    if (walletApi.name === "eternl") {
+      window.cardano.eternl = walletApi;
+      return true;
     }
-    const { promise, resolve } = deferredPromise<boolean>();
-    this._initState = { status: "loading", promise };
-    const res = await this._initializeBridge();
-    this._initState = { status: res ? "initialized" : "idle" };
-    resolve(res);
-    return promise;
+    return false;
+  } catch {
+    return false;
   }
 }
 
-export const eternl = getDefaultWalletConnector(EternlWalletHandler);
+export const eternl = createCustomWallet({
+  async initialize() {
+    if (state.status === "loading") {
+      // Already initializing, return the existing promise
+      return state.promise;
+    }
+    const { promise, resolve } = deferredPromise<void>();
+    state = { status: "loading", promise };
+    const res = await initializeBridge();
+    state = { status: res ? "initialized" : "idle" };
+    resolve();
+    return promise;
+  },
+});
