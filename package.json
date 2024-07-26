@@ -26,6 +26,11 @@
       "import": "./server.js",
       "require": "./server.cjs",
       "types": "./server.d.ts"
+    },
+    "./vanilla": {
+      "import": "./vanilla.js",
+      "require": "./vanilla.cjs",
+      "types": "./vanilla.d.ts"
     }
   },
   "files": ["**"],

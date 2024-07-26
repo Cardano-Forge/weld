@@ -55,7 +55,6 @@ export const createExtensionsStore = createStoreFactory<ExtensionsStoreState>(
 
     const __init = () => {
       if (typeof window !== "undefined") {
-        console.log("init!");
         update();
       }
     };

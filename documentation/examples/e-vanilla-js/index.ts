@@ -1,31 +1,17 @@
-import { createExtensionsStore } from "@/lib/main";
+import { weld } from "@/lib/vanilla";
 
-const extensionsStore = createExtensionsStore.vanilla();
-
-extensionsStore.subscribe((state) => {
+weld.extensions.subscribe((state) => {
   console.log("state", state);
 });
 
-extensionsStore.subscribeWithSelector(
+weld.extensions.subscribeWithSelector(
   (s) => s.allArr,
   (ext) => {
     console.log("ext", ext);
   },
 );
 
-import { createWalletStore } from "@/lib/main";
-
-const walletStore = createWalletStore.vanilla({
-  onUpdateError(error) {
-    console.log("update error: ", error);
-  },
-});
-
-walletStore.subscribe((state) => {
-  console.log("state", state);
-});
-
-walletStore.subscribeWithSelector(
+weld.wallet.subscribeWithSelector(
   (state) => state.balanceAda?.toFixed(2) ?? "-",
   (balance) => {
     // biome-ignore lint/style/noNonNullAssertion: We know balance exists
@@ -34,9 +20,9 @@ walletStore.subscribeWithSelector(
 );
 
 document.querySelector("#connect")?.addEventListener("click", () => {
-  walletStore.getState().connect("eternl");
+  weld.wallet.getState().connect("eternl");
 });
 
 document.querySelector("#disconnect")?.addEventListener("click", () => {
-  walletStore.getState().disconnect();
+  weld.wallet.getState().disconnect();
 });
