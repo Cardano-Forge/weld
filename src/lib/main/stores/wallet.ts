@@ -99,12 +99,6 @@ export const createWalletStore = createStoreFactory<
     }
   };
 
-  const handleError = (error: unknown) => {
-    if (error instanceof WalletDisconnectAccountError) {
-      disconnect();
-    }
-  };
-
   const connectAsync: WalletApi["connectAsync"] = async (key, connectConfigOverrides) => {
     const signal: InFlightConnection = { aborted: false };
     inFlightConnections.add(signal);
@@ -172,23 +166,19 @@ export const createWalletStore = createStoreFactory<
 
       if (config.pollInterval) {
         const pollInterval = setInterval(async () => {
-          console.log("updating state on interval");
           safeUpdateState();
         }, config.pollInterval);
         subscriptions.add(() => {
-          console.log("stop polling");
           clearInterval(pollInterval);
         });
       }
 
       if (config.updateOnWindowFocus) {
         const listener = async () => {
-          console.log("updating state on window focus");
           safeUpdateState();
         };
         window.addEventListener("focus", listener);
         subscriptions.add(() => {
-          console.log("stop listening for focus events");
           window.removeEventListener("focus", listener);
         });
       }
@@ -199,8 +189,9 @@ export const createWalletStore = createStoreFactory<
 
       return newState;
     } catch (error) {
-      handleError(error);
-      disconnect();
+      if (error instanceof WalletDisconnectAccountError) {
+        disconnect();
+      }
       throw error;
     } finally {
       inFlightConnections.delete(signal);
@@ -235,13 +226,11 @@ export const createWalletStore = createStoreFactory<
     }
 
     if (initialState.isConnectingTo) {
-      console.log("autoconnect:", initialState.isConnectingTo);
       connect(initialState.isConnectingTo);
     }
   };
 
   initialState.__cleanup = () => {
-    console.log("cleanup!");
     clearSubscriptions();
     abortInFlightConnections();
   };
