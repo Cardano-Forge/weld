@@ -15,7 +15,11 @@ extensionsStore.subscribeWithSelector(
 
 import { createWalletStore } from "@/lib/main";
 
-const walletStore = createWalletStore.vanilla();
+const walletStore = createWalletStore.vanilla({
+  onUpdateError(error) {
+    console.log("update error: ", error);
+  },
+});
 
 walletStore.subscribe((state) => {
   console.log("state", state);
@@ -30,7 +34,7 @@ walletStore.subscribeWithSelector(
 );
 
 document.querySelector("#connect")?.addEventListener("click", () => {
-  walletStore.getState().connect("nami");
+  walletStore.getState().connect("eternl");
 });
 
 document.querySelector("#disconnect")?.addEventListener("click", () => {

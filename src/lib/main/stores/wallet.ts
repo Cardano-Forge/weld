@@ -1,3 +1,4 @@
+import { handleAccountChangeErrors } from "@/internal/account-change";
 import type { WalletHandler } from "@/internal/handler";
 import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/internal/store";
 import { STORAGE_KEYS } from "@/lib/server";
@@ -119,7 +120,20 @@ export const createWalletStore = createStoreFactory<
         ...connectConfigOverrides,
       };
 
-      const handler = await weldConnect(key, config);
+      const handler: WalletHandler = handleAccountChangeErrors(
+        await weldConnect(key, config),
+        async () => {
+          const isEnabled = await handler.reenable();
+          if (!isEnabled) {
+            throw new WalletDisconnectAccountError(
+              `Could not reenable ${handler.info.displayName} wallet after account change`,
+            );
+          }
+          safeUpdateState();
+          return handler;
+        },
+        () => handler.defaultApi.isEnabled(),
+      );
 
       if (signal.aborted) {
         throw new WalletConnectionAbortedError();
@@ -143,6 +157,13 @@ export const createWalletStore = createStoreFactory<
         return newState;
       };
 
+      const safeUpdateState = () => {
+        return updateState().catch((error) => {
+          onUpdateError?.(error);
+          disconnect();
+        });
+      };
+
       const newState = await updateState();
 
       if (signal.aborted) {
@@ -150,9 +171,9 @@ export const createWalletStore = createStoreFactory<
       }
 
       if (config.pollInterval) {
-        const pollInterval = setInterval(() => {
+        const pollInterval = setInterval(async () => {
           console.log("updating state on interval");
-          updateState();
+          safeUpdateState();
         }, config.pollInterval);
         subscriptions.add(() => {
           console.log("stop polling");
@@ -161,9 +182,9 @@ export const createWalletStore = createStoreFactory<
       }
 
       if (config.updateOnWindowFocus) {
-        const listener = () => {
+        const listener = async () => {
           console.log("updating state on window focus");
-          updateState();
+          safeUpdateState();
         };
         window.addEventListener("focus", listener);
         subscriptions.add(() => {

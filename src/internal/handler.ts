@@ -20,6 +20,8 @@ import { decodeBalance } from "./utils/decode-balance";
 
 export type WalletHandler = {
   info: WalletInfo;
+  defaultApi: DefaultWalletApi;
+  reenable(): Promise<boolean>;
   getChangeAddress(): Promise<string>;
   getStakeAddress(): Promise<string>;
   getNetworkId(): Promise<NetworkId>;
@@ -37,14 +39,20 @@ export type WalletHandler = {
 
 export class DefaultWalletHandler implements WalletHandler {
   constructor(
-    public info: WalletInfo,
-    protected _defaultApi: DefaultWalletApi,
+    public readonly info: WalletInfo,
+    public readonly defaultApi: DefaultWalletApi,
     protected _enabledApi: EnabledWalletApi,
     protected _config: WalletConfig,
+    protected _enable: () => Promise<EnabledWalletApi | undefined> | EnabledWalletApi | undefined,
   ) {}
 
-  get apiVersion() {
-    return this._defaultApi.apiVersion;
+  async reenable(): Promise<boolean> {
+    const enabledApi = await this._enable();
+    if (enabledApi) {
+      this._enabledApi = enabledApi;
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -147,7 +155,7 @@ export class DefaultWalletHandler implements WalletHandler {
    * @returns The default wallet API.
    */
   getDefaultApi(): DefaultWalletApi {
-    return this._defaultApi;
+    return this.defaultApi;
   }
 
   /**
@@ -155,7 +163,7 @@ export class DefaultWalletHandler implements WalletHandler {
    * @returns True if the wallet is connected, otherwise false.
    */
   async isConnected(): Promise<boolean> {
-    return this._defaultApi.isEnabled();
+    return this.defaultApi.isEnabled();
   }
 
   /**

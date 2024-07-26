@@ -28,7 +28,9 @@ export function getDefaultWalletConnector<TConstructor extends typeof DefaultWal
 
     const info = getWalletInfo({ key, defaultApi });
 
-    const enabledApi = await enableWallet(defaultApi);
+    const enable = () => enableWallet(defaultApi);
+
+    const enabledApi = await enable();
     if (!enabledApi) {
       const message = "Could not enable the wallet";
       throw new WalletConnectionError(message);
@@ -36,9 +38,9 @@ export function getDefaultWalletConnector<TConstructor extends typeof DefaultWal
 
     let handler: DefaultWalletHandler;
     if (HandlerConstructor) {
-      handler = new HandlerConstructor(info, defaultApi, enabledApi, config);
+      handler = new HandlerConstructor(info, defaultApi, enabledApi, config, enable);
     } else {
-      handler = new DefaultWalletHandler(info, defaultApi, enabledApi, config);
+      handler = new DefaultWalletHandler(info, defaultApi, enabledApi, config, enable);
     }
 
     return handler as InstanceType<TConstructor>;
