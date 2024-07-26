@@ -1,9 +1,6 @@
 import type { WalletHandler } from "@/internal/handler";
-import {
-  type Store,
-  type StoreLifeCycleMethods,
-  createStore,
-} from "@/internal/store";
+import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/internal/store";
+import { STORAGE_KEYS } from "@/lib/server";
 import {
   type NetworkId,
   WalletConnectionAbortedError,
@@ -14,7 +11,6 @@ import {
 import { type WalletConfig, defaults } from "../config";
 import { connect as weldConnect } from "../connect";
 import { getPersistedValue } from "../persistence";
-import { STORAGE_KEYS } from "@/lib/server";
 
 type WalletProps = WalletInfo & {
   isConnectingTo: string | undefined;
@@ -73,46 +69,9 @@ type InFlightConnection = {
   aborted: boolean;
 };
 
-export type CreateWalletStore = {
-  (opts?: CreateWalletStoreOpts): WalletStore;
-  vanilla(opts?: CreateWalletStoreOpts): WalletStore;
-};
-
-export function storeCreator<TConfig extends ReadonlyArray<unknown>, TState extends object>(
-  storeHandler: (
-    setState: Store<TState>["setState"],
-    getState: Store<TState>["getState"],
-    ...config: TConfig
-  ) => TState & StoreLifeCycleMethods,
-) {
-  const factory = (...config: TConfig) => {
-    return createStore<TState>((s, g) => {
-      return storeHandler(s, g, ...config);
-    });
-  };
-
-  factory.vanilla = (...config: TConfig) => {
-    const store = factory(...config);
-    console.log("store", store?.getInitialState());
-
-    window.addEventListener("load", () => {
-      console.log("init!");
-      store.getState().__init?.();
-    });
-
-    window.addEventListener("unload", () => {
-      store.getState().__cleanup?.();
-    });
-
-    return store;
-  };
-
-  return factory;
-}
-
-export const createWalletStore = storeCreator<
-  [opts?: CreateWalletStoreOpts, config?: Partial<WalletConfig>],
-  WalletStoreState
+export const createWalletStore = createStoreFactory<
+  WalletStoreState,
+  [opts?: CreateWalletStoreOpts, config?: Partial<WalletConfig>]
 >((setState, _getState, { onUpdateError, ...initialProps } = {}, storeConfigOverrides = {}) => {
   const subscriptions = new Set<() => void>();
   const inFlightConnections = new Set<InFlightConnection>();

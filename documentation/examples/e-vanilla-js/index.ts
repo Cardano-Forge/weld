@@ -1,6 +1,6 @@
-import { createExtensionsStore, createWalletStore } from "@/lib/main";
+import { createExtensionsStore } from "@/lib/main";
 
-const extensionsStore = createExtensionsStore();
+const extensionsStore = createExtensionsStore.vanilla();
 
 extensionsStore.subscribe((state) => {
   console.log("state", state);
@@ -13,9 +13,7 @@ extensionsStore.subscribeWithSelector(
   },
 );
 
-setInterval(() => {
-  extensionsStore.getState().update();
-}, 2000);
+import { createWalletStore } from "@/lib/main";
 
 const walletStore = createWalletStore.vanilla();
 

@@ -23,9 +23,10 @@ export type Store<TState = any> = {
   ) => () => void;
 };
 
-export type StoreHandler<TState> = (
+export type StoreHandler<TState, TParams extends ReadonlyArray<unknown> = []> = (
   setState: Store<TState>["setState"],
   getState: Store<TState>["getState"],
+  ...params: TParams
 ) => TState & StoreLifeCycleMethods;
 
 export type ReadonlyStore<TState> = Omit<Store<TState>, "setState">;
@@ -86,6 +87,44 @@ export function createStore<TState extends object>(
   state = initialState;
 
   return store;
+}
+
+export type StoreFactory<TState extends object, TParams extends ReadonlyArray<unknown>> = {
+  (...params: TParams): Store<TState>;
+  vanilla(...params: TParams): Store<TState>;
+};
+
+export function createStoreFactory<
+  TState extends object,
+  TParams extends ReadonlyArray<unknown> = [],
+>(
+  storeHandler: (
+    setState: Store<TState>["setState"],
+    getState: Store<TState>["getState"],
+    ...params: TParams
+  ) => TState & StoreLifeCycleMethods,
+) {
+  const factory = (...params: TParams) => {
+    return createStore<TState>((s, g) => {
+      return storeHandler(s, g, ...params);
+    });
+  };
+
+  factory.vanilla = (...params: TParams) => {
+    const store = factory(...params);
+
+    window.addEventListener("load", () => {
+      store.getState().__init?.();
+    });
+
+    window.addEventListener("unload", () => {
+      store.getState().__cleanup?.();
+    });
+
+    return store;
+  };
+
+  return factory;
 }
 
 export function hasLifeCycleMethods(store: unknown): store is StoreLifeCycleMethods {

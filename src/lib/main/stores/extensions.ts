@@ -1,4 +1,4 @@
-import { type Store, createStore } from "@/internal/store";
+import { type Store, createStoreFactory } from "@/internal/store";
 import { getFailureReason } from "@/lib/utils";
 import {
   type InstalledExtensions,
@@ -26,8 +26,8 @@ export type ExtensionsApi = {
 export type ExtensionsStoreState = ExtensionsState & ExtensionsApi;
 export type ExtensionsStore = Store<ExtensionsStoreState>;
 
-export function createExtensionsStore(): ExtensionsStore {
-  return createStore<ExtensionsStoreState>((setState, getState) => {
+export const createExtensionsStore = createStoreFactory<ExtensionsStoreState>(
+  (setState, getState) => {
     const update = () => {
       if (getState()?.isFetching) {
         return;
@@ -55,6 +55,7 @@ export function createExtensionsStore(): ExtensionsStore {
 
     const __init = () => {
       if (typeof window !== "undefined") {
+        console.log("init!");
         update();
       }
     };
@@ -64,5 +65,5 @@ export function createExtensionsStore(): ExtensionsStore {
       update,
       __init,
     };
-  });
-}
+  },
+);
