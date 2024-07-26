@@ -31,7 +31,7 @@ export function newInstalledExtensions(): InstalledExtensions {
   };
 }
 
-const cache = new Map<string, InstalledExtension>();
+const cache = new Map<DefaultWalletApi, InstalledExtension>();
 
 export async function getInstalledExtensions({
   caching = true,
@@ -46,10 +46,10 @@ export async function getInstalledExtensions({
     if (!caching) {
       api = { info, defaultApi: extension.defaultApi };
     } else {
-      api = cache.get(extension.key) ?? { info, defaultApi: extension.defaultApi };
+      api = cache.get(extension.defaultApi) ?? { info, defaultApi: extension.defaultApi };
     }
 
-    cache.set(extension.key, api);
+    cache.set(extension.defaultApi, api);
 
     res.allMap.set(info.key, api);
     res.allArr.push(api);

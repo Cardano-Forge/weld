@@ -1,21 +1,21 @@
-import { createWalletStore } from "@/lib/main";
+import { createExtensionsStore, createWalletStore } from "@/lib/main";
 
-// const extensionsStore = createExtensionsStore();
+const extensionsStore = createExtensionsStore();
 
-// extensionsStore.subscribe((state) => {
-//   console.log("state", state);
-// });
+extensionsStore.subscribe((state) => {
+  console.log("state", state);
+});
 
-// extensionsStore.subscribeWithSelector(
-//   (s) => s.allArr.length,
-//   (ext) => {
-//     console.log("ext", ext);
-//   },
-// );
+extensionsStore.subscribeWithSelector(
+  (s) => s.allArr,
+  (ext) => {
+    console.log("ext", ext);
+  },
+);
 
-// setInterval(() => {
-//   extensionsStore.getState().update();
-// }, 2000);
+setInterval(() => {
+  extensionsStore.getState().update();
+}, 2000);
 
 const walletStore = createWalletStore.vanilla();
 
