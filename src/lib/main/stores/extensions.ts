@@ -34,10 +34,9 @@ export function createExtensionsStore(): ExtensionsStore {
       }
       setState({ isFetching: true });
       getInstalledExtensions()
-        .then(({ map, arr }) => {
+        .then((res) => {
           setState({
-            map,
-            arr,
+            ...res,
             isLoading: false,
             isFetching: false,
             error: undefined,

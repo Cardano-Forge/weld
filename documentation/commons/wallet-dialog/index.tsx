@@ -6,7 +6,7 @@ import { WalletBtn } from "./wallet-btn";
 const WalletDialog = () => {
   const wallet = useWallet("connect", "isConnectingTo");
   const { isOpen, close } = useDialogContext();
-  const supportedExtensions = useExtensions((s) => s.map.supported);
+  const supportedExtensions = useExtensions((s) => s.supportedMap);
 
   const handleConnectWallet = async (key: string) => {
     wallet.connect(key, {

@@ -1,6 +1,6 @@
 // adapted from https://github.com/pmndrs/zustand/blob/main/src/vanilla/shallow.ts
 
-export function compare<T>(objA: T, objB: T, depth = 1) {
+export function compare<T>(objA: T, objB: T) {
   if (Object.is(objA, objB)) {
     return true;
   }
@@ -31,6 +31,14 @@ export function compare<T>(objA: T, objB: T, depth = 1) {
     return true;
   }
 
+  if (Array.isArray(objA) && Array.isArray(objB)) {
+    for (let i = 0; i < objA.length; i++) {
+      if (!Object.is(objA[i], objB[i])) {
+        return false;
+      }
+    }
+  }
+
   const keysA = Object.keys(objA);
 
   if (keysA.length !== Object.keys(objB).length) {
@@ -45,11 +53,7 @@ export function compare<T>(objA: T, objB: T, depth = 1) {
     const valueA = objA[keyA as keyof T];
     const valueB = objB[keyA as keyof T];
 
-    if (depth > 0) {
-      if (!compare(valueA, valueB, depth - 1)) {
-        return false;
-      }
-    } else if (!Object.is(valueA, valueB)) {
+    if (!Object.is(valueA, valueB)) {
       return false;
     }
   }

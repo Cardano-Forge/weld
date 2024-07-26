@@ -56,7 +56,7 @@ export const Wallet = () => {
 };
 
 export const Extensions = () => {
-  const extensions = useExtensions((state) => state.arr.all);
+  const extensions = useExtensions((state) => state.allArr);
   const update = useExtensions("update");
   useEffect(() => console.log("extensions updated"));
   return (

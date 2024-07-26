@@ -12,48 +12,53 @@ export type InstalledExtension = {
 };
 
 export type InstalledExtensions = {
-  map: {
-    supported: Map<WalletKey, InstalledExtension>;
-    unsupported: Map<string, InstalledExtension>;
-    all: Map<string, InstalledExtension>;
-  };
-  arr: {
-    supported: InstalledExtension[];
-    unsupported: InstalledExtension[];
-    all: InstalledExtension[];
-  };
+  supportedMap: Map<WalletKey, InstalledExtension>;
+  unsupportedMap: Map<string, InstalledExtension>;
+  allMap: Map<string, InstalledExtension>;
+  supportedArr: InstalledExtension[];
+  unsupportedArr: InstalledExtension[];
+  allArr: InstalledExtension[];
 };
 
 export function newInstalledExtensions(): InstalledExtensions {
   return {
-    map: {
-      supported: new Map<WalletKey, InstalledExtension>(),
-      unsupported: new Map<string, InstalledExtension>(),
-      all: new Map<string, InstalledExtension>(),
-    },
-    arr: {
-      supported: [],
-      unsupported: [],
-      all: [],
-    },
+    supportedMap: new Map<WalletKey, InstalledExtension>(),
+    unsupportedMap: new Map<string, InstalledExtension>(),
+    allMap: new Map<string, InstalledExtension>(),
+    supportedArr: [],
+    unsupportedArr: [],
+    allArr: [],
   };
 }
 
-export async function getInstalledExtensions(): Promise<InstalledExtensions> {
+const cache = new Map<string, InstalledExtension>();
+
+export async function getInstalledExtensions({
+  caching = true,
+} = {}): Promise<InstalledExtensions> {
   const walletExtensions = await getWalletExtensions();
   const res = newInstalledExtensions();
 
   for (const extension of walletExtensions) {
     const info = getWalletInfo(extension);
-    const api: InstalledExtension = { info, defaultApi: extension.defaultApi };
-    res.map.all.set(info.key, api);
-    res.arr.all.push(api);
-    if (info.supported) {
-      res.map.supported.set(info.key, api);
-      res.arr.supported.push(api);
+
+    let api: InstalledExtension;
+    if (!caching) {
+      api = { info, defaultApi: extension.defaultApi };
     } else {
-      res.map.unsupported.set(info.key, api);
-      res.arr.unsupported.push(api);
+      api = cache.get(extension.key) ?? { info, defaultApi: extension.defaultApi };
+    }
+
+    cache.set(extension.key, api);
+
+    res.allMap.set(info.key, api);
+    res.allArr.push(api);
+    if (info.supported) {
+      res.supportedMap.set(info.key, api);
+      res.supportedArr.push(api);
+    } else {
+      res.unsupportedMap.set(info.key, api);
+      res.unsupportedArr.push(api);
     }
   }
 
