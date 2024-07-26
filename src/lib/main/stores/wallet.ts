@@ -10,6 +10,7 @@ import {
 import { type WalletConfig, defaults } from "../config";
 import { connect as weldConnect } from "../connect";
 import { getPersistedValue } from "../persistence";
+import { STORAGE_KEYS } from "@/lib/server";
 
 type WalletProps = WalletInfo & {
   isConnectingTo: string | undefined;
@@ -68,10 +69,15 @@ type InFlightConnection = {
   aborted: boolean;
 };
 
-export function createWalletStore(
+export type CreateWalletStore = {
+  (opts?: CreateWalletStoreOpts): WalletStore;
+  vanilla(opts?: CreateWalletStoreOpts): WalletStore;
+};
+
+export const createWalletStore: CreateWalletStore = (
   { onUpdateError, ...initialProps }: CreateWalletStoreOpts = {},
   storeConfigOverrides?: Partial<WalletConfig>,
-): WalletStore {
+): WalletStore => {
   console.log("\n\ncreate wallet store\n\n");
   return createStore<WalletStoreState>((setState) => {
     const subscriptions = new Set<() => void>();
@@ -94,6 +100,9 @@ export function createWalletStore(
     const disconnect: WalletApi["disconnect"] = () => {
       clearSubscriptions();
       setState(initialWalletState);
+      if (defaults.persistence.enabled) {
+        defaults.persistence.storage.remove(STORAGE_KEYS.connectedWallet);
+      }
     };
 
     const handleError = (error: unknown) => {
@@ -170,6 +179,10 @@ export function createWalletStore(
           });
         }
 
+        if (defaults.persistence.enabled) {
+          defaults.persistence.storage.set(STORAGE_KEYS.connectedWallet, newState.key);
+        }
+
         return newState;
       } catch (error) {
         handleError(error);
@@ -198,11 +211,15 @@ export function createWalletStore(
       disconnect,
     };
 
-    if (!initialState.isConnectingTo && typeof window !== "undefined") {
-      initialState.isConnectingTo = getPersistedValue("connectedWallet");
-    }
-
     initialState.__init = () => {
+      if (
+        !initialState.isConnectingTo &&
+        typeof window !== "undefined" &&
+        defaults.persistence.enabled
+      ) {
+        initialState.isConnectingTo = getPersistedValue("connectedWallet");
+      }
+
       if (initialState.isConnectingTo) {
         console.log("autoconnect:", initialState.isConnectingTo);
         connect(initialState.isConnectingTo);
@@ -217,4 +234,20 @@ export function createWalletStore(
 
     return initialState;
   });
-}
+};
+
+createWalletStore.vanilla = (opts) => {
+  const store = createWalletStore(opts);
+  console.log("store", store?.getInitialState());
+
+  window.addEventListener("load", () => {
+    console.log("init!");
+    store.getState().__init?.();
+  });
+
+  window.addEventListener("unload", () => {
+    store.getState().__cleanup?.();
+  });
+
+  return store;
+};

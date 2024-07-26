@@ -11,8 +11,8 @@ export type StoreListener<T> = (state: T, prevState: T) => void;
 
 // biome-ignore lint/suspicious/noExplicitAny: Allow any store for generics
 export type Store<TState = any> = {
-  getState: () => TState;
-  getInitialState: () => TState;
+  getState: () => TState & StoreLifeCycleMethods;
+  getInitialState: () => TState & StoreLifeCycleMethods;
   setState: (
     partial: TState | Partial<TState> | ((state: TState) => TState | Partial<TState>),
   ) => void;
@@ -21,7 +21,7 @@ export type Store<TState = any> = {
     selector: (state: TState) => TSlice,
     listener: StoreListener<TSlice>,
   ) => () => void;
-} & StoreLifeCycleMethods;
+};
 
 export type StoreCreator<TState> = (
   setState: Store<TState>["setState"],

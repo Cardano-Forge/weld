@@ -17,7 +17,7 @@ import { createWalletStore } from "@/lib/main";
 //   extensionsStore.getState().update();
 // }, 2000);
 
-const walletStore = createWalletStore();
+const walletStore = createWalletStore.vanilla();
 
 walletStore.subscribe((state) => {
   console.log("state", state);
