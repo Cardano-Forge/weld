@@ -14,7 +14,7 @@ weld.extensions.subscribeWithSelector(
 weld.wallet.subscribeWithSelector(
   (state) => state.balanceAda?.toFixed(2) ?? "-",
   (balance) => {
-    // biome-ignore lint/style/noNonNullAssertion: We know balance exists
+    // biome-ignore lint/style/noNonNullAssertion: We know the element exists
     document.querySelector("#balance")!.textContent = balance;
   },
 );
