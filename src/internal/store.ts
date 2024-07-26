@@ -23,7 +23,7 @@ export type Store<TState = any> = {
   ) => () => void;
 };
 
-export type StoreCreator<TState> = (
+export type StoreHandler<TState> = (
   setState: Store<TState>["setState"],
   getState: Store<TState>["getState"],
 ) => TState & StoreLifeCycleMethods;
@@ -33,7 +33,7 @@ export type ReadonlyStore<TState> = Omit<Store<TState>, "setState">;
 export type ExtractStoreState<TStore> = TStore extends { getState: () => infer T } ? T : never;
 
 export function createStore<TState extends object>(
-  createState: StoreCreator<TState>,
+  createState: StoreHandler<TState>,
 ): Store<TState> {
   let state: TState;
   const listeners = new Set<StoreListener<TState>>();
