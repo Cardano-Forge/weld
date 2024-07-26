@@ -40,7 +40,7 @@ const MockupContent = () => {
     },
     {
       key: "Balance",
-      value: `${Math.floor(wallet.balance.ada)} ADA`,
+      value: `${Math.floor(wallet.balanceAda)} ADA`,
     },
   ];
 

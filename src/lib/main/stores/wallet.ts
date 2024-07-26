@@ -14,7 +14,8 @@ import { getPersistedValue } from "../persistence";
 type WalletProps = WalletInfo & {
   isConnectingTo: string | undefined;
   handler: WalletHandler;
-  balance: { lovelace: number; ada: number };
+  balanceLovelace: number;
+  balanceAda: number;
   rewardAddress: string;
   changeAddress: string;
   networkId: NetworkId;
@@ -24,7 +25,8 @@ const initialWalletState: WalletState = {
   isConnected: false,
   isConnectingTo: undefined,
   handler: undefined,
-  balance: undefined,
+  balanceLovelace: undefined,
+  balanceAda: undefined,
   rewardAddress: undefined,
   changeAddress: undefined,
   networkId: undefined,
@@ -127,10 +129,8 @@ export function createWalletStore(
             isConnected: true,
             isConnectingTo: undefined,
             handler,
-            balance: {
-              lovelace: balanceLovelace,
-              ada: lovelaceToAda(balanceLovelace),
-            },
+            balanceLovelace,
+            balanceAda: lovelaceToAda(balanceLovelace),
             networkId: await handler.getNetworkId(),
             rewardAddress: await handler.getStakeAddress(),
             changeAddress: await handler.getChangeAddress(),

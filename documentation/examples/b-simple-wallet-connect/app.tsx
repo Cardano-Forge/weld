@@ -22,7 +22,7 @@ const Description = () => {
 };
 
 const Balance = () => {
-  const balance = useWallet((state) => state.balance?.ada.toFixed(2));
+  const balance = useWallet((state) => state.balanceAda?.toFixed(2));
   useEffect(() => console.log("balance"));
   return <div>Balance {balance ?? "-"}</div>;
 };

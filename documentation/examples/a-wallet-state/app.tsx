@@ -30,7 +30,7 @@ export const App = () => {
               </div>
               <div>Lovelace:</div>
               <div className="py-2 px-4 text-xs bg-slate-100 rounded-md break-words">
-                {wallet.balance.ada.toFixed(2)}
+                {wallet.balanceAda.toFixed(2)}
               </div>
             </>
           )}
