@@ -1,4 +1,9 @@
+import { defaults } from "@/lib/main";
 import { weld } from "@/lib/vanilla";
+
+defaults.extensions = {
+  updateInterval: false,
+};
 
 weld.extensions.subscribe((state) => {
   console.log("state", state);
@@ -12,15 +17,25 @@ weld.extensions.subscribeWithSelector(
 );
 
 weld.wallet.subscribeWithSelector(
+  (state) => state.displayName ?? "-",
+  (displayName) => {
+    console.log("displayName", displayName);
+    // biome-ignore lint/style/noNonNullAssertion: We know the element exists
+    document.querySelector("#name")!.textContent = displayName;
+  },
+);
+
+weld.wallet.subscribeWithSelector(
   (state) => state.balanceAda?.toFixed(2) ?? "-",
   (balance) => {
+    console.log("balance", balance);
     // biome-ignore lint/style/noNonNullAssertion: We know the element exists
     document.querySelector("#balance")!.textContent = balance;
   },
 );
 
 document.querySelector("#connect")?.addEventListener("click", () => {
-  weld.wallet.getState().connect("eternl");
+  weld.wallet.getState().connect("nami");
 });
 
 document.querySelector("#disconnect")?.addEventListener("click", () => {

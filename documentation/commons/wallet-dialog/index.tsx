@@ -11,7 +11,7 @@ const WalletDialog = () => {
   const handleConnectWallet = async (key: string) => {
     wallet.connect(key, {
       updateOnWindowFocus: true,
-      pollInterval: 2000,
+      updateInterval: 2000,
       onSuccess() {
         close();
       },

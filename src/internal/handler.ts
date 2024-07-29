@@ -1,4 +1,3 @@
-import type { WalletConfig } from "@/lib/main/config";
 import {
   type AddressBech32,
   type BalanceByPolicies,
@@ -42,7 +41,6 @@ export class DefaultWalletHandler implements WalletHandler {
     public readonly info: WalletInfo,
     public readonly defaultApi: DefaultWalletApi,
     protected _enabledApi: EnabledWalletApi,
-    protected _config: WalletConfig,
     protected _enable: () => Promise<EnabledWalletApi | undefined> | EnabledWalletApi | undefined,
   ) {}
 

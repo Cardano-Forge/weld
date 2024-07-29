@@ -1,9 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { initialize } from "@/lib/main/initialize";
-import { createExtensionsStore } from "@/lib/main/stores/extensions";
+import {
+  type CreateExtensionsStoreOpts,
+  createExtensionsStore,
+} from "@/lib/main/stores/extensions";
 import { type CreateWalletStoreOpts, createWalletStore } from "@/lib/main/stores/wallet";
 
+import { type WeldConfig, defaults } from "../main";
 import { createContextFromStore } from "./context";
 
 const walletContext = createContextFromStore("wallet", createWalletStore);
@@ -14,16 +18,25 @@ const extensionsContext = createContextFromStore("extensions", createExtensionsS
 const ExtensionsProvider = extensionsContext.provider;
 export const useExtensions = extensionsContext.hook;
 
-export type WeldProviderProps = React.PropsWithChildren<{ wallet?: CreateWalletStoreOpts }>;
+export type WeldProviderProps = React.PropsWithChildren<
+  Partial<Omit<WeldConfig, "wallet" | "extensions">> & {
+    wallet?: CreateWalletStoreOpts;
+    extensions?: CreateExtensionsStoreOpts;
+  }
+>;
 
-export function WeldProvider({ children, wallet }: WeldProviderProps) {
+export function WeldProvider({ children, wallet, extensions, ...config }: WeldProviderProps) {
+  useState(() => {
+    Object.assign(defaults, config);
+  });
+
   useEffect(() => {
     initialize();
   }, []);
 
   return (
     <WalletProvider {...wallet}>
-      <ExtensionsProvider>{children}</ExtensionsProvider>
+      <ExtensionsProvider {...extensions}>{children}</ExtensionsProvider>
     </WalletProvider>
   );
 }

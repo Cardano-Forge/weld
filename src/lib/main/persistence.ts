@@ -12,10 +12,10 @@ export type WeldStorage = {
  * Always returns `undefined` when persistence is disabled
  */
 export function getPersistedValue(key: keyof typeof STORAGE_KEYS): string | undefined {
-  if (!defaults.persistence.enabled) {
+  if (!defaults.enablePersistence) {
     return undefined;
   }
-  return defaults.persistence.storage.get(STORAGE_KEYS[key]) ?? undefined;
+  return defaults.storage.get(STORAGE_KEYS[key]) ?? undefined;
 }
 
 export const defaultStorage: WeldStorage = {

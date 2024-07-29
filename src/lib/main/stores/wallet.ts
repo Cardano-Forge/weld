@@ -1,6 +1,8 @@
 import { handleAccountChangeErrors } from "@/internal/account-change";
 import type { WalletHandler } from "@/internal/handler";
+import { LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/internal/store";
+import { setupAutoUpdate } from "@/internal/update";
 import { STORAGE_KEYS } from "@/lib/server";
 import {
   type NetworkId,
@@ -9,7 +11,7 @@ import {
   type WalletInfo,
   lovelaceToAda,
 } from "@/lib/utils";
-import { type WalletConfig, defaults } from "../config";
+import { type WalletConfig, defaults, getUpdateConfig } from "../config";
 import { connect as weldConnect } from "../connect";
 import { getPersistedValue } from "../persistence";
 
@@ -62,178 +64,144 @@ export type DiconnectedWalletState = Extract<WalletState, { isConnected: false }
 export type WalletStoreState = WalletState & WalletApi;
 export type WalletStore = Store<WalletStoreState>;
 
-export type CreateWalletStoreOpts = Partial<Pick<WalletProps, "isConnectingTo">> & {
-  onUpdateError?(error: unknown): void;
-};
-
-type InFlightConnection = {
-  aborted: boolean;
-};
+export type CreateWalletStoreOpts = Partial<Pick<WalletProps, "isConnectingTo">> &
+  Partial<WalletConfig> & {
+    onUpdateError?(error: unknown): void;
+  };
 
 export const createWalletStore = createStoreFactory<
   WalletStoreState,
   [opts?: CreateWalletStoreOpts, config?: Partial<WalletConfig>]
->((setState, _getState, { onUpdateError, ...initialProps } = {}, storeConfigOverrides = {}) => {
-  const subscriptions = new Set<() => void>();
-  const inFlightConnections = new Set<InFlightConnection>();
+>(
+  (
+    setState,
+    _getState,
+    { onUpdateError, isConnectingTo: initialIsConnectingTo, ...storeConfigOverrides } = {},
+  ) => {
+    const lifecycle = new LifeCycleManager();
 
-  const abortInFlightConnections = () => {
-    for (const connection of inFlightConnections) {
-      connection.aborted = true;
-    }
-    inFlightConnections.clear();
-  };
+    const disconnect: WalletApi["disconnect"] = () => {
+      lifecycle.subscriptions.clearAll();
+      setState(initialWalletState);
+      if (defaults.enablePersistence) {
+        defaults.storage.remove(STORAGE_KEYS.connectedWallet);
+      }
+    };
 
-  const clearSubscriptions = () => {
-    for (const unsubscribe of subscriptions) {
-      unsubscribe();
-    }
-    subscriptions.clear();
-  };
+    const connectAsync: WalletApi["connectAsync"] = async (key, configOverrides) => {
+      const signal = lifecycle.inFlight.add();
 
-  const disconnect: WalletApi["disconnect"] = () => {
-    clearSubscriptions();
-    setState(initialWalletState);
-    if (defaults.persistence.enabled) {
-      defaults.persistence.storage.remove(STORAGE_KEYS.connectedWallet);
-    }
-  };
+      try {
+        lifecycle.subscriptions.clearAll();
 
-  const connectAsync: WalletApi["connectAsync"] = async (key, connectConfigOverrides) => {
-    const signal: InFlightConnection = { aborted: false };
-    inFlightConnections.add(signal);
+        setState({ isConnectingTo: key });
 
-    try {
-      clearSubscriptions();
+        const handler: WalletHandler = handleAccountChangeErrors(
+          await weldConnect(key),
+          async () => {
+            const isEnabled = await handler.reenable();
+            if (!isEnabled) {
+              throw new WalletDisconnectAccountError(
+                `Could not reenable ${handler.info.displayName} wallet after account change`,
+              );
+            }
+            safeUpdateState();
+            return handler;
+          },
+          () => handler.defaultApi.isEnabled(),
+        );
 
-      setState({ isConnectingTo: key });
+        if (signal.aborted) {
+          throw new WalletConnectionAbortedError();
+        }
 
-      const config: WalletConfig = {
-        ...defaults.wallet,
-        ...storeConfigOverrides,
-        ...connectConfigOverrides,
-      };
+        const updateState = async () => {
+          const balanceLovelace = await handler.getBalanceLovelace();
+          const newState: ConnectedWalletState = {
+            isConnected: true,
+            isConnectingTo: undefined,
+            handler,
+            balanceLovelace,
+            balanceAda: lovelaceToAda(balanceLovelace),
+            networkId: await handler.getNetworkId(),
+            rewardAddress: await handler.getStakeAddress(),
+            changeAddress: await handler.getChangeAddress(),
+            ...handler.info,
+          };
 
-      const handler: WalletHandler = handleAccountChangeErrors(
-        await weldConnect(key, config),
-        async () => {
-          const isEnabled = await handler.reenable();
-          if (!isEnabled) {
-            throw new WalletDisconnectAccountError(
-              `Could not reenable ${handler.info.displayName} wallet after account change`,
-            );
+          setState(newState);
+          return newState;
+        };
+
+        const safeUpdateState = async () => {
+          try {
+            return await updateState();
+          } catch (error) {
+            onUpdateError?.(error);
+            disconnect();
           }
-          safeUpdateState();
-          return handler;
-        },
-        () => handler.defaultApi.isEnabled(),
-      );
-
-      if (signal.aborted) {
-        throw new WalletConnectionAbortedError();
-      }
-
-      const updateState = async () => {
-        const balanceLovelace = await handler.getBalanceLovelace();
-        const newState: ConnectedWalletState = {
-          isConnected: true,
-          isConnectingTo: undefined,
-          handler,
-          balanceLovelace,
-          balanceAda: lovelaceToAda(balanceLovelace),
-          networkId: await handler.getNetworkId(),
-          rewardAddress: await handler.getStakeAddress(),
-          changeAddress: await handler.getChangeAddress(),
-          ...handler.info,
         };
 
-        setState(newState);
+        const newState = await updateState();
+
+        if (signal.aborted) {
+          throw new WalletConnectionAbortedError();
+        }
+
+        const updateConfig = getUpdateConfig("wallet", storeConfigOverrides, configOverrides);
+        setupAutoUpdate(safeUpdateState, updateConfig, lifecycle);
+
+        if (defaults.enablePersistence) {
+          defaults.storage.set(STORAGE_KEYS.connectedWallet, newState.key);
+        }
+
         return newState;
-      };
-
-      const safeUpdateState = () => {
-        return updateState().catch((error) => {
-          onUpdateError?.(error);
+      } catch (error) {
+        if (error instanceof WalletDisconnectAccountError) {
           disconnect();
+        }
+        throw error;
+      } finally {
+        lifecycle.inFlight.remove(signal);
+      }
+    };
+
+    const connect: WalletApi["connect"] = async (key, { onSuccess, onError, ...config } = {}) => {
+      connectAsync(key, config)
+        .then((wallet) => {
+          onSuccess?.(wallet);
+        })
+        .catch((error) => {
+          onError?.(error);
         });
-      };
+    };
 
-      const newState = await updateState();
+    const initialState: WalletStoreState & StoreLifeCycleMethods = {
+      ...initialWalletState,
+      isConnectingTo: initialIsConnectingTo,
+      connect,
+      connectAsync,
+      disconnect,
+    };
 
-      if (signal.aborted) {
-        throw new WalletConnectionAbortedError();
+    initialState.__init = () => {
+      if (
+        !initialState.isConnectingTo &&
+        typeof window !== "undefined" &&
+        defaults.enablePersistence
+      ) {
+        initialState.isConnectingTo = getPersistedValue("connectedWallet");
       }
 
-      if (config.pollInterval) {
-        const pollInterval = setInterval(async () => {
-          safeUpdateState();
-        }, config.pollInterval);
-        subscriptions.add(() => {
-          clearInterval(pollInterval);
-        });
+      if (initialState.isConnectingTo) {
+        connect(initialState.isConnectingTo);
       }
+    };
 
-      if (config.updateOnWindowFocus) {
-        const listener = async () => {
-          safeUpdateState();
-        };
-        window.addEventListener("focus", listener);
-        subscriptions.add(() => {
-          window.removeEventListener("focus", listener);
-        });
-      }
+    initialState.__cleanup = () => {
+      lifecycle.cleanup();
+    };
 
-      if (defaults.persistence.enabled) {
-        defaults.persistence.storage.set(STORAGE_KEYS.connectedWallet, newState.key);
-      }
-
-      return newState;
-    } catch (error) {
-      if (error instanceof WalletDisconnectAccountError) {
-        disconnect();
-      }
-      throw error;
-    } finally {
-      inFlightConnections.delete(signal);
-    }
-  };
-
-  const connect: WalletApi["connect"] = async (key, { onSuccess, onError, ...config } = {}) => {
-    connectAsync(key, config)
-      .then((wallet) => {
-        onSuccess?.(wallet);
-      })
-      .catch((error) => {
-        onError?.(error);
-      });
-  };
-
-  const initialState: WalletStoreState & StoreLifeCycleMethods = {
-    ...initialWalletState,
-    ...initialProps,
-    connect,
-    connectAsync,
-    disconnect,
-  };
-
-  initialState.__init = () => {
-    if (
-      !initialState.isConnectingTo &&
-      typeof window !== "undefined" &&
-      defaults.persistence.enabled
-    ) {
-      initialState.isConnectingTo = getPersistedValue("connectedWallet");
-    }
-
-    if (initialState.isConnectingTo) {
-      connect(initialState.isConnectingTo);
-    }
-  };
-
-  initialState.__cleanup = () => {
-    clearSubscriptions();
-    abortInFlightConnections();
-  };
-
-  return initialState;
-});
+    return initialState;
+  },
+);
