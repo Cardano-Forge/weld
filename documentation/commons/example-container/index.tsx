@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 import { AnvilIcon } from "../anvil-logo";
+import { DialogProvider } from "../hooks/dialog.context";
 import Logo from "../logo";
 import WalletDialog from "../wallet-dialog";
 import DialogTrigger from "../wallet-dialog/dialog-trigger";
-import { DialogProvider } from "../hooks/dialog.context";
 
 export const ExampleContainer = ({ children }: { children: ReactNode }) => {
   return (

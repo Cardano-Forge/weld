@@ -1,8 +1,7 @@
 import { ExampleContainer } from "@/documentation/commons/example-container";
+import { WeldProvider } from "@/lib/react";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { DialogProvider } from "./commons/hooks/dialog.context";
-import { WeldProvider } from "@/lib/react";
 
 const root = document.querySelector("#root");
 if (root) {
