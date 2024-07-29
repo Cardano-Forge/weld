@@ -4,27 +4,26 @@ import clsx from "clsx";
 
 export const WalletBtn = ({
   info,
-  isConnectingToKey,
   onClick,
   className,
   installed = true,
 }: {
   info: WalletInfo;
-  isConnectingToKey?: string;
   onClick(key: string): void | Promise<void>;
   className?: string;
   installed?: boolean;
 }) => {
-  const isConnectedTo = useWallet((s) => s.key);
-
-  const isLoading = info.key === isConnectingToKey;
+  const wallet = useWallet((s) => ({
+    isConnectingTo: s.isConnectingTo,
+    isLoading: info.key === s.isConnectingTo,
+  }));
 
   if (!installed && info.website) {
     return (
       <button
         type="button"
         onClick={() => window.open(info.website, "_blank", "noopener noreferrer")}
-        disabled={!!isConnectingToKey}
+        disabled={wallet.isLoading}
         className={clsx("btn py-4 h-full", className)}
       >
         <div className="flex flex-col items-center">
@@ -49,13 +48,13 @@ export const WalletBtn = ({
   return (
     <button
       type="button"
-      aria-busy={isLoading}
-      disabled={!!isConnectingToKey || isConnectedTo === info.key}
+      aria-busy={wallet.isLoading}
+      disabled={!!wallet.isConnectingTo || wallet.isLoading}
       onClick={() => onClick(info.key)}
       key={info.key}
       className={clsx("btn py-4 h-full", className)}
     >
-      {!isLoading && (
+      {!wallet.isLoading && (
         <div className="flex flex-col items-center">
           <img alt={info.key} src={info.icon} className="w-6 h-6 object-contain" />
           <div className="mt-4">{info.displayName}</div>

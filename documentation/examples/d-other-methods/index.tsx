@@ -1,4 +1,3 @@
-import { DialogProvider } from "@/documentation/commons/hooks/dialog.context";
 import { WeldProvider } from "@/lib/react";
 import React from "react";
 import ReactDOM from "react-dom/client";
@@ -8,11 +7,9 @@ const root = document.querySelector("#root");
 if (root) {
   ReactDOM.createRoot(root).render(
     <React.StrictMode>
-      <DialogProvider>
-        <WeldProvider>
-          <App />
-        </WeldProvider>
-      </DialogProvider>
+      <WeldProvider>
+        <App />
+      </WeldProvider>
     </React.StrictMode>,
   );
 }

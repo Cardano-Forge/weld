@@ -2,12 +2,13 @@ import { ExampleContainer } from "@/documentation/commons/example-container";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { DialogProvider } from "./commons/hooks/dialog.context";
+import { WeldProvider } from "@/lib/react";
 
 const root = document.querySelector("#root");
 if (root) {
   ReactDOM.createRoot(root).render(
     <React.StrictMode>
-      <DialogProvider>
+      <WeldProvider>
         <ExampleContainer>
           <h1 className="mt-8 text-center text-3xl">Examples</h1>
           <p className="max-w-[800px] mx-auto text-center my-8">
@@ -58,7 +59,7 @@ if (root) {
             </li>
           </ul>
         </ExampleContainer>
-      </DialogProvider>
+      </WeldProvider>
     </React.StrictMode>,
   );
 }

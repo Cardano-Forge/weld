@@ -4,14 +4,12 @@ import { useDialogContext } from "../hooks/dialog.context";
 import { WalletBtn } from "./wallet-btn";
 
 const WalletDialog = () => {
-  const wallet = useWallet("connect", "isConnectingTo");
+  const connect = useWallet("connect");
   const { isOpen, close } = useDialogContext();
   const supportedExtensions = useExtensions((s) => s.supportedMap);
 
   const handleConnectWallet = async (key: string) => {
-    wallet.connect(key, {
-      updateOnWindowFocus: true,
-      updateInterval: 2000,
+    connect(key, {
       onSuccess() {
         close();
       },
@@ -28,7 +26,6 @@ const WalletDialog = () => {
               key={info.key}
               info={info}
               installed={supportedExtensions.has(info.key)}
-              isConnectingToKey={wallet.isConnectingTo}
               onClick={handleConnectWallet}
             />
           ))}
