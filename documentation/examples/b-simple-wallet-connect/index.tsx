@@ -11,7 +11,21 @@ const root = document.querySelector("#root");
 if (root) {
   ReactDOM.createRoot(root).render(
     <React.StrictMode>
-      <WeldProvider>
+      <WeldProvider
+        onUpdateError={(store, error) => {
+          console.log("global", store, error);
+        }}
+        wallet={{
+          onUpdateError(error) {
+            console.log("wallet error", error);
+          },
+        }}
+        extensions={{
+          onUpdateError(error) {
+            console.log("extensions error", error);
+          },
+        }}
+      >
         <App />
       </WeldProvider>
       <ToastContainer position="bottom-right" />

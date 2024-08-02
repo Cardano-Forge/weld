@@ -20,12 +20,19 @@ export const useExtensions = extensionsContext.hook;
 
 export type WeldProviderProps = React.PropsWithChildren<
   Partial<Omit<WeldConfig, "wallet" | "extensions">> & {
+    onUpdateError?(store: "wallet" | "extensions", error: unknown): void;
     wallet?: CreateWalletStoreOpts;
     extensions?: CreateExtensionsStoreOpts;
   }
 >;
 
-export function WeldProvider({ children, wallet, extensions, ...config }: WeldProviderProps) {
+export function WeldProvider({
+  children,
+  wallet,
+  extensions,
+  onUpdateError,
+  ...config
+}: WeldProviderProps) {
   useState(() => {
     Object.assign(defaults, config);
   });
@@ -35,8 +42,22 @@ export function WeldProvider({ children, wallet, extensions, ...config }: WeldPr
   }, []);
 
   return (
-    <WalletProvider {...wallet}>
-      <ExtensionsProvider {...extensions}>{children}</ExtensionsProvider>
+    <WalletProvider
+      {...wallet}
+      onUpdateError={(error) => {
+        onUpdateError?.("wallet", error);
+        wallet?.onUpdateError?.(error);
+      }}
+    >
+      <ExtensionsProvider
+        {...extensions}
+        onUpdateError={(error) => {
+          onUpdateError?.("extensions", error);
+          extensions?.onUpdateError?.(error);
+        }}
+      >
+        {children}
+      </ExtensionsProvider>
     </WalletProvider>
   );
 }
