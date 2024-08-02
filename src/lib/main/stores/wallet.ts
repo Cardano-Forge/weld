@@ -23,6 +23,7 @@ type WalletProps = WalletInfo & {
   rewardAddress: string;
   changeAddress: string;
   networkId: NetworkId;
+  utxos?: string[] | undefined;
 };
 
 const initialWalletState: WalletState = {
@@ -34,6 +35,7 @@ const initialWalletState: WalletState = {
   rewardAddress: undefined,
   changeAddress: undefined,
   networkId: undefined,
+  utxos: undefined,
   supported: undefined,
   key: undefined,
   icon: undefined,
@@ -115,6 +117,8 @@ export const createWalletStore = createStoreFactory<
           throw new WalletConnectionAbortedError();
         }
 
+        // utxos are purposefully omitted here since getUtxos can take a long time
+        // to resolve and we don't want it to affect connection speed
         const updateState = async () => {
           const balanceLovelace = await handler.getBalanceLovelace();
           const newState: ConnectedWalletState = {
@@ -150,6 +154,29 @@ export const createWalletStore = createStoreFactory<
 
         const updateConfig = getUpdateConfig("wallet", storeConfigOverrides, configOverrides);
         setupAutoUpdate(safeUpdateState, updateConfig, lifecycle);
+
+        const safeUpdateUtxos = async () => {
+          try {
+            const utxos = await handler.getUtxos();
+            if (!signal.aborted) {
+              setState({ utxos });
+            }
+          } catch (error) {
+            onUpdateError?.(error);
+            disconnect();
+          }
+        };
+
+        setupAutoUpdate(
+          safeUpdateUtxos,
+          {
+            ...updateConfig,
+            updateInterval: updateConfig.updateUtxosInterval ?? updateConfig.updateInterval,
+          },
+          lifecycle,
+        );
+
+        safeUpdateUtxos();
 
         if (defaults.enablePersistence) {
           defaults.storage.set(STORAGE_KEYS.connectedWallet, newState.key);

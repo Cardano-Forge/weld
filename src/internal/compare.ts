@@ -11,7 +11,6 @@ export function compare<T>(objA: T, objB: T) {
 
   if (objA instanceof Map && objB instanceof Map) {
     if (objA.size !== objB.size) return false;
-
     for (const [key, value] of objA) {
       if (!Object.is(value, objB.get(key))) {
         return false;
@@ -22,7 +21,6 @@ export function compare<T>(objA: T, objB: T) {
 
   if (objA instanceof Set && objB instanceof Set) {
     if (objA.size !== objB.size) return false;
-
     for (const value of objA) {
       if (!objB.has(value)) {
         return false;
@@ -32,11 +30,13 @@ export function compare<T>(objA: T, objB: T) {
   }
 
   if (Array.isArray(objA) && Array.isArray(objB)) {
+    if (objA.length !== objB.length) return false;
     for (let i = 0; i < objA.length; i++) {
       if (!Object.is(objA[i], objB[i])) {
         return false;
       }
     }
+    return true;
   }
 
   const keysA = Object.keys(objA);

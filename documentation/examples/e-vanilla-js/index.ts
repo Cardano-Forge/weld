@@ -22,6 +22,13 @@ if (lastConnectedWallet) {
   weld.wallet.getState().connect(lastConnectedWallet);
 }
 
+weld.wallet.subscribeWithSelector(
+  (state) => state.utxos,
+  (utxos) => {
+    console.log("utxos changed", utxos);
+  },
+);
+
 defaults.extensions = {
   updateInterval: false,
 };
