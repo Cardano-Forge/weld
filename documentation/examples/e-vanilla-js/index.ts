@@ -1,5 +1,26 @@
-import { defaults } from "@/lib/main";
+import { defaults, getPersistedValue } from "@/lib/main";
 import { weld } from "@/lib/vanilla";
+
+// Disable auto persistence
+defaults.enablePersistence = false;
+
+// Manually persist connection
+weld.wallet.subscribeWithSelector(
+  (state) => state.key,
+  (key) => {
+    if (key) {
+      defaults.storage.set("connectedWallet", key);
+    } else {
+      defaults.storage.remove("connectedWallet");
+    }
+  },
+);
+
+// Auto reconnect
+const lastConnectedWallet = getPersistedValue("connectedWallet");
+if (lastConnectedWallet) {
+  weld.wallet.getState().connect(lastConnectedWallet);
+}
 
 defaults.extensions = {
   updateInterval: false,

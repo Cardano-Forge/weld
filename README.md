@@ -402,7 +402,7 @@ _Note: When using a SSR framework, make sure to set configuration options inside
 
 When using Next.js, you can prevent hydration errors by retrieving the connected wallet cookie in a server component
 and passing it as initial value to the useWallet hook:
-```typescript
+```typescriptreact
 import { cookies } from "next/headers";
 import { STORAGE_KEYS } from "@ada-anvil/weld/server";
 import { WeldProvider } from "@ada-anvil/weld/react";
