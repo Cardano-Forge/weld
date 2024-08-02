@@ -1,5 +1,6 @@
 // adapted from https://github.com/pmndrs/zustand/blob/main/src/vanilla.ts
 
+import { initialize } from "@/lib/main";
 import { compare } from "./compare";
 
 export type StoreLifeCycleMethods = {
@@ -114,6 +115,7 @@ export function createStoreFactory<
     const store = factory(...params);
 
     window.addEventListener("load", () => {
+      initialize();
       store.getState().__init?.();
     });
 

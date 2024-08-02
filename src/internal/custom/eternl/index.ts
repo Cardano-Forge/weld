@@ -26,6 +26,9 @@ async function initializeBridge(): Promise<boolean> {
 
 export const eternl = createCustomWallet({
   async initialize() {
+    if (state.status === "initialized") {
+      return;
+    }
     if (state.status === "loading") {
       // Already initializing, return the existing promise
       return state.promise;
