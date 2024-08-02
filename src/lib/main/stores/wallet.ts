@@ -1,4 +1,5 @@
 import { handleAccountChangeErrors } from "@/internal/account-change";
+import { compare } from "@/internal/compare";
 import type { WalletHandler } from "@/internal/handler";
 import { LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/internal/store";
@@ -77,7 +78,7 @@ export const createWalletStore = createStoreFactory<
 >(
   (
     setState,
-    _getState,
+    getState,
     { onUpdateError, isConnectingTo: initialIsConnectingTo, ...storeConfigOverrides } = {},
   ) => {
     const lifecycle = new LifeCycleManager();
@@ -158,7 +159,9 @@ export const createWalletStore = createStoreFactory<
         const safeUpdateUtxos = async () => {
           try {
             const utxos = await handler.getUtxos();
-            if (!signal.aborted) {
+            const prev = getState().utxos;
+            // Keep stable reference to utxos array until its contents change
+            if (!signal.aborted && !compare(utxos, prev)) {
               setState({ utxos });
             }
           } catch (error) {
