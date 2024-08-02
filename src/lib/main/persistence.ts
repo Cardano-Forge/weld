@@ -9,12 +9,8 @@ export type WeldStorage = {
 
 /**
  * Retrieves a value from storage.
- * Always returns `undefined` when persistence is disabled
  */
 export function getPersistedValue(key: keyof typeof STORAGE_KEYS): string | undefined {
-  if (!defaults.enablePersistence) {
-    return undefined;
-  }
   return defaults.storage.get(STORAGE_KEYS[key]) ?? undefined;
 }
 
