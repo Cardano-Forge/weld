@@ -5,14 +5,27 @@ import {
   type CreateExtensionsStoreOpts,
   createExtensionsStore,
 } from "@/lib/main/stores/extensions";
-import { type CreateWalletStoreOpts, createWalletStore } from "@/lib/main/stores/wallet";
+import {
+  type CreateWalletStoreOpts,
+  type WalletApi,
+  type WalletProps,
+  type WalletStoreState,
+  createWalletStore,
+} from "@/lib/main/stores/wallet";
 
 import { type WeldConfig, defaults } from "../main";
 import { createContextFromStore } from "./context";
 
 const walletContext = createContextFromStore("wallet", createWalletStore);
 const WalletProvider = walletContext.provider;
-export const useWallet = walletContext.hook;
+export const useWallet: {
+  (): WalletStoreState;
+  <TSlice>(selector: (state: WalletStoreState) => TSlice): TSlice;
+  <TKey extends keyof WalletProps | keyof WalletApi>(key: TKey): WalletStoreState[TKey];
+  <TKeys extends ReadonlyArray<keyof WalletProps | keyof WalletApi>>(
+    ...keys: [...TKeys]
+  ): WalletStoreState<TKeys[number]>;
+} = walletContext.hook;
 export const useWalletStore = walletContext.storeHook;
 
 const extensionsContext = createContextFromStore("extensions", createExtensionsStore);

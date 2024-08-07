@@ -16,7 +16,8 @@ import { type WalletConfig, defaults, getUpdateConfig } from "../config";
 import { connect as weldConnect } from "../connect";
 import { getPersistedValue } from "../persistence";
 
-type WalletProps = WalletInfo & {
+export type WalletProps = WalletInfo & {
+  isConnected: boolean;
   isConnectingTo: string | undefined;
   handler: WalletHandler;
   balanceLovelace: number;
@@ -50,24 +51,33 @@ const initialWalletState: WalletState = {
 };
 
 type ConnectWalletCallbacks = {
-  onSuccess(wallet: ConnectedWalletState): void;
+  onSuccess(wallet: Omit<ConnectedWalletState, "utxos">): void;
   onError(error: unknown): void;
 };
 
-type WalletApi = {
+export type WalletApi = {
   connect(key: string, config?: Partial<WalletConfig & ConnectWalletCallbacks>): void;
-  connectAsync: (key: string, config?: Partial<WalletConfig>) => Promise<ConnectedWalletState>;
+  connectAsync: (
+    key: string,
+    config?: Partial<WalletConfig>,
+  ) => Promise<Omit<ConnectedWalletState, "utxos">>;
   disconnect(): void;
 };
 
-export type WalletState =
-  | ({ isConnected: true } & WalletProps)
-  | ({ isConnected: false } & { [TKey in keyof WalletProps]: WalletProps[TKey] | undefined });
+export type WalletState<TKeys extends keyof WalletProps = keyof WalletProps> =
+  | { [TKey in TKeys]: TKey extends "isConnected" ? true : WalletProps[TKey] }
+  | {
+      [TKey in TKeys]: TKey extends "isConnected" ? false : WalletProps[TKey] | undefined;
+    };
 
 export type ConnectedWalletState = Extract<WalletState, { isConnected: true }>;
 export type DiconnectedWalletState = Extract<WalletState, { isConnected: false }>;
 
-export type WalletStoreState = WalletState & WalletApi;
+export type WalletStoreState<
+  TKeys extends keyof WalletProps | keyof WalletApi = keyof WalletProps | keyof WalletApi,
+> = WalletState<Extract<TKeys, keyof WalletProps>> & {
+  [TKey in Extract<TKeys, keyof WalletApi>]: WalletApi[TKey];
+};
 export type WalletStore = Store<WalletStoreState>;
 
 export type CreateWalletStoreOpts = Partial<Pick<WalletProps, "isConnectingTo">> &
@@ -139,7 +149,7 @@ export const createWalletStore = createStoreFactory<
         // to resolve and we don't want it to affect connection speed
         const updateState = async () => {
           const balanceLovelace = await handler.getBalanceLovelace();
-          const newState: ConnectedWalletState = {
+          const newState: Omit<ConnectedWalletState, "utxos"> = {
             isConnected: true,
             isConnectingTo: undefined,
             handler,
