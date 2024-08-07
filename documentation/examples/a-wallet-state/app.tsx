@@ -14,7 +14,7 @@ export const App = () => {
             <>
               <div>Connected to</div>
               <div className="py-2 px-4 text-xs bg-slate-100 rounded-md break-words">
-                {wallet.handler.info.displayName}
+                {wallet.displayName}
               </div>
               <div>Stake address:</div>
               <div className="py-2 px-4 text-xs bg-slate-100 rounded-md break-words">

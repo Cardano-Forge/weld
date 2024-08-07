@@ -46,7 +46,6 @@ const initialWalletState: WalletState = {
   icon: undefined,
   website: undefined,
   displayName: undefined,
-  description: undefined,
   supportsTxChaining: undefined,
 };
 
