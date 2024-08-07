@@ -196,8 +196,8 @@ export const App = () => {
   return (
     <>
       <div>Connected to {wallet.displayName}</div>
-      <div>Stake address: {wallet.rewardAddress}</div>
-      <div>Change address: {wallet.changeAddress}</div>
+      <div>Stake address: {wallet.stakeAddressBech32}</div>
+      <div>Change address: {wallet.changeAddressBech32}</div>
       <div>Network: {wallet.networkId}</div>
       <div>Lovelace: {wallet.balanceLovelace}</div>
     </>
@@ -396,7 +396,7 @@ Alternatively, you can directly explore the code by browsing the <a href="/docum
 
 ### Variables
 
-`balanceAda`, `balanceLovelace`, `changeAddress`, `utxos`, `displayName`, `handler`, `icon`, `isConnected`, `isConnectingTo`, `key`, `networkId`, `rewardAddress`, `supported`, `supportsTxChaining`, `website`
+`balanceAda`, `balanceLovelace`, `changeAddressHex`,`changeAddressBech32`, `utxos`, `displayName`, `handler`, `icon`, `isConnected`, `isConnectingTo`, `key`, `networkId`, `stakeAddressHex`, `stakeAddressBech32`, `supported`, `supportsTxChaining`, `website`
 
 ### Methods
 `connect`, `connectAsync`, `disconnect`
