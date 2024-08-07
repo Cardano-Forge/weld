@@ -13,10 +13,12 @@ import { createContextFromStore } from "./context";
 const walletContext = createContextFromStore("wallet", createWalletStore);
 const WalletProvider = walletContext.provider;
 export const useWallet = walletContext.hook;
+export const useWalletStore = walletContext.storeHook;
 
 const extensionsContext = createContextFromStore("extensions", createExtensionsStore);
 const ExtensionsProvider = extensionsContext.provider;
 export const useExtensions = extensionsContext.hook;
+export const useExtensionsStore = extensionsContext.storeHook;
 
 export type WeldProviderProps = React.PropsWithChildren<
   Partial<Omit<WeldConfig, "wallet" | "extensions">> & {

@@ -36,7 +36,7 @@ export function createContextFromStore<TStore extends Store, TOpts = unknown>(
   }
 
   function hook(): TState;
-  function hook<TStore>(selector: (state: TState) => TStore): TStore;
+  function hook<TSlice>(selector: (state: TState) => TSlice): TSlice;
   function hook<TKey extends keyof TState>(key: TKey): TState[TKey];
   function hook<TKeys extends ReadonlyArray<keyof TState>>(
     ...keys: [...TKeys]
@@ -74,8 +74,13 @@ export function createContextFromStore<TStore extends Store, TOpts = unknown>(
     );
   }
 
+  function storeHook() {
+    return useContext(Context);
+  }
+
   return {
     provider,
     hook,
+    storeHook,
   };
 }
