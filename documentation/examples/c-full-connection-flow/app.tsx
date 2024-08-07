@@ -31,8 +31,8 @@ const MockupContent = () => {
   }
 
   const walletData = [
-    { key: "Reward", value: wallet.rewardAddress },
-    { key: "Change", value: wallet.changeAddress },
+    { key: "Reward", value: wallet.stakeAddressBech32 },
+    { key: "Change", value: wallet.changeAddressBech32 },
     { key: "Network", value: wallet.networkId },
     {
       key: "Wallet",

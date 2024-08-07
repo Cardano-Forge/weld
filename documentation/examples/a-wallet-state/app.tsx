@@ -18,11 +18,11 @@ export const App = () => {
               </div>
               <div>Stake address:</div>
               <div className="py-2 px-4 text-xs bg-slate-100 rounded-md break-words">
-                {wallet.rewardAddress}
+                {wallet.stakeAddressBech32}
               </div>
               <div>Change address:</div>
               <div className="py-2 px-4 text-xs bg-slate-100 rounded-md break-words">
-                {wallet.changeAddress}
+                {wallet.changeAddressBech32}
               </div>
               <div>Network:</div>
               <div className="py-2 px-4 text-xs bg-slate-100 rounded-md break-words">

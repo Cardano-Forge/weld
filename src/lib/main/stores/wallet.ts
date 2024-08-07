@@ -21,8 +21,10 @@ type WalletProps = WalletInfo & {
   handler: WalletHandler;
   balanceLovelace: number;
   balanceAda: number;
-  rewardAddress: string;
-  changeAddress: string;
+  changeAddressHex: string;
+  changeAddressBech32: string;
+  stakeAddressHex: string;
+  stakeAddressBech32: string;
   networkId: NetworkId;
   utxos?: string[] | undefined;
 };
@@ -33,8 +35,10 @@ const initialWalletState: WalletState = {
   handler: undefined,
   balanceLovelace: undefined,
   balanceAda: undefined,
-  rewardAddress: undefined,
-  changeAddress: undefined,
+  changeAddressHex: undefined,
+  changeAddressBech32: undefined,
+  stakeAddressHex: undefined,
+  stakeAddressBech32: undefined,
   networkId: undefined,
   utxos: undefined,
   supported: undefined,
@@ -129,8 +133,10 @@ export const createWalletStore = createStoreFactory<
             balanceLovelace,
             balanceAda: lovelaceToAda(balanceLovelace),
             networkId: await handler.getNetworkId(),
-            rewardAddress: await handler.getStakeAddress(),
-            changeAddress: await handler.getChangeAddress(),
+            changeAddressHex: await handler.getChangeAddressHex(),
+            changeAddressBech32: await handler.getChangeAddress(),
+            stakeAddressHex: await handler.getStakeAddressHex(),
+            stakeAddressBech32: await handler.getStakeAddress(),
             ...handler.info,
           };
 

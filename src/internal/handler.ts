@@ -1,5 +1,6 @@
 import {
   type AddressBech32,
+  type AddressHex,
   type BalanceByPolicies,
   type Cbor,
   type DefaultWalletApi,
@@ -21,8 +22,10 @@ export type WalletHandler = {
   info: WalletInfo;
   defaultApi: DefaultWalletApi;
   reenable(): Promise<boolean>;
-  getChangeAddress(): Promise<string>;
-  getStakeAddress(): Promise<string>;
+  getChangeAddressHex(): Promise<AddressHex>;
+  getChangeAddress(): Promise<AddressBech32>;
+  getStakeAddressHex(): Promise<AddressHex>;
+  getStakeAddress(): Promise<AddressBech32>;
   getNetworkId(): Promise<NetworkId>;
   getBalance(): Promise<Cbor>;
   getBalanceLovelace(): Promise<Lovelace>;
@@ -55,12 +58,29 @@ export class DefaultWalletHandler implements WalletHandler {
 
   /**
    * Gets the change address for the wallet.
+   * @returns The change address in hex format.
+   */
+  async getChangeAddressHex(): Promise<AddressHex> {
+    return this._enabledApi.getChangeAddress();
+  }
+
+  /**
+   * Gets the change address for the wallet.
    * @returns The change address in Bech32 format.
    */
   async getChangeAddress(): Promise<AddressBech32> {
-    const changeAddress = await this._enabledApi.getChangeAddress();
+    const hex = await this.getChangeAddressHex();
     const networkId = await this._enabledApi.getNetworkId();
-    return hexToBech32(changeAddress, "addr", networkId);
+    return hexToBech32(hex, "addr", networkId);
+  }
+
+  /**
+   * Gets the stake address for the wallet.
+   * @returns The stake address in hex format.
+   */
+  async getStakeAddressHex(): Promise<AddressHex> {
+    const rewardAddresses = await this._enabledApi.getRewardAddresses();
+    return rewardAddresses[0];
   }
 
   /**
@@ -68,9 +88,9 @@ export class DefaultWalletHandler implements WalletHandler {
    * @returns The stake address in Bech32 format.
    */
   async getStakeAddress(): Promise<AddressBech32> {
-    const rewardAddresses = await this._enabledApi.getRewardAddresses();
+    const hex = await this.getStakeAddressHex();
     const networkId = await this._enabledApi.getNetworkId();
-    return hexToBech32(rewardAddresses[0], "stake", networkId);
+    return hexToBech32(hex, "stake", networkId);
   }
 
   /**
