@@ -15,12 +15,6 @@ const ConnectingTo = () => {
   return <div>Connecting to {isConnectingTo ?? "-"}</div>;
 };
 
-const Description = () => {
-  const description = useWallet("description");
-  useEffect(() => console.log("description"));
-  return <div>Description {description ?? "-"}</div>;
-};
-
 const Balance = () => {
   const balance = useWallet((state) => state.balanceAda?.toFixed(2));
   useEffect(() => console.log("balance"));
@@ -47,7 +41,6 @@ export const Wallet = () => {
         <div className="flex flex-col items-start my-4 gap-2">
           <Connected />
           <ConnectingTo />
-          <Description />
           <Balance />
         </div>
       </div>
