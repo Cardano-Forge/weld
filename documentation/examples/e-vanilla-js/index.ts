@@ -16,12 +16,6 @@ weld.wallet.subscribeWithSelector(
   },
 );
 
-// Auto reconnect
-const lastConnectedWallet = getPersistedValue("connectedWallet");
-if (lastConnectedWallet) {
-  weld.wallet.getState().connect(lastConnectedWallet);
-}
-
 weld.wallet.subscribeWithSelector(
   (state) => state.utxos,
   (utxos) => {
@@ -62,6 +56,15 @@ weld.wallet.subscribeWithSelector(
   },
 );
 
+weld.wallet.subscribeWithSelector(
+  (state) => state.isConnectingTo ?? "-",
+  (isConnectingTo) => {
+    console.log("isConnectingTo", isConnectingTo);
+    // biome-ignore lint/style/noNonNullAssertion: We know the element exists
+    document.querySelector("#connecting")!.textContent = isConnectingTo;
+  },
+);
+
 document.querySelector("#connect")?.addEventListener("click", () => {
   weld.wallet.getState().connect("nami");
 });
@@ -69,3 +72,9 @@ document.querySelector("#connect")?.addEventListener("click", () => {
 document.querySelector("#disconnect")?.addEventListener("click", () => {
   weld.wallet.getState().disconnect();
 });
+
+// Auto reconnect
+const lastConnectedWallet = getPersistedValue("connectedWallet");
+if (lastConnectedWallet) {
+  weld.wallet.getState().connect(lastConnectedWallet);
+}

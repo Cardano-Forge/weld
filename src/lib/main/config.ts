@@ -18,7 +18,10 @@ export type UpdateConfig = {
   updateOnWindowFocus: boolean;
 };
 
-export type WalletConfig = UpdateConfig;
+export type WalletConfig = UpdateConfig & {
+  connectTimeout: number | false;
+};
+
 export type ExtensionsConfig = Omit<UpdateConfig, "updateUtxosInterval">;
 
 export type StoreConfig = {

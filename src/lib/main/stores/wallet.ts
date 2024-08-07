@@ -102,6 +102,24 @@ export const createWalletStore = createStoreFactory<
 
         setState({ isConnectingTo: key });
 
+        let abortTimeout: NodeJS.Timeout | undefined = undefined;
+
+        const connectTimeout =
+          configOverrides?.connectTimeout ??
+          storeConfigOverrides?.connectTimeout ??
+          defaults.wallet?.connectTimeout;
+
+        if (connectTimeout) {
+          abortTimeout = setTimeout(() => {
+            signal.aborted = true;
+            setState({ isConnectingTo: undefined });
+          }, connectTimeout);
+        }
+
+        await new Promise((resolve) => {
+          setTimeout(resolve, 10_000);
+        });
+
         const handler: WalletHandler = handleAccountChangeErrors(
           await weldConnect(key),
           async () => {
@@ -188,6 +206,10 @@ export const createWalletStore = createStoreFactory<
 
         if (defaults.enablePersistence) {
           defaults.storage.set(STORAGE_KEYS.connectedWallet, newState.key);
+        }
+
+        if (abortTimeout) {
+          clearTimeout(abortTimeout);
         }
 
         return newState;
