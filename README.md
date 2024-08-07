@@ -178,6 +178,7 @@ The provider wraps the asynchronous error events that are related to the current
 
 ```tsx
 <WeldProvider
+  onUpdateError={(type, error) => handleError(error)}
   extensions={{ onUpdateError: (error) => handleError(error) }}
   wallet={{ onUpdateError: (error) => handleError(error) }}
 >
