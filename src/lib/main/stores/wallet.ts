@@ -116,10 +116,6 @@ export const createWalletStore = createStoreFactory<
           }, connectTimeout);
         }
 
-        await new Promise((resolve) => {
-          setTimeout(resolve, 10_000);
-        });
-
         const handler: WalletHandler = handleAccountChangeErrors(
           await weldConnect(key),
           async () => {
