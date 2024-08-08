@@ -27,23 +27,22 @@ weld.extensions.subscribe((state) => {
 
 weld.wallet.subscribeWithSelector(
   (s) => s.utxos,
-  (utxos) => {
-    console.log("utxos", utxos);
-  },
+  (utxos) => console.log("utxos", utxos),
+);
+
+weld.wallet.subscribeWithSelector(
+  (s) => s.isConnecting,
+  (isConnecting) => console.log("isConnecting", isConnecting),
 );
 
 weld.wallet.subscribeWithSelector(
   (s) => s.isUpdatingUtxos,
-  (isUpdatingUtxos) => {
-    console.log("isUpdatingUtxos", isUpdatingUtxos);
-  },
+  (isUpdatingUtxos) => console.log("isUpdatingUtxos", isUpdatingUtxos),
 );
 
 weld.extensions.subscribeWithSelector(
   (s) => s.allArr,
-  (ext) => {
-    console.log("ext", ext);
-  },
+  (ext) => console.log("ext", ext),
 );
 
 weld.wallet.subscribeWithSelector(

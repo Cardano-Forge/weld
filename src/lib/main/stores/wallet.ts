@@ -20,6 +20,7 @@ import { getPersistedValue } from "../persistence";
 
 export type WalletProps = WalletInfo & {
   isConnected: boolean;
+  isConnecting: boolean;
   isConnectingTo: string | undefined;
   handler: WalletHandler;
   balanceLovelace: number;
@@ -35,6 +36,7 @@ export type WalletProps = WalletInfo & {
 
 const initialWalletState: WalletState = {
   isConnected: false,
+  isConnecting: false,
   isConnectingTo: undefined,
   handler: undefined,
   balanceLovelace: undefined,
@@ -128,7 +130,7 @@ export const createWalletStore = createStoreFactory<
       try {
         lifecycle.subscriptions.clearAll();
 
-        setState({ isConnectingTo: key });
+        setState({ isConnectingTo: key, isConnecting: true });
 
         let abortTimeout: NodeJS.Timeout | undefined = undefined;
 
@@ -140,7 +142,7 @@ export const createWalletStore = createStoreFactory<
         if (connectTimeout) {
           abortTimeout = setTimeout(() => {
             signal.aborted = true;
-            setState({ isConnectingTo: undefined });
+            setState({ isConnectingTo: undefined, isConnecting: false });
           }, connectTimeout);
         }
 
@@ -214,6 +216,7 @@ export const createWalletStore = createStoreFactory<
 
           const newState: Partial<ConnectedWalletState> = {
             isConnected: true,
+            isConnecting: false,
             isConnectingTo: undefined,
             handler,
             balanceLovelace,
@@ -288,6 +291,7 @@ export const createWalletStore = createStoreFactory<
 
     const initialState: WalletStoreState & StoreLifeCycleMethods = {
       ...initialWalletState,
+      isConnecting: !!initialIsConnectingTo,
       isConnectingTo: initialIsConnectingTo,
       connect,
       connectAsync,
@@ -301,7 +305,9 @@ export const createWalletStore = createStoreFactory<
         typeof window !== "undefined" &&
         defaults.enablePersistence
       ) {
-        initialState.isConnectingTo = getPersistedValue("connectedWallet");
+        const persisted = getPersistedValue("connectedWallet");
+        initialState.isConnectingTo = persisted;
+        initialState.isConnecting = !!persisted;
       }
 
       if (initialState.isConnectingTo) {
