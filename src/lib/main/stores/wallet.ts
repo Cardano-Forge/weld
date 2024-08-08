@@ -3,20 +3,20 @@ import type { WalletHandler } from "@/internal/handler";
 import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/internal/store";
 import { setupAutoUpdate } from "@/internal/update";
+import { deferredPromise } from "@/internal/utils/deferred-promise";
 import { STORAGE_KEYS } from "@/lib/server";
 import {
   type NetworkId,
   WalletConnectionAbortedError,
   WalletDisconnectAccountError,
   type WalletInfo,
-  lovelaceToAda,
   WalletUtxosUpdateError,
   getFailureReason,
+  lovelaceToAda,
 } from "@/lib/utils";
 import { type WalletConfig, defaults, getUpdateConfig } from "../config";
 import { connect as weldConnect } from "../connect";
 import { getPersistedValue } from "../persistence";
-import { deferredPromise } from "@/internal/utils/deferred-promise";
 
 export type WalletProps = WalletInfo & {
   isConnected: boolean;
