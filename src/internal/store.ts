@@ -8,7 +8,7 @@ export type StoreLifeCycleMethods = {
   __cleanup?(): void;
 };
 
-export type StoreListener<T> = (state: T, prevState: T) => void;
+export type StoreListener<T> = (state: T, prevState: T | undefined) => void;
 
 // biome-ignore lint/suspicious/noExplicitAny: Allow any store for generics
 export type Store<TState = any> = {
@@ -17,10 +17,11 @@ export type Store<TState = any> = {
   setState: (
     partial: TState | Partial<TState> | ((state: TState) => TState | Partial<TState>),
   ) => void;
-  subscribe: (listener: StoreListener<TState>) => () => void;
+  subscribe: (listener: StoreListener<TState>, opts?: { fireImmediately?: boolean }) => () => void;
   subscribeWithSelector: <TSlice>(
     selector: (state: TState) => TSlice,
     listener: StoreListener<TSlice>,
+    opts?: { fireImmediately?: boolean },
   ) => () => void;
 };
 
@@ -59,14 +60,21 @@ export function createStore<TState extends object>(
 
   const getInitialState: Store<TState>["getInitialState"] = () => initialState;
 
-  const subscribe: Store<TState>["subscribe"] = (listener) => {
+  const subscribe: Store<TState>["subscribe"] = (listener, opts) => {
     listeners.add(listener);
+    if (opts?.fireImmediately) {
+      listener(state, undefined);
+    }
     return () => {
       listeners.delete(listener);
     };
   };
 
-  const subscribeWithSelector: Store<TState>["subscribeWithSelector"] = (selector, listener) => {
+  const subscribeWithSelector: Store<TState>["subscribeWithSelector"] = (
+    selector,
+    listener,
+    opts,
+  ) => {
     let currSlice = selector(state);
     const globalListener = (next: TState) => {
       const nextSlice = selector(next);
@@ -77,6 +85,9 @@ export function createStore<TState extends object>(
       }
     };
     listeners.add(globalListener);
+    if (opts?.fireImmediately) {
+      listener(currSlice, undefined);
+    }
     return () => {
       listeners.delete(globalListener);
     };

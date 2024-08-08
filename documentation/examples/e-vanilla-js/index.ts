@@ -25,6 +25,20 @@ weld.extensions.subscribe((state) => {
   console.log("state", state);
 });
 
+weld.wallet.subscribeWithSelector(
+  (s) => s.utxos,
+  (utxos) => {
+    console.log("utxos", utxos);
+  },
+);
+
+weld.wallet.subscribeWithSelector(
+  (s) => s.isUpdatingUtxos,
+  (isUpdatingUtxos) => {
+    console.log("isUpdatingUtxos", isUpdatingUtxos);
+  },
+);
+
 weld.extensions.subscribeWithSelector(
   (s) => s.allArr,
   (ext) => {
@@ -70,5 +84,14 @@ document.querySelector("#disconnect")?.addEventListener("click", () => {
 // Auto reconnect
 const lastConnectedWallet = getPersistedValue("connectedWallet");
 if (lastConnectedWallet) {
-  weld.wallet.getState().connect(lastConnectedWallet);
+  weld.wallet.getState().connect(lastConnectedWallet, {
+    onSuccess() {
+      weld.wallet
+        .getState()
+        .ensureUtxos()
+        .then((ensured) => {
+          console.log("ensured", ensured);
+        });
+    },
+  });
 }

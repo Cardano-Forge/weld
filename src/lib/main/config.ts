@@ -7,14 +7,6 @@ export type UpdateConfig = {
    * @default 2000ms
    */
   updateInterval: number | false;
-  /**
-   * Updating utxos frequently can be expensive for large wallets.
-   * That's why we expose a separate config option to allow disabling or slowing down
-   * utxo updates without sacrificing update speed for other wallet properties
-   *
-   * @default 30_000ms
-   */
-  updateUtxosInterval: number | false;
   updateOnWindowFocus: boolean;
 };
 
@@ -38,7 +30,6 @@ export type WeldConfig = UpdateConfig &
 
 export const defaults: WeldConfig = {
   updateInterval: 2000,
-  updateUtxosInterval: 30_000,
   updateOnWindowFocus: true,
   ignoreUnsafeUsageError: false,
   enablePersistence: true,
@@ -51,7 +42,6 @@ export function getUpdateConfig(
 ): UpdateConfig {
   const config: UpdateConfig = {
     updateInterval: defaults.updateInterval,
-    updateUtxosInterval: defaults.updateUtxosInterval,
     updateOnWindowFocus: defaults.updateOnWindowFocus,
   };
   if (defaults[store]) {

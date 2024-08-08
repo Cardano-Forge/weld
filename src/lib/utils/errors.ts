@@ -24,6 +24,13 @@ export class WalletConnectionError extends Error {
   }
 }
 
+export class WalletUtxosUpdateError extends Error {
+  constructor(message?: string | undefined) {
+    super(message);
+    this.name = "Anvil Weld - WalletUtxosUpdateError";
+  }
+}
+
 export class WalletConnectionAbortedError extends Error {
   constructor(message?: string | undefined) {
     super(message);
