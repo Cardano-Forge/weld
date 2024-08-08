@@ -1,4 +1,5 @@
 import { defaults, getPersistedValue } from "@/lib/main";
+import { STORAGE_KEYS } from "@/lib/server";
 import { weld } from "@/lib/vanilla";
 
 // Disable auto persistence
@@ -9,17 +10,10 @@ weld.wallet.subscribeWithSelector(
   (state) => state.key,
   (key) => {
     if (key) {
-      defaults.storage.set("connectedWallet", key);
+      defaults.storage.set(STORAGE_KEYS.connectedWallet, key);
     } else {
-      defaults.storage.remove("connectedWallet");
+      defaults.storage.remove(STORAGE_KEYS.connectedWallet);
     }
-  },
-);
-
-weld.wallet.subscribeWithSelector(
-  (state) => state.utxos,
-  (utxos) => {
-    console.log("utxos changed", utxos);
   },
 );
 
