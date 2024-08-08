@@ -1,17 +1,17 @@
-import { type EnabledWalletApi, WalletDisconnectAccountError, getFailureReason } from "@/lib/utils";
+import { WalletDisconnectAccountError, getFailureReason } from "@/lib/utils";
 
 function defaultIsAccountChangeError(error: unknown): error is Error {
   return getFailureReason(error) === "account changed";
 }
 
-export function handleAccountChangeErrors(
-  enabledApi: EnabledWalletApi,
-  updateEnabledApi: () => Promise<EnabledWalletApi>,
+export function handleAccountChangeErrors<T extends Record<string, unknown>>(
+  enabledApi: T,
+  updateEnabledApi: () => Promise<T>,
   isApiEnabled: () => Promise<boolean>,
   { isAccountChangeError = defaultIsAccountChangeError } = {},
-): EnabledWalletApi {
+): T {
   const proxy = new Proxy(enabledApi, {
-    get(target, p: keyof EnabledWalletApi, receiver: EnabledWalletApi) {
+    get(target, p: string, receiver: T) {
       const value: unknown = target[p];
 
       if (typeof value !== "function") {

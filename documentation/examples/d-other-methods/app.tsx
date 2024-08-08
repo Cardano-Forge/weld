@@ -1,15 +1,8 @@
 import { ExampleContainer } from "@/documentation/commons/example-container";
-import { useWalletContext } from "@/lib/react/contexts/wallet.context";
-import { useEffect } from "react";
+import { useWallet } from "@/lib/react";
 
 export const App = () => {
-  const { wallet } = useWalletContext();
-
-  useEffect(() => {
-    if (wallet.isConnected) {
-      wallet.handler.initialize();
-    }
-  }, [wallet]);
+  const wallet = useWallet();
 
   return (
     <ExampleContainer>

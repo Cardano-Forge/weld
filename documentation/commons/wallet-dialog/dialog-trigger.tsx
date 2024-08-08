@@ -1,4 +1,4 @@
-import { useWalletContext } from "@/lib/react/contexts/wallet.context";
+import { useWallet } from "@/lib/react";
 import { useDialogContext } from "../hooks/dialog.context";
 
 const Icon = ({ icon }: { icon: string | null }) => {
@@ -26,12 +26,11 @@ const Icon = ({ icon }: { icon: string | null }) => {
 };
 
 const DialogTrigger = () => {
-  const { wallet } = useWalletContext();
+  const wallet = useWallet("isConnected", "icon");
   const { open } = useDialogContext();
-  const icon = wallet.isConnected ? wallet.handler.info.icon : null;
   return (
     <button type="button" className="btn btn-sm ml-auto" onClick={open}>
-      <Icon icon={icon} />
+      <Icon icon={wallet.icon ?? null} />
       <div>{wallet.isConnected ? "Switch" : "Connect"}</div>
     </button>
   );

@@ -1,10 +1,9 @@
-import { DialogProvider } from "@/documentation/commons/hooks/dialog.context";
-import { WeldProvider } from "@/lib/react/contexts/weld.context";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { App } from "./app";
 
-import { ToastContainer, toast } from "react-toastify";
+import { WeldProvider } from "@/lib/react";
+import { ToastContainer } from "react-toastify";
 
 import "react-toastify/dist/ReactToastify.min.css";
 
@@ -13,21 +12,21 @@ if (root) {
   ReactDOM.createRoot(root).render(
     <React.StrictMode>
       <WeldProvider
-        config={{
-          wallet: {
-            onUpdateError(error) {
-              const message =
-                error instanceof Error
-                  ? error.message
-                  : "An unknown error occured while updating the wallet state";
-              toast.error(message, { toastId: "wallet-update" });
-            },
+        onUpdateError={(store, error) => {
+          console.log("global", store, error);
+        }}
+        wallet={{
+          onUpdateError(error) {
+            console.log("wallet error", error);
+          },
+        }}
+        extensions={{
+          onUpdateError(error) {
+            console.log("extensions error", error);
           },
         }}
       >
-        <DialogProvider>
-          <App />
-        </DialogProvider>
+        <App />
       </WeldProvider>
       <ToastContainer position="bottom-right" />
     </React.StrictMode>,

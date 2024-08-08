@@ -1,15 +1,8 @@
 import { ExampleContainer } from "@/documentation/commons/example-container";
-import { useWalletContext } from "@/lib/react/contexts/wallet.context";
-import { useEffect } from "react";
+import { useWallet } from "@/lib/react";
 
 export const App = () => {
-  const { wallet } = useWalletContext();
-
-  useEffect(() => {
-    if (wallet.isConnected) {
-      wallet.handler.initialize();
-    }
-  }, [wallet]);
+  const wallet = useWallet();
 
   return (
     <ExampleContainer>
@@ -21,15 +14,15 @@ export const App = () => {
             <>
               <div>Connected to</div>
               <div className="py-2 px-4 text-xs bg-slate-100 rounded-md break-words">
-                {wallet.handler.info.displayName}
+                {wallet.displayName}
               </div>
               <div>Stake address:</div>
               <div className="py-2 px-4 text-xs bg-slate-100 rounded-md break-words">
-                {wallet.rewardAddress}
+                {wallet.stakeAddressBech32}
               </div>
               <div>Change address:</div>
               <div className="py-2 px-4 text-xs bg-slate-100 rounded-md break-words">
-                {wallet.changeAddress}
+                {wallet.changeAddressBech32}
               </div>
               <div>Network:</div>
               <div className="py-2 px-4 text-xs bg-slate-100 rounded-md break-words">
@@ -37,7 +30,7 @@ export const App = () => {
               </div>
               <div>Lovelace:</div>
               <div className="py-2 px-4 text-xs bg-slate-100 rounded-md break-words">
-                {wallet.balanceLovelace}
+                {wallet.balanceAda.toFixed(2)}
               </div>
             </>
           )}

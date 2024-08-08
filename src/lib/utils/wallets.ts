@@ -1,13 +1,12 @@
 import type { WalletExtension } from "./extensions";
 
 type AbstractWalletInfo = {
-  supported: true;
+  supported: boolean;
   key: string;
   icon: string;
-  website?: string;
+  website: string | undefined;
   displayName: string;
-  description?: string;
-  supportsTxChaining?: boolean;
+  supportsTxChaining: boolean;
 };
 
 export const SUPPORTED_WALLETS = [
@@ -15,10 +14,10 @@ export const SUPPORTED_WALLETS = [
     supported: true,
     key: "eternl",
     displayName: "Eternl",
-    supportsTxChaining: true,
     icon: "https://raw.githubusercontent.com/cardano-forge/universal-wallet-connector/main/images/wallets/eternl.svg",
     website:
       "https://chrome.google.com/webstore/detail/eternl/kmhcihpebfmpgmihbkipmjlmmioameka?hl=en-US",
+    supportsTxChaining: true,
   },
   {
     supported: true,
@@ -27,6 +26,7 @@ export const SUPPORTED_WALLETS = [
     icon: "https://raw.githubusercontent.com/cardano-forge/universal-wallet-connector/main/images/wallets/nami.svg",
     website:
       "https://chrome.google.com/webstore/detail/nami/lpfcbjknijpeeillifnkikgncikgfhdo?hl=en-US",
+    supportsTxChaining: false,
   },
   {
     supported: true,
@@ -34,6 +34,7 @@ export const SUPPORTED_WALLETS = [
     displayName: "Tokeo",
     icon: "https://raw.githubusercontent.com/cardano-forge/universal-wallet-connector/main/images/wallets/tokeo.svg",
     website: "https://tokeopay.io",
+    supportsTxChaining: false,
   },
   {
     supported: true,
@@ -42,6 +43,7 @@ export const SUPPORTED_WALLETS = [
     icon: "https://raw.githubusercontent.com/cardano-forge/universal-wallet-connector/main/images/wallets/flint.svg",
     website:
       "https://chrome.google.com/webstore/detail/flint-wallet/hnhobjmcibchnmglfbldbfabcgaknlkj?hl=en-US",
+    supportsTxChaining: false,
   },
   {
     supported: true,
@@ -50,6 +52,7 @@ export const SUPPORTED_WALLETS = [
     icon: "https://raw.githubusercontent.com/cardano-forge/universal-wallet-connector/main/images/wallets/gerowallet.svg",
     website:
       "https://chrome.google.com/webstore/detail/gerowallet/bgpipimickeadkjlklgciifhnalhdjhe/overview",
+    supportsTxChaining: false,
   },
   {
     supported: true,
@@ -58,6 +61,7 @@ export const SUPPORTED_WALLETS = [
     icon: "https://raw.githubusercontent.com/cardano-forge/universal-wallet-connector/main/images/wallets/typhoncip30.svg",
     website:
       "https://chrome.google.com/webstore/detail/typhon-wallet/kfdniefadaanbjodldohaedphafoffoh",
+    supportsTxChaining: false,
   },
   {
     supported: true,
@@ -66,6 +70,7 @@ export const SUPPORTED_WALLETS = [
     icon: "https://raw.githubusercontent.com/cardano-forge/universal-wallet-connector/main/images/wallets/nufi.svg",
     website:
       "https://chrome.google.com/webstore/detail/nufi/gpnihlnnodeiiaakbikldcihojploeca?hl=en-US",
+    supportsTxChaining: false,
   },
   {
     supported: true,
@@ -74,6 +79,7 @@ export const SUPPORTED_WALLETS = [
     icon: "https://raw.githubusercontent.com/cardano-forge/universal-wallet-connector/main/images/wallets/lace.svg",
     website:
       "https://chrome.google.com/webstore/detail/lace/gafhhkghbfjjkeiendhlofajokpaflmk?hl=en-US",
+    supportsTxChaining: false,
   },
   {
     supported: true,
@@ -81,8 +87,9 @@ export const SUPPORTED_WALLETS = [
     displayName: "VESPR",
     icon: "https://raw.githubusercontent.com/cardano-forge/universal-wallet-connector/main/images/wallets/vespr.svg",
     website: "https://www.vespr.xyz/",
+    supportsTxChaining: false,
   },
-] as const satisfies AbstractWalletInfo[];
+] as const satisfies readonly AbstractWalletInfo[];
 
 export type WalletKey = (typeof SUPPORTED_WALLETS)[number]["key"];
 
@@ -94,11 +101,7 @@ export type WalletInfo =
       supported: false;
     });
 
-export type SupportedWalletInfo = Extract<WalletInfo, { supported: true }>;
-
-export type UnsupportedWalletInfo = Extract<WalletInfo, { supported: false }>;
-
-export const supportedWalletsMap = new Map<WalletKey, SupportedWalletInfo>(
+export const supportedWalletsMap = new Map<WalletKey, WalletInfo>(
   SUPPORTED_WALLETS.map((config) => [config.key, config]),
 );
 
@@ -116,5 +119,7 @@ export function getWalletInfo(extension: WalletExtension): WalletInfo {
     key: extension.key,
     icon: extension.defaultApi.icon,
     displayName: extension.defaultApi.name,
+    website: undefined,
+    supportsTxChaining: false,
   };
 }

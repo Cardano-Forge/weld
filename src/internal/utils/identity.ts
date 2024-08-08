@@ -1,3 +1,3 @@
-export function identity<T>(value?: T): T {
-  return value as T;
+export function identity<T, U = T>(value?: T): U {
+  return value as U;
 }

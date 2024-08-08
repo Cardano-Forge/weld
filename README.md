@@ -23,46 +23,22 @@
   - [What's not new](#whats-not-new)
 - [Get started](#get-started)
   - [Weld provider](#weld-provider)
-  - [Initialization](#initialization)
 - [Usage](#usage)
   - [Wallet connection](#wallet-connection)
   - [Error handling](#error-handling)
     - [Synchronous errors](#synchronous-errors)
-    - [Synchronous errors using React](#synchronous-errors-using-react)
     - [Asynchronous errors](#asynchronous-errors)
   - [Reactive variable](#reactive-variable)
   - [Other methods](#other-methods)
-- [Events](#events)
-  - [Semantic](#semantic)
-  - [Naming](#naming)
-  - [Events table](#events-table)
-  - [Wildcard usage](#wildcard-usage)
-  - [`weld:*`](#weld)
-  - [`weld:wallet.*`](#weldwallet)
-  - [`weld:wallet.balance.*`](#weldwalletbalance)
-  - [`weld:wallet.balance.update.*`](#weldwalletbalanceupdate)
-  - [`weld:wallet.balance.update.nami`](#weldwalletbalanceupdatenami)
+- [Selectors](#selectors)
 - [Persistence](#persistence)
   - [Automatic reconnection](#automatic-reconnection)
   - [Configuration](#configuration)
 - [Usage with Next.js](#usage-with-nextjs)
 - [Examples](#examples)
-- [Methods](#methods)
-  - [initialize](#initialize)
-  - [getChangeAddress](#getchangeaddress)
-  - [getStakeAddress](#getstakeaddress)
-  - [getNetworkId](#getnetworkid)
-  - [getBalance](#getbalance)
-  - [getBalanceLovelace](#getbalancelovelace)
-  - [getBalanceAssets](#getbalanceassets)
-  - [getDefaultApi](#getdefaultapi)
-  - [isConnected](#isconnected)
-  - [isConnectedTo](#isconnectedto)
-  - [getUtxos](#getutxos)
-  - [signTx](#signtx)
-  - [submitTx](#submittx)
-  - [signData](#signdata)
-
+- [Wallet hook exports](#wallet-hook-exports)
+  - [Variables](#variables)
+  - [Methods](#methods)
 
 ## Introduction
 
@@ -91,6 +67,7 @@ Basic functions remain accessible through the library. Our goal is not to compli
 ## Get started
 
 ### Weld provider
+
 After installing the library, wrap your App within the `WeldProvider`.
 
 ```typescript
@@ -107,22 +84,9 @@ if (root) {
       <WeldProvider>
         <App />
       </WeldProvider>
-    </React.StrictMode>,
+    </React.StrictMode>
   );
 }
-```
-
-### Initialization
-In certain situations, a dApp may require specific initialization. This is managed through the `wallet.handler.initialize` method. It should be invoked as early as possible within a component that falls under the Weld provider tree.
-
-```typescript
-const { wallet } = useWalletContext();
-
-useEffect(() => {
-  if (wallet.isConnected) {
-    wallet.handler.initialize();
-  }
-}, [wallet]);
 ```
 
 ## Usage
@@ -132,40 +96,33 @@ Here are common use cases for an app utilizing this library.
 ### Wallet connection
 
 Use the exported `SUPPORTED_WALLETS` constant to display the available wallets.
-Additionally, you can use the `getInstalledExtensions` method or the `useInstalledExtensionsContext` to identify installed extensions, even if they are not officially supported.
+Additionally, you can use the `useExtensions` hooke to identify installed extensions, even if they are not officially supported.
 
 ```tsx
-export const App = () => {
-  const { wallet, connectWallet } = useWalletContext();
+const supportedExtensions = useExtensions((s) => s.supportedMap);
+const unsupportedExtensions = useExtensions((s) => s.unsupportedMap);
+const allExtensions = useExtensions((s) => s.allMap);
 
-  useEffect(() => {
-    if (wallet.isConnected) {
-      wallet.handler.initialize();
-    }
-  }, [wallet]);
+// or
 
-  return (
-    <ExampleContainer>
-      <article className="card bg-base-100 shadow-xl">
-        <div className="card-body">
-          <div className="flex flex-wrap gap-4">
-            {SUPPORTED_WALLETS.map(({ key, displayName }) => (
-              <button
-                key={key}
-                type="button"
-                className="btn btn-primary"
-                onClick={() => connectWallet(key)}
-              >
-                {displayName}
-              </button>
-            ))}
-          </div>
-        </div>
-      </article>
-    </ExampleContainer>
-  );
-};
+const supportedExtensions = useExtensions((s) => s.supportedArr);
+const unsupportedExtensions = useExtensions((s) => s.unsupportedArr);
+const allExtensions = useExtensions((s) => s.allArr);
 ```
+
+You will be able to connect the wallet using one of the two connect functions exported from the `useWallet` hook.
+
+```tsx
+const walletHook = useWallet();
+
+walletHook.connect(key);
+
+// or
+
+const wallet = await walletHook.connectAsync(key);
+```
+
+See [this implemantation](documentation/commons/wallet-dialog/index.tsx) for a use case example.
 
 ### Error handling
 
@@ -173,26 +130,21 @@ When using Weld, two types of errors can occur: **synchronous** errors and **asy
 
 #### Synchronous errors
 
-Synchronous errors are the ones that get thrown by functions that you call explicitly, like `connect` and `disconnect`.
-They are regular rejections that can be caught and handled by using normal language constructs:
-```typescript
-try {
-  const handler = await connect(key);
-} catch (error) {
-  // handle connection error
-}
-```
-#### Synchronous errors using React
 You can use one of two functions to connect a wallet using the `useWallet` React hook.
-If you just want to trigger the connection flow and don't care about the result, use the `connectWallet` function, which is guaranteed to never throw:
+If you just want to trigger the connection flow and don't care about the result, use the `connect` function, which is guaranteed to never throw:
+
 ```typescript
+const walletHook = useWallet();
 // Doesn't return the wallet and never throws
-connectWallet(key);
+walletHook.connect(key);
 ```
 
-You can pass callbacks to the `connectWallet` function to handle success and error cases:
+You can pass callbacks to the `connect` function to handle success and error cases:
+
 ```typescript
-connectWallet(key, {
+const walletHook = useWallet();
+
+walletHook.connect(key, {
   onSuccess(wallet) {
     console.log("wallet", wallet);
   },
@@ -202,10 +154,15 @@ connectWallet(key, {
 });
 ```
 
-Alternatively, you can use the `connectWalletAsync` function, which returns a promise containing the wallet handler and throws errors when they occur.
+See [this implemantation](documentation/commons/wallet-dialog/index.tsx) for a use case example.
+
+Alternatively, you can use the `connectAsync` function, which returns a promise containing the wallet handler and throws errors when they occur.
+
 ```typescript
+const walletHook = useWallet();
+
 try {
-  const wallet = await connectWalletAsync(key);
+  const wallet = await walletHook.connectAsync(key);
   console.log("wallet", wallet);
 } catch (error) {
   console.log("error", error);
@@ -216,162 +173,176 @@ try {
 
 Asynchronous errors are the ones that occur during side effects like polling updates.
 Since they can occur anywhere and at any point, these errors cannot be caught by a try catch so we don't throw them as errors to prevent uncaught failure rejections.
-Instead, we send [events](#events) which contain the errors and that can be listened for using our event system:
-```typescript
-subscribe("weld:wallet.update.error.*", (event) => {
-  handleError(event.data.error);
-});
-```
 
-The `useWallet` React hook wraps the asynchronous error events that are related to the current wallet and allows you to pass callbacks to handle them without having to manage the event subscriptions manually:
+The provider wraps the asynchronous error events that are related to the current wallet and allows you to pass callbacks to handle them without having to manage the event subscriptions manually:
+
 ```tsx
-// If using the weld context
-<WeldProvider config={{ wallet: { onUpdateError: error => handleError(error) }}}>{children}</WeldProvider>
-
-// If using the wallet provider
-<WalletProvider config={{ onUpdateError: error => handleError(error)}}>{children}</WalletProvider>
-
-// If using the useWallet hook directly
-const { wallet } = useWallet({ onUpdateError: error => handleError(error) });
+<WeldProvider
+  onUpdateError={(type, error) => handleError(error)}
+  extensions={{ onUpdateError: (error) => handleError(error) }}
+  wallet={{ onUpdateError: (error) => handleError(error) }}
+>
+  {children}
+</WeldProvider>
 ```
 
 ### Reactive variable
 
 This very simple example would not be a real use case. But it shows that those values would be automatically updated if they are changing. This might seems trivial, but right now the default wallets API does not allow to achieve this easily. A valid use case for reactive variables are the connect button on a website header where the wallet icon is usally displayed as well as the balance.
 
-
-This simple example may not reflect a practical use case, yet it demonstrates how these values are automatically updated upon change. While this may seem trivial, achieving this is not straightforward with the current default wallets API. 
+This simple example may not reflect a practical use case, yet it demonstrates how these values are automatically updated upon change. While this may seem trivial, achieving this is not straightforward with the current default wallets API.
 
 A pertinent application for reactive variables would be the connect button on a website's header, where the wallet icon and balance are typically displayed.
 
 ```tsx
-import { useWalletContext } from "@/lib/react/contexts/wallet.context";
-
 export const App = () => {
-  const { wallet } = useWalletContext();
+  const wallet = useWallet();
 
   if (!wallet.isConnected) return <></>;
 
   return (
     <>
-      <div>Connected to {wallet.handler.info.displayName}</div>
-      <div>Stake address: {wallet.rewardAddress}</div>
-      <div>Change address: {wallet.changeAddress}</div>
+      <div>Connected to {wallet.displayName}</div>
+      <div>Stake address: {wallet.stakeAddressBech32}</div>
+      <div>Change address: {wallet.changeAddressBech32}</div>
       <div>Network: {wallet.networkId}</div>
       <div>Lovelace: {wallet.balanceLovelace}</div>
     </>
   );
 };
-
 ```
+
 ### Other methods
 
 All default API functions are accessible and can be utilized via the `wallet.handler` class. If a function is unavailable, you can retrieve the default API by invoking the `wallet.handler.getDefaultApi` method.
 
 ```tsx
-export const App = () => {
-  const { wallet } = useWalletContext();
+const wallet = useWallet();
 
-  useEffect(() => {
-    if (wallet.isConnected) {
-      wallet.handler.initialize();
-    }
-  }, [wallet]);
-
-  return (
-    <ExampleContainer>
-      <article className="card bg-base-100 shadow-xl max-w-[800px] mx-auto">
-        <div className="card-body text-center">
-          {!wallet.isConnected ? (
-            <h2>Connect your wallet</h2>
-          ) : (
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => wallet.handler.signTx("YOUR_TX", true)}
-            >
-              Sign
-            </button>
-          )}
-        </div>
-      </article>
-    </ExampleContainer>
-  );
-};
+await wallet.handler.signTx("YOUR_TX", true);
 ```
 
+See [this implemantation](documentation/examples/d-other-methods/app.tsx) for a use case example.
 
-## Events
+## Selectors
 
-Events are a crucial feature of this library, enabling continuous synchronization between the dApp connector and the front-end. They trigger updates as necessary, such as when the wallet balance changes or when the user switches wallet accounts.
+React state selectors are functions or hooks that help manage and access specific parts of a component's state. They allow you to efficiently retrieve and update only the necessary pieces of state within a component, **reducing the need for re-rendering the entire component tree** when changes occur. By using state selectors, you can **optimize performance** by ensuring that only the relevant parts of the UI are updated, improving responsiveness and efficiency. This targeted state management makes your application more maintainable and scalable, as it prevents unnecessary computations and enhances overall performance.
 
-### Semantic
+> It is crucial to keep the state minimal and derive additional values from it whenever possible.
 
-Events follow the specific naming convention `scope`.`namespace`.`type`, where the wildcard `*` can be used at the end of an event name to capture all corresponding events.
+### Basic selector concepts
 
-### Naming
+Getting a single value
 
-**Scopes**: wallet
+```typescript
+const displayName = useWallet("displayName");
 
-**Namespaces**: connection, balance, reward-address, change-address, network
+// or
 
-**Types**: update, initiate, success, error
+const displayName = useWallet((state) => state.displayName);
+```
 
-### Events table
+Getting multiple values
 
-| Scope  | Namespace      | Type     | Parameters                                                                        |
-| ------ | -------------- | -------- | --------------------------------------------------------------------------------- |
-| wallet | connection     | initiate | `undefined`                                                                       |
-| wallet | connection     | success  | `{ handler: WalletHandler; }`                                                     |
-| wallet | connection     | error    | `{ error: unknown; }`                                                             |
-| wallet | update         | error    | `{ error: unknown; }`                                                             |
-| wallet | balance        | update   | `{ handler: WalletHandler; cbor: string; balanceLovelace: number \| undefined; }` |
-| wallet | reward-address | update   | `{ handler: WalletHandler; rewardAddress: string; }`                              |
-| wallet | change-address | update   | `{ handler: WalletHandler; changeAddress: string; }`                              |
-| wallet | network        | update   | `{ handler: WalletHandler; networkId: NetworkId; }`                               |
+```typescript
+const { displayName, icon } = useWallet("displayName", "icon");
 
-### Wildcard usage
+// or
 
-### `weld:*`
-Listen to every events triggered.
+const { displayName, icon } = useWallet((state) => ({
+  displayName: state.displayName,
+  icon: state.icon,
+}));
+```
 
-### `weld:wallet.*`
-Listen to every events triggered on the `wallet` scope.
+### Deriving data with selectors
 
-### `weld:wallet.balance.*`
-Listen to every events triggered on the `wallet` scope and the `balance` namespace.
+Deriving data can be helpful for simple tasks such as formatting the ADA balance, as shown in this [example](documentation/examples/b-simple-wallet-connect/app.tsx)
 
-### `weld:wallet.balance.update.*`
-Listen to every events triggered on the `wallet` scope, the `balance` namespace and the `update` type.
+```typescript
+const balance = useWallet((state) => state.balanceAda?.toFixed(2));
+```
 
-### `weld:wallet.balance.update.nami`
-Listen to every events triggered on the `wallet` scope, the `balance` namespace, the `update` type and the specific `nami` key.
+It can also be used to create custom states, as demonstrated in our [example](documentation/commons/wallet-dialog/wallet-btn.tsx).
 
+```typescript
+const wallet = useWallet((s) => ({
+  isConnectingTo: s.isConnectingTo,
+  isLoading: info.key === s.isConnectingTo,
+}));
+```
 
 ## Persistence
 
-Weld provides a flexible interface to handle wallet connection persistence.
+Weld offers a flexible interface for managing wallet connection persistence. In most cases, you shouldn't need to use this feature.
+
+```typescript
+weld.wallet.subscribeWithSelector(
+  (state) => state.key,
+  (key) => {
+    if (key) {
+      defaults.storage.set("connectedWallet", key);
+    } else {
+      defaults.storage.remove("connectedWallet");
+    }
+  }
+);
+```
 
 ### Automatic reconnection
-When using the `useWallet` React hook, an attempt will be made to reconnect the persisted wallet on first mount.
 
-If you are not using the `useWallet` hook, you can use the `getPersistedValue` helper function to retrieve the persisted wallet and connect it during the initialization of your app:
+When using the library, an attempt will be made to reconnect the persisted wallet on first mount.
+
+If you are not using the automatic reconnection, you can use the `getPersistedValue` helper function to retrieve the persisted wallet and connect it during the initialization of your app.
+
 ```typescript
-function initApp() {
-  const persistedWalletKey = getPersistedValue("connectedWallet");
-  if (persistedWalletKey) {
-    connect(persistedWalletKey).then((handler) => {
-      console.log("handler", handler);
-    });
-  }
+const walletHook = useWallet();
+const lastConnectedWallet = getPersistedValue("connectedWallet");
+
+if (lastConnectedWallet) {
+  walletHook.connect(lastConnectedWallet);
 }
 ```
+
 _Note: `getPersistedValue` always returns `undefined` when persistence is disabled._
 
 ### Configuration
 
 By default, the user's wallet connection is persisted to [local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage).
-This behavior can be customized by providing a different [Storage](https://developer.mozilla.org/en-US/docs/Web/API/Storage) interface to the global configuration object:
+This behavior can be customized by providing a different [Storage](https://developer.mozilla.org/en-US/docs/Web/API/Storage) interface to the global configuration object.
+
+Here’s how to customize the persistence using the WeldProvider:
+
+```typescriptreact
+import { WeldProvider } from "@ada-anvil/weld/react";
+
+export default function RootLayout({ children }) {
+  return (
+    <WeldProvider
+      storage={{
+        get(key) {
+            return window.localStorage.getItem(key) ?? undefined;
+          },
+        set(key, value) {
+          if (typeof window !== "undefined") {
+            window.localStorage.setItem(key, value);
+          }
+        },
+        remove(key) {
+          if (typeof window !== "undefined") {
+            window.localStorage.removeItem(key);
+          }
+        },
+        }}
+    >
+      {children}
+    </WeldProvider>
+  );
+}
+```
+
+Here’s an example using the default configuration.
+
 ```typescript
 defaults.persistence.storage = {
   get(key) {
@@ -391,7 +362,9 @@ defaults.persistence.storage = {
   },
 };
 ```
+
 The persistence features can be disabled through the global configuration object:
+
 ```typescript
 defaults.persistence.enabled = false;
 ```
@@ -401,8 +374,9 @@ _Note: When using a SSR framework, make sure to set configuration options inside
 ## Usage with Next.js
 
 When using Next.js, you can prevent hydration errors by retrieving the connected wallet cookie in a server component
-and passing it as initial value to the useWallet hook:
-```typescript
+and passing it as initial value to the provicer.
+
+```typescriptreact
 import { cookies } from "next/headers";
 import { STORAGE_KEYS } from "@ada-anvil/weld/server";
 import { WeldProvider } from "@ada-anvil/weld/react";
@@ -431,95 +405,15 @@ To run the examples, navigate to the project's root directory and execute `npm i
 
 Alternatively, you can directly explore the code by browsing the <a href="/documentation/examples/">examples</a> folder.
 
-## Methods
+## Wallet hook exports
 
-### initialize
+### Variables
 
-Initializes the handler when it is needed for certain wallets.
+`balanceAda`, `balanceLovelace`, `changeAddressHex`,`changeAddressBech32`, `utxos`, `displayName`, `handler`, `icon`, `isConnected`, `isConnectingTo`, `key`, `networkId`, `stakeAddressHex`, `stakeAddressBech32`, `supported`, `supportsTxChaining`, `website`
 
-- **Returns**: `Promise<boolean>`
+### Methods
 
-### getChangeAddress
-
-Gets the change address for the wallet.
-
-- **Returns**: `Promise<AddressBech32>`
-
-### getStakeAddress
-
-Gets the stake address for the wallet.
-
-- **Returns**: `Promise<AddressBech32>`
-
-### getNetworkId
-
-Gets the network ID of the wallet.
-
-- **Returns**: `Promise<NetworkId>`
-
-### getBalance
-
-Gets the balance of the wallet in CBOR format.
-
-- **Returns**: `Promise<Cbor>`
-
-### getBalanceLovelace
-
-Gets the balance of the wallet in Lovelace.
-
-- **Returns**: `Promise<Lovelace>`
-
-### getBalanceAssets
-
-Gets the balance of assets for the wallet categorized by policies.
-
-- **Returns**: `Promise<BalanceByPolicies>`
-
-### getDefaultApi
-
-Gets the default API for the wallet.
-
-- **Returns**: `DefaultWalletApi`
-
-### isConnected
-
-Checks if the wallet is connected.
-
-- **Returns**: `Promise<boolean>`
-
-### isConnectedTo
-
-Checks if the wallet is connected to a specific wallet key.
-
-- **Returns**: `Promise<boolean>`
-
-### getUtxos
-
-Gets the UTXOs for the wallet.
-
-- **Returns**: `Promise<string[] | undefined>`
-
-### signTx
-
-Signs a transaction.
-
-- **Parameters**: `tx: string`, `partialSign: boolean = true`
-- **Returns**: `Promise<string>`
-
-### submitTx
-
-Submits a transaction to the network.
-
-- **Parameters**: `tx: string`
-- **Returns**: `Promise<string>`
-
-### signData
-
-Signs data with the wallet's stake address.
-
-- **Parameters**: `payload: string`
-- **Returns**: `Promise<Signature>`
-
+`connect`, `connectAsync`, `disconnect`
 
 ---
 

@@ -1,20 +1,15 @@
-import { useInstalledExtensionsContext } from "@/lib/react/contexts/installed-extensions.context";
-import { useWalletContext } from "@/lib/react/contexts/wallet.context";
+import { useExtensions, useWallet } from "@/lib/react";
 import { SUPPORTED_WALLETS } from "@/lib/utils";
 import { useDialogContext } from "../hooks/dialog.context";
 import { WalletBtn } from "./wallet-btn";
 
 const WalletDialog = () => {
-  const { wallet, connectWallet } = useWalletContext();
+  const connect = useWallet("connect");
   const { isOpen, close } = useDialogContext();
-  const { installedExtensions } = useInstalledExtensionsContext();
+  const supportedExtensions = useExtensions((s) => s.supportedMap);
 
   const handleConnectWallet = async (key: string) => {
-    connectWallet(key, {
-      overwriteExistingConnection: false,
-      allowMultipleConnections: true,
-      updateOnWindowFocus: true,
-      pollInterval: 2000,
+    connect(key, {
       onSuccess() {
         close();
       },
@@ -30,8 +25,7 @@ const WalletDialog = () => {
             <WalletBtn
               key={info.key}
               info={info}
-              installed={!!installedExtensions.data?.supported.get(info.key)}
-              isConnectingToKey={wallet.isConnectingTo}
+              installed={supportedExtensions.has(info.key)}
               onClick={handleConnectWallet}
             />
           ))}

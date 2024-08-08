@@ -1,4 +1,4 @@
-import { hexToArrayBuffer } from "@/internal/utils";
+import { hexToArrayBuffer } from "@/internal/utils/hex-to-array-buffer";
 import type { Cbor } from "@/lib/utils";
 import { decode as decodeCbor } from "cbor-js";
 

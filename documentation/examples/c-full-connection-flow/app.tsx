@@ -1,5 +1,5 @@
 import { ExampleContainer } from "@/documentation/commons/example-container";
-import { useWalletContext } from "@/lib/react/contexts/wallet.context";
+import { useWallet } from "@/lib/react";
 
 const WalletInfoLine = ({
   prefix,
@@ -16,7 +16,7 @@ const WalletInfoLine = ({
 );
 
 const MockupContent = () => {
-  const { wallet } = useWalletContext();
+  const wallet = useWallet();
 
   if (!wallet.isConnected) {
     return (
@@ -31,8 +31,8 @@ const MockupContent = () => {
   }
 
   const walletData = [
-    { key: "Reward", value: wallet.rewardAddress },
-    { key: "Change", value: wallet.changeAddress },
+    { key: "Reward", value: wallet.stakeAddressBech32 },
+    { key: "Change", value: wallet.changeAddressBech32 },
     { key: "Network", value: wallet.networkId },
     {
       key: "Wallet",
@@ -40,7 +40,7 @@ const MockupContent = () => {
     },
     {
       key: "Balance",
-      value: `${Math.floor(wallet.balanceLovelace / 1_000_000)} ADA`,
+      value: `${Math.floor(wallet.balanceAda)} ADA`,
     },
   ];
 
