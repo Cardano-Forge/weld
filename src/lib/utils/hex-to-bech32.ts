@@ -1,14 +1,14 @@
 import { bech32 } from "bech32";
 import {
-  type ChangeAddressBech32,
-  type ChangeAddressHex,
-  type StakeAddressBech32,
-  type StakeAddressHex,
-  isStakeAddressHex,
   type AddressBech32,
   type AddressHex,
+  type ChangeAddressBech32,
   type ChangeAddressBech32Prefix,
+  type ChangeAddressHex,
+  type StakeAddressBech32,
   type StakeAddressBech32Prefix,
+  type StakeAddressHex,
+  isStakeAddressHex,
 } from "./extensions";
 
 // Convert hex string to Uint8Array

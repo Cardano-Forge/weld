@@ -3,18 +3,18 @@ import {
   type AddressHex,
   type BalanceByPolicies,
   type Cbor,
+  type ChangeAddressBech32,
+  type ChangeAddressHex,
   type DefaultWalletApi,
   type EnabledWalletApi,
   type Lovelace,
   type NetworkId,
   type Signature,
+  type StakeAddressBech32,
+  type StakeAddressHex,
   WalletBalanceDecodeError,
   type WalletInfo,
   type WalletKey,
-  type StakeAddressHex,
-  type ChangeAddressBech32,
-  type ChangeAddressHex,
-  type StakeAddressBech32,
 } from "@/lib/utils";
 import { hexToBech32 } from "@/lib/utils/hex-to-bech32";
 import { hexToView } from "@/lib/utils/hex-to-view";

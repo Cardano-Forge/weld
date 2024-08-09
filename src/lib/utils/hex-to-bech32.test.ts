@@ -1,12 +1,12 @@
 import { expect, test } from "vitest";
 
-import { hexToBech32 } from "./hex-to-bech32";
 import type {
   ChangeAddressBech32,
   ChangeAddressHex,
   StakeAddressBech32,
   StakeAddressHex,
 } from "./extensions";
+import { hexToBech32 } from "./hex-to-bech32";
 
 const changeHexStripped =
   "69edbdd0d0a5fd7dfe0fced07630d03c2f9e9e5c0cd2071516774cb616432945320470900272d7e0707062c21d50a7021b37deb84213ab86";

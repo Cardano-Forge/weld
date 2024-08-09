@@ -1,7 +1,7 @@
 import { deferredPromise } from "@/internal/utils/deferred-promise";
 
-import type { WalletKey } from "./wallets";
 import { startsWithAny } from "@/internal/utils/starts-with-any";
+import type { WalletKey } from "./wallets";
 
 export const stakeAddressHexLength = 58;
 export const stakeAddressHexPrefixes = ["e0", "e1"] as const;
