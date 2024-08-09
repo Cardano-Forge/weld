@@ -28,6 +28,7 @@ export type WalletProps = WalletInfo & {
   changeAddressHex: string;
   changeAddressBech32: string;
   stakeAddressHex: string;
+  stakeAddressHexPrefixed: string;
   stakeAddressBech32: string;
   networkId: NetworkId;
   isUpdatingUtxos: boolean;
@@ -44,6 +45,7 @@ const initialWalletState: WalletState = {
   changeAddressHex: undefined,
   changeAddressBech32: undefined,
   stakeAddressHex: undefined,
+  stakeAddressHexPrefixed: undefined,
   stakeAddressBech32: undefined,
   networkId: undefined,
   supported: undefined,
@@ -225,6 +227,7 @@ export const createWalletStore = createStoreFactory<
             changeAddressHex: await handler.getChangeAddressHex(),
             changeAddressBech32: await handler.getChangeAddress(),
             stakeAddressHex: await handler.getStakeAddressHex(),
+            stakeAddressHexPrefixed: await handler.getStakeAddressHexPrefixed(),
             stakeAddressBech32: await handler.getStakeAddress(),
             ...handler.info,
           };

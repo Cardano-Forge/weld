@@ -12,7 +12,7 @@ import {
   type WalletInfo,
   type WalletKey,
 } from "@/lib/utils";
-import { hexToBech32 } from "@/lib/utils/hex-to-bech32";
+import { ensurePrefix, hexToBech32, stripPrefix } from "@/lib/utils/hex-to-bech32";
 import { hexToView } from "@/lib/utils/hex-to-view";
 import { viewToString } from "@/lib/utils/view-to-string";
 import cbor from "cbor-js";
@@ -25,6 +25,7 @@ export type WalletHandler = {
   getChangeAddressHex(): Promise<AddressHex>;
   getChangeAddress(): Promise<AddressBech32>;
   getStakeAddressHex(): Promise<AddressHex>;
+  getStakeAddressHexPrefixed(): Promise<AddressHex>;
   getStakeAddress(): Promise<AddressBech32>;
   getNetworkId(): Promise<NetworkId>;
   getBalance(): Promise<Cbor>;
@@ -80,7 +81,17 @@ export class DefaultWalletHandler implements WalletHandler {
    */
   async getStakeAddressHex(): Promise<AddressHex> {
     const rewardAddresses = await this._enabledApi.getRewardAddresses();
-    return rewardAddresses[0];
+    return stripPrefix(rewardAddresses[0]);
+  }
+
+  /**
+   * Gets the stake address for the wallet.
+   * @returns The stake address in hex format with e1 in front on mainnet and e0 on testnets.
+   */
+  async getStakeAddressHexPrefixed(): Promise<AddressHex> {
+    const rewardAddresses = await this._enabledApi.getRewardAddresses();
+    const networkId = await this._enabledApi.getNetworkId();
+    return ensurePrefix(rewardAddresses[0], networkId);
   }
 
   /**
@@ -88,7 +99,7 @@ export class DefaultWalletHandler implements WalletHandler {
    * @returns The stake address in Bech32 format.
    */
   async getStakeAddress(): Promise<AddressBech32> {
-    const hex = await this.getStakeAddressHex();
+    const hex = await this.getStakeAddressHexPrefixed();
     const networkId = await this._enabledApi.getNetworkId();
     return hexToBech32(hex, networkId);
   }
