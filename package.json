@@ -33,15 +33,14 @@
       "types": "./vanilla.d.ts"
     }
   },
-  "files": [
-    "**"
-  ],
+  "files": ["**"],
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "biome lint --write .",
     "format": "biome format --write .",
     "check": "biome check --write .",
+    "test": "vitest",
     "pack": "cd dist && npm pack && mv *.tgz .."
   },
   "devDependencies": {
@@ -63,7 +62,8 @@
     "tailwindcss": "^3.4.3",
     "typescript": "^5.4.5",
     "vite": "^5.2.0",
-    "vite-plugin-dts": "^2.3.0"
+    "vite-plugin-dts": "^2.3.0",
+    "vitest": "^2.0.5"
   },
   "peerDependencies": {
     "@types/react": ">=17.0.0",
