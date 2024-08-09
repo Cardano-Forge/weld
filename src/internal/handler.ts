@@ -71,7 +71,7 @@ export class DefaultWalletHandler implements WalletHandler {
   async getChangeAddress(): Promise<AddressBech32> {
     const hex = await this.getChangeAddressHex();
     const networkId = await this._enabledApi.getNetworkId();
-    return hexToBech32(hex, "addr", networkId);
+    return hexToBech32(hex, networkId);
   }
 
   /**
@@ -90,7 +90,7 @@ export class DefaultWalletHandler implements WalletHandler {
   async getStakeAddress(): Promise<AddressBech32> {
     const hex = await this.getStakeAddressHex();
     const networkId = await this._enabledApi.getNetworkId();
-    return hexToBech32(hex, "stake", networkId);
+    return hexToBech32(hex, networkId);
   }
 
   /**
