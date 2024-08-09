@@ -223,9 +223,9 @@ export const createWalletStore = createStoreFactory<
             balanceAda: lovelaceToAda(balanceLovelace),
             networkId: await handler.getNetworkId(),
             changeAddressHex: await handler.getChangeAddressHex(),
-            changeAddressBech32: await handler.getChangeAddress(),
+            changeAddressBech32: await handler.getChangeAddressBech32(),
             stakeAddressHex: await handler.getStakeAddressHex(),
-            stakeAddressBech32: await handler.getStakeAddress(),
+            stakeAddressBech32: await handler.getStakeAddressBech32(),
             ...handler.info,
           };
 

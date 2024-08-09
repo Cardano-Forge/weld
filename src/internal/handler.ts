@@ -3,11 +3,15 @@ import {
   type AddressHex,
   type BalanceByPolicies,
   type Cbor,
+  type ChangeAddressBech32,
+  type ChangeAddressHex,
   type DefaultWalletApi,
   type EnabledWalletApi,
   type Lovelace,
   type NetworkId,
   type Signature,
+  type StakeAddressBech32,
+  type StakeAddressHex,
   WalletBalanceDecodeError,
   type WalletInfo,
   type WalletKey,
@@ -23,9 +27,9 @@ export type WalletHandler = {
   defaultApi: DefaultWalletApi;
   reenable(): Promise<boolean>;
   getChangeAddressHex(): Promise<AddressHex>;
-  getChangeAddress(): Promise<AddressBech32>;
+  getChangeAddressBech32(): Promise<AddressBech32>;
   getStakeAddressHex(): Promise<AddressHex>;
-  getStakeAddress(): Promise<AddressBech32>;
+  getStakeAddressBech32(): Promise<AddressBech32>;
   getNetworkId(): Promise<NetworkId>;
   getBalance(): Promise<Cbor>;
   getBalanceLovelace(): Promise<Lovelace>;
@@ -60,7 +64,7 @@ export class DefaultWalletHandler implements WalletHandler {
    * Gets the change address for the wallet.
    * @returns The change address in hex format.
    */
-  async getChangeAddressHex(): Promise<AddressHex> {
+  async getChangeAddressHex(): Promise<ChangeAddressHex> {
     return this._enabledApi.getChangeAddress();
   }
 
@@ -68,17 +72,16 @@ export class DefaultWalletHandler implements WalletHandler {
    * Gets the change address for the wallet.
    * @returns The change address in Bech32 format.
    */
-  async getChangeAddress(): Promise<AddressBech32> {
+  async getChangeAddressBech32(): Promise<ChangeAddressBech32> {
     const hex = await this.getChangeAddressHex();
-    const networkId = await this._enabledApi.getNetworkId();
-    return hexToBech32(hex, "addr", networkId);
+    return hexToBech32(hex);
   }
 
   /**
    * Gets the stake address for the wallet.
    * @returns The stake address in hex format.
    */
-  async getStakeAddressHex(): Promise<AddressHex> {
+  async getStakeAddressHex(): Promise<StakeAddressHex> {
     const rewardAddresses = await this._enabledApi.getRewardAddresses();
     return rewardAddresses[0];
   }
@@ -87,10 +90,9 @@ export class DefaultWalletHandler implements WalletHandler {
    * Gets the stake address for the wallet.
    * @returns The stake address in Bech32 format.
    */
-  async getStakeAddress(): Promise<AddressBech32> {
+  async getStakeAddressBech32(): Promise<StakeAddressBech32> {
     const hex = await this.getStakeAddressHex();
-    const networkId = await this._enabledApi.getNetworkId();
-    return hexToBech32(hex, "stake", networkId);
+    return hexToBech32(hex);
   }
 
   /**
@@ -227,7 +229,7 @@ export class DefaultWalletHandler implements WalletHandler {
    * @returns The signed data.
    */
   async signData(payload: string): Promise<Signature> {
-    const stake = await this.getStakeAddress();
+    const stake = await this.getStakeAddressHex();
     return this._enabledApi.signData(stake, payload);
   }
 }
