@@ -25,6 +25,7 @@ import { decodeBalance } from "./utils/decode-balance";
 export type WalletHandler = {
   info: WalletInfo;
   defaultApi: DefaultWalletApi;
+  enabledApi: EnabledWalletApi;
   reenable(): Promise<boolean>;
   getChangeAddressHex(): Promise<AddressHex>;
   getChangeAddressBech32(): Promise<AddressBech32>;
@@ -58,6 +59,10 @@ export class DefaultWalletHandler implements WalletHandler {
       return true;
     }
     return false;
+  }
+
+  get enabledApi() {
+    return this._enabledApi;
   }
 
   /**
