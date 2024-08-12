@@ -39,7 +39,7 @@ export type WalletHandler = {
   isConnected(): Promise<boolean>;
   isConnectedTo(wallet: WalletKey): Promise<boolean>;
   getUtxos(): Promise<string[] | undefined>;
-  signTx(tx: string, partialSign: boolean): Promise<string>;
+  signTx(tx: string, partialSign?: boolean): Promise<string>;
   submitTx(tx: string): Promise<string>;
   signData(payload: string): Promise<Signature>;
 };
