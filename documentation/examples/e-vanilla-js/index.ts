@@ -1,6 +1,5 @@
-import { defaults, getPersistedValue } from "@/lib/main";
+import { defaults, getPersistedValue, weld } from "@/lib/main";
 import { STORAGE_KEYS } from "@/lib/server";
-import { weld } from "@/lib/vanilla";
 
 // Disable auto persistence
 defaults.enablePersistence = false;

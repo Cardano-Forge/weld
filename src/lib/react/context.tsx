@@ -1,28 +1,26 @@
-import { type ExtractStoreState, type Store, hasLifeCycleMethods } from "@/internal/store";
+import { type ExtractStoreState, hasLifeCycleMethods } from "@/internal/store";
 import { identity } from "@/internal/utils/identity";
 import { createContext, useContext, useEffect, useRef } from "react";
+import { weld } from "../main";
 import { useCompare } from "./compare";
 import { useStore } from "./store";
 
-export function createContextFromStore<TStore extends Store, TOpts = unknown>(
-  name: string,
-  createStore: (opts?: TOpts) => TStore,
-) {
+export function createContextFromStore<TName extends keyof typeof weld>(name: TName) {
+  type TStore = (typeof weld)[TName];
   type TState = ExtractStoreState<TStore>;
-
-  let defaultStore: TStore | undefined = undefined;
-  function getDefaultStore(): TStore {
-    if (defaultStore) {
-      return defaultStore;
-    }
-    defaultStore = createStore();
-    return defaultStore;
-  }
+  type TInitialState = TState extends { setInitialState: (values: infer TValues) => void }
+    ? TValues
+    : never;
 
   const Context = createContext<TStore | undefined>(undefined);
 
-  function provider({ children, ...props }: React.PropsWithChildren<TOpts>) {
-    const store = useRef(createStore(props as TOpts));
+  function provider({
+    children,
+  }: React.PropsWithChildren<{
+    onUpdateError?(error: unknown): void;
+    initialState?: TInitialState;
+  }>) {
+    const store = useRef(weld[name]);
     useEffect(() => {
       const state = store.current.getState();
       if (hasLifeCycleMethods(state)) {
@@ -48,7 +46,7 @@ export function createContextFromStore<TStore extends Store, TOpts = unknown>(
     let store = useContext(Context);
 
     if (!store) {
-      store = getDefaultStore();
+      store = weld[name];
       if (hasLifeCycleMethods(store.getInitialState())) {
         throw new Error(`[WELD] ${name} hook cannot be used without a provider`);
       }
