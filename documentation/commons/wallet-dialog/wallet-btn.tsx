@@ -1,5 +1,5 @@
+import type { WalletInfo } from "@/lib/main";
 import { useWallet } from "@/lib/react";
-import type { WalletInfo } from "@/lib/utils";
 import clsx from "clsx";
 
 export const WalletBtn = ({

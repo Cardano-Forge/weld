@@ -1,6 +1,6 @@
 import { ExampleContainer } from "@/documentation/commons/example-container";
+import { SUPPORTED_WALLETS } from "@/lib/main";
 import { useExtensions, useWallet } from "@/lib/react";
-import { SUPPORTED_WALLETS } from "@/lib/utils";
 import { useEffect } from "react";
 
 const Connected = () => {

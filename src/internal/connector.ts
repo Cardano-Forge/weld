@@ -1,4 +1,4 @@
-import { WalletConnectionError, enableWallet, getWalletInfo, getWindowCardano } from "@/lib/utils";
+import { WalletConnectionError, enableWallet, getWalletInfo, getWindowCardano } from "@/lib/main";
 
 import { DefaultWalletHandler, type WalletHandler } from "@/internal/handler";
 

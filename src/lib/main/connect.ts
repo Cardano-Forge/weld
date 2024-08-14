@@ -1,4 +1,4 @@
-import type { WalletKey } from "@/lib/utils";
+import type { WalletKey } from "@/lib/main";
 
 import { getDefaultWalletConnector } from "@/internal/connector";
 import { type WalletHandlerByKey, customWallets, hasCustomImplementation } from "@/internal/custom";

@@ -1,5 +1,5 @@
 import { hexToArrayBuffer } from "@/internal/utils/hex-to-array-buffer";
-import type { Cbor } from "@/lib/utils";
+import type { Cbor } from "@/lib/main";
 import { decode as decodeCbor } from "cbor-js";
 
 export function decodeBalance(balanceCbor: Cbor) {

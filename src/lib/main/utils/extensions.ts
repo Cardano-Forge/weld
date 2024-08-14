@@ -3,13 +3,13 @@ import { deferredPromise } from "@/internal/utils/deferred-promise";
 import { startsWithAny } from "@/internal/utils/starts-with-any";
 import type { WalletKey } from "./wallets";
 
-export const stakeAddressHexLength = 58;
-export const stakeAddressHexPrefixes = ["e0", "e1"] as const;
-export type StakeAddressHexPrefix = (typeof stakeAddressHexPrefixes)[number];
+const stakeAddressHexLength = 58;
+const stakeAddressHexPrefixes = ["e0", "e1"] as const;
+type StakeAddressHexPrefix = (typeof stakeAddressHexPrefixes)[number];
 
-export const changeAddressHexLength = 116;
-export const changeAddressHexPrefixes = ["00", "01"] as const;
-export type ChangeAddressHexPrefix = (typeof changeAddressHexPrefixes)[number];
+const changeAddressHexLength = 116;
+const changeAddressHexPrefixes = ["00", "01"] as const;
+type ChangeAddressHexPrefix = (typeof changeAddressHexPrefixes)[number];
 
 export function isStakeAddressHex(input: string): input is StakeAddressHex {
   return input.length === stakeAddressHexLength && startsWithAny(input, stakeAddressHexPrefixes);
@@ -23,15 +23,17 @@ export type AddressHex = `${ChangeAddressHexPrefix | StakeAddressHexPrefix}${str
 export type ChangeAddressHex = `${ChangeAddressHexPrefix}${string}`;
 export type StakeAddressHex = `${StakeAddressHexPrefix}${string}`;
 
-export const stakeAddressBech32Prefixes = ["stake", "stake_test"] as const;
+const stakeAddressBech32Prefixes = ["stake", "stake_test"] as const;
 export type StakeAddressBech32Prefix = (typeof stakeAddressBech32Prefixes)[number];
 
-export const changeAddressBech32Prefixes = ["addr", "addr_test"] as const;
+const changeAddressBech32Prefixes = ["addr", "addr_test"] as const;
 export type ChangeAddressBech32Prefix = (typeof changeAddressBech32Prefixes)[number];
 
 export type AddressBech32 = `${StakeAddressBech32Prefix | ChangeAddressBech32Prefix}${string}`;
 export type ChangeAddressBech32 = `${ChangeAddressBech32Prefix}${string}`;
 export type StakeAddressBech32 = `${StakeAddressBech32Prefix}${string}`;
+
+export type BalanceByPolicies = { [key: string]: { [key: string]: number } };
 
 export type Bytes = string;
 
@@ -234,5 +236,3 @@ export async function enableWallet(
 
   return promise;
 }
-
-export type BalanceByPolicies = { [key: string]: { [key: string]: number } };

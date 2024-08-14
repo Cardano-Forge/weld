@@ -1,5 +1,5 @@
 import { deferredPromise } from "@/internal/utils/deferred-promise";
-import type { DefaultWalletApi } from "@/lib/utils";
+import type { DefaultWalletApi } from "@/lib/main";
 import { initCardanoDAppConnectorBridge } from "./initialize-d-app-connector-bridge";
 
 export function initializeDAppConnectorBridgeAsync() {

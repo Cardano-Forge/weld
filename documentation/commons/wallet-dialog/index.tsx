@@ -1,5 +1,5 @@
+import { SUPPORTED_WALLETS } from "@/lib/main";
 import { useExtensions, useWallet } from "@/lib/react";
-import { SUPPORTED_WALLETS } from "@/lib/utils";
 import { useDialogContext } from "../hooks/dialog.context";
 import { WalletBtn } from "./wallet-btn";
 

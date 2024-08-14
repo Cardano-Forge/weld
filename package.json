@@ -12,11 +12,6 @@
       "require": "./main.cjs",
       "types": "./main.d.ts"
     },
-    "./utils": {
-      "import": "./utils.js",
-      "require": "./utils.cjs",
-      "types": "./utils.d.ts"
-    },
     "./react": {
       "import": "./react.js",
       "require": "./react.cjs",

@@ -19,7 +19,7 @@ To add a new wallet, you will need the following:
 
 3. **Update Wallet List**
 
-   - Append your wallet to the `SUPPORTED_WALLETS` array in `src/lib/utils/wallets.ts`.
+   - Append your wallet to the `SUPPORTED_WALLETS` array in `src/lib/main/wallets.ts`.
    - Maintain the correct file format and JSON structure.
 
    <details>

@@ -1,4 +1,5 @@
-import { WalletDisconnectAccountError, getFailureReason } from "@/lib/utils";
+import { WalletDisconnectAccountError } from "@/lib/main";
+import { getFailureReason } from "./utils/errors";
 
 function defaultIsAccountChangeError(error: unknown): error is Error {
   return getFailureReason(error) === "account changed";

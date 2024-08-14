@@ -4,7 +4,7 @@ import {
   type WalletKey,
   getWalletExtensions,
   getWalletInfo,
-} from "@/lib/utils";
+} from "@/lib/main";
 
 export type InstalledExtension = {
   info: WalletInfo;
