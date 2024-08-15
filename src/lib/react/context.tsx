@@ -1,66 +1,78 @@
-import { type ExtractStoreState, hasLifeCycleMethods } from "@/internal/store";
+import {
+  type ExtractStoreState,
+  type Store,
+  hasInitialStateMethods,
+  hasLifeCycleMethods,
+  hasUpdateErrorMethods,
+} from "@/internal/store";
 import { identity } from "@/internal/utils/identity";
 import { createContext, useContext, useEffect, useState } from "react";
-import { weld } from "../main";
 import { useCompare } from "./compare";
 import { useStore } from "./store";
 
-export function createContextFromStore<TName extends keyof typeof weld>(name: TName) {
-  type TStore = (typeof weld)[TName];
+export function createContextFromStore<TStore extends Store>(vanillaStore: TStore) {
   type TState = ExtractStoreState<TStore>;
+
   type TInitialState = TState extends { setInitialState: (values: infer TValues) => void }
     ? TValues
     : never;
 
+  type TUpdateErrorHandler = TState extends {
+    addUpdateErrorHandler: (handler: (error: unknown) => void) => void;
+  }
+    ? (error: unknown) => void
+    : never;
+
+  type TPropsRestricted = {
+    [key in "initialState" as TInitialState extends never ? never : key]?: TInitialState;
+  } & {
+    [key in "onUpdateError" as TUpdateErrorHandler extends never
+      ? never
+      : key]?: TUpdateErrorHandler;
+  };
+
+  type TProps = {
+    initialState?: TInitialState;
+    onUpdateError?: TUpdateErrorHandler;
+  };
+
   const Context = createContext<TStore | undefined>(undefined);
 
-  function provider({
-    children,
-    onUpdateError,
-    initialState,
-  }: React.PropsWithChildren<{
-    onUpdateError?(error: unknown): void;
-    initialState?: TInitialState;
-  }>) {
+  function provider({ children, ...rest }: React.PropsWithChildren<TPropsRestricted>) {
+    const props = rest as TProps;
+
+    // Setup store and initial state
     const [store] = useState(() => {
-      const state = weld[name].getState();
-      if (
-        initialState &&
-        "setInitialState" in state &&
-        typeof state.setInitialState === "function"
-      ) {
-        state?.setInitialState?.(initialState);
+      const state = vanillaStore.getState();
+      if (hasInitialStateMethods(state) && props.initialState) {
+        state?.setInitialState?.(props.initialState);
       }
-      return weld[name];
+      return vanillaStore;
     });
 
+    // Setup lifecycle methods
     useEffect(() => {
       const state = store.getState();
       if (hasLifeCycleMethods(state)) {
-        state.__init?.();
+        state.init?.();
         return () => {
-          state.__cleanup?.();
+          state.cleanup?.();
         };
       }
     }, [store]);
 
+    // Setup update error handlers
     useEffect(() => {
       const state = store.getState();
-      const hasAddFct =
-        "addUpdateErrorHandler" in state && typeof state.addUpdateErrorHandler === "function";
-      const hasRemoveFct =
-        "removeUpdateErrorHandler" in state && typeof state.removeUpdateErrorHandler === "function";
-      if (!hasAddFct || !hasRemoveFct) {
-        return;
+      if (hasUpdateErrorMethods(state) && props.onUpdateError) {
+        state.addUpdateErrorHandler(props.onUpdateError);
       }
-      if (!onUpdateError) {
-        return;
-      }
-      state.addUpdateErrorHandler(onUpdateError);
       return () => {
-        state.removeUpdateErrorHandler(onUpdateError);
+        if (hasUpdateErrorMethods(state) && props.onUpdateError) {
+          state.removeUpdateErrorHandler(props.onUpdateError);
+        }
       };
-    }, [onUpdateError, store]);
+    }, [props.onUpdateError, store]);
 
     return <Context.Provider value={store}>{children}</Context.Provider>;
   }
@@ -75,13 +87,12 @@ export function createContextFromStore<TName extends keyof typeof weld>(name: TN
     selectorOrKey: ((state: TState) => unknown) | keyof TState = identity,
     ...additionalKeys: ReadonlyArray<keyof TState>
   ): unknown {
-    let store = useContext(Context);
+    const store = useContext(Context);
 
     if (!store) {
-      store = weld[name];
-      if (hasLifeCycleMethods(store.getInitialState())) {
-        throw new Error(`[WELD] ${name} hook cannot be used without a provider`);
-      }
+      throw new Error(
+        "Weld hooks cannot be used without a provider. \nYou likely forgot to wrap your app in a WeldProvider context provider.",
+      );
     }
 
     return useStore(
@@ -104,13 +115,8 @@ export function createContextFromStore<TName extends keyof typeof weld>(name: TN
     );
   }
 
-  function storeHook() {
-    return useContext(Context);
-  }
-
   return {
     provider,
     hook,
-    storeHook,
   };
 }

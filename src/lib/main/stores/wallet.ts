@@ -1,7 +1,12 @@
 import { handleAccountChangeErrors } from "@/internal/account-change";
 import type { WalletHandler } from "@/internal/handler";
 import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
-import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/internal/store";
+import {
+  type Store,
+  type StoreLifeCycleMethods,
+  type StoreUpdateErrorMethods,
+  createStoreFactory,
+} from "@/internal/store";
 import { setupAutoUpdate } from "@/internal/update";
 import { deferredPromise } from "@/internal/utils/deferred-promise";
 import { getFailureReason } from "@/internal/utils/errors";
@@ -67,9 +72,8 @@ export type WalletApi = {
   disconnect(): void;
   ensureUtxos(): Promise<string[]>;
   setInitialState(values: Partial<Pick<WalletStoreState, "isConnectingTo">>): void;
-  addUpdateErrorHandler(handler: (error: unknown) => void): void;
-  removeUpdateErrorHandler(handler: (error: unknown) => void): void;
-};
+} & StoreLifeCycleMethods &
+  StoreUpdateErrorMethods;
 
 export type WalletState<TKeys extends keyof WalletProps = keyof WalletProps> =
   | { [TKey in TKeys]: TKey extends "isConnected" ? true : WalletProps[TKey] }
@@ -292,7 +296,7 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
     updateErrorHandlers.delete(handler);
   };
 
-  const initialState: WalletStoreState & StoreLifeCycleMethods = {
+  const initialState: WalletStoreState = {
     ...initialWalletState,
     connect,
     connectAsync,
@@ -300,8 +304,13 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
     ensureUtxos,
     addUpdateErrorHandler,
     removeUpdateErrorHandler,
-    setInitialState: () => {}, // Gets overridden below
+    // Gets overridden below
+    // TODO: Maybe this can be refactored using functions and `this`?
+    init: () => {},
+    cleanup: () => {},
+    setInitialState: () => {},
   };
+
   initialState.setInitialState = (values: Partial<Pick<WalletProps, "isConnectingTo">>) => {
     Object.assign(initialState, values);
     if (values.isConnectingTo) {
@@ -309,7 +318,7 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
     }
   };
 
-  initialState.__init = () => {
+  initialState.init = () => {
     if (
       !initialState.isConnectingTo &&
       typeof window !== "undefined" &&
@@ -325,7 +334,7 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
     }
   };
 
-  initialState.__cleanup = () => {
+  initialState.cleanup = () => {
     lifecycle.cleanup();
   };
 

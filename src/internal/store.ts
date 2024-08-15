@@ -1,19 +1,13 @@
 // adapted from https://github.com/pmndrs/zustand/blob/main/src/vanilla.ts
 
-import { initialize } from "@/lib/main";
 import { compare } from "./compare";
-
-export type StoreLifeCycleMethods = {
-  __init?(): void;
-  __cleanup?(): void;
-};
 
 export type StoreListener<T> = (state: T, prevState: T | undefined) => void;
 
 // biome-ignore lint/suspicious/noExplicitAny: Allow any store for generics
 export type Store<TState = any> = {
-  getState: () => TState & StoreLifeCycleMethods;
-  getInitialState: () => TState & StoreLifeCycleMethods;
+  getState: () => TState;
+  getInitialState: () => TState;
   setState: (
     partial: TState | Partial<TState> | ((state: TState) => TState | Partial<TState>),
   ) => void;
@@ -29,7 +23,7 @@ export type StoreHandler<TState, TParams extends ReadonlyArray<unknown> = []> = 
   setState: Store<TState>["setState"],
   getState: Store<TState>["getState"],
   ...params: TParams
-) => TState & StoreLifeCycleMethods;
+) => TState;
 
 export type ReadonlyStore<TState> = Omit<Store<TState>, "setState">;
 
@@ -101,10 +95,9 @@ export function createStore<TState extends object>(
   return store;
 }
 
-export type StoreFactory<TState extends object, TParams extends ReadonlyArray<unknown>> = {
-  (...params: TParams): Store<TState>;
-  vanilla(...params: TParams): Store<TState>;
-};
+export type StoreFactory<TState extends object, TParams extends ReadonlyArray<unknown>> = (
+  ...params: TParams
+) => Store<TState>;
 
 export function createStoreFactory<
   TState extends object,
@@ -114,7 +107,7 @@ export function createStoreFactory<
     setState: Store<TState>["setState"],
     getState: Store<TState>["getState"],
     ...params: TParams
-  ) => TState & StoreLifeCycleMethods,
+  ) => TState,
 ) {
   const factory = (...params: TParams) => {
     return createStore<TState>((s, g) => {
@@ -122,27 +115,44 @@ export function createStoreFactory<
     });
   };
 
-  factory.vanilla = (...params: TParams) => {
-    const store = factory(...params);
-
-    window.addEventListener("load", () => {
-      initialize();
-      store.getState().__init?.();
-    });
-
-    window.addEventListener("unload", () => {
-      store.getState().__cleanup?.();
-    });
-
-    return store;
-  };
-
   return factory;
 }
 
+export type StoreLifeCycleMethods = {
+  init?(): void;
+  cleanup?(): void;
+};
+
 export function hasLifeCycleMethods(store: unknown): store is StoreLifeCycleMethods {
   if (!store || typeof store !== "object" || store === null) return false;
-  if ("__init" in store && typeof store.__init === "function") return true;
-  if ("__cleanup" in store && typeof store.__cleanup === "function") return true;
+  if ("init" in store && typeof store.init === "function") return true;
+  if ("cleanup" in store && typeof store.cleanup === "function") return true;
   return false;
+}
+
+export type StoreUpdateErrorMethods = {
+  addUpdateErrorHandler: (handler: (error: unknown) => void) => void;
+  removeUpdateErrorHandler: (handler: (error: unknown) => void) => void;
+};
+
+export function hasUpdateErrorMethods(store: unknown): store is StoreUpdateErrorMethods {
+  if (!store || typeof store !== "object" || store === null) {
+    return false;
+  }
+  const hasAddFct =
+    "addUpdateErrorHandler" in store && typeof store.addUpdateErrorHandler === "function";
+  const hasRemoveFct =
+    "removeUpdateErrorHandler" in store && typeof store.removeUpdateErrorHandler === "function";
+  return hasAddFct && hasRemoveFct;
+}
+
+export type StoreInitialStateMethods = {
+  setInitialState: (values: unknown) => void;
+};
+
+export function hasInitialStateMethods(store: unknown): store is StoreInitialStateMethods {
+  if (!store || typeof store !== "object" || store === null) {
+    return false;
+  }
+  return "setInitialState" in store && typeof store.setInitialState === "function";
 }
