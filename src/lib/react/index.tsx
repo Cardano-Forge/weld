@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { initialize } from "@/lib/main/initialize";
 import type { CreateExtensionsStoreOpts } from "@/lib/main/stores/extensions";
@@ -50,21 +50,25 @@ export function WeldProvider({
     initialize();
   }, []);
 
+  const handleWalletUpdateError = useCallback(
+    (error: unknown) => {
+      onUpdateError?.("wallet", error);
+      wallet?.onUpdateError?.(error);
+    },
+    [wallet?.onUpdateError, onUpdateError],
+  );
+
+  const handleExtensionsUpdateError = useCallback(
+    (error: unknown) => {
+      onUpdateError?.("extensions", error);
+      extensions?.onUpdateError?.(error);
+    },
+    [extensions?.onUpdateError, onUpdateError],
+  );
+
   return (
-    <WalletProvider
-      {...wallet}
-      onUpdateError={(error) => {
-        onUpdateError?.("wallet", error);
-        wallet?.onUpdateError?.(error);
-      }}
-    >
-      <ExtensionsProvider
-        {...extensions}
-        onUpdateError={(error) => {
-          onUpdateError?.("extensions", error);
-          extensions?.onUpdateError?.(error);
-        }}
-      >
+    <WalletProvider {...wallet} onUpdateError={handleWalletUpdateError}>
+      <ExtensionsProvider {...extensions} onUpdateError={handleExtensionsUpdateError}>
         {children}
       </ExtensionsProvider>
     </WalletProvider>

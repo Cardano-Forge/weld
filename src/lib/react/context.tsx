@@ -1,6 +1,6 @@
 import { type ExtractStoreState, hasLifeCycleMethods } from "@/internal/store";
 import { identity } from "@/internal/utils/identity";
-import { createContext, useContext, useEffect, useRef } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { weld } from "../main";
 import { useCompare } from "./compare";
 import { useStore } from "./store";
@@ -16,21 +16,53 @@ export function createContextFromStore<TName extends keyof typeof weld>(name: TN
 
   function provider({
     children,
+    onUpdateError,
+    initialState,
   }: React.PropsWithChildren<{
     onUpdateError?(error: unknown): void;
     initialState?: TInitialState;
   }>) {
-    const store = useRef(weld[name]);
+    const [store] = useState(() => {
+      const state = weld[name].getState();
+      if (
+        initialState &&
+        "setInitialState" in state &&
+        typeof state.setInitialState === "function"
+      ) {
+        state?.setInitialState?.(initialState);
+      }
+      return weld[name];
+    });
+
     useEffect(() => {
-      const state = store.current.getState();
+      const state = store.getState();
       if (hasLifeCycleMethods(state)) {
         state.__init?.();
         return () => {
           state.__cleanup?.();
         };
       }
-    }, []);
-    return <Context.Provider value={store.current}>{children}</Context.Provider>;
+    }, [store]);
+
+    useEffect(() => {
+      const state = store.getState();
+      const hasAddFct =
+        "addUpdateErrorHandler" in state && typeof state.addUpdateErrorHandler === "function";
+      const hasRemoveFct =
+        "removeUpdateErrorHandler" in state && typeof state.removeUpdateErrorHandler === "function";
+      if (!hasAddFct || !hasRemoveFct) {
+        return;
+      }
+      if (!onUpdateError) {
+        return;
+      }
+      state.addUpdateErrorHandler(onUpdateError);
+      return () => {
+        state.removeUpdateErrorHandler(onUpdateError);
+      };
+    }, [onUpdateError, store]);
+
+    return <Context.Provider value={store}>{children}</Context.Provider>;
   }
 
   function hook(): TState;
