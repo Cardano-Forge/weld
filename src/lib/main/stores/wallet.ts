@@ -15,9 +15,8 @@ import {
   weld,
 } from "@/lib/main";
 import { STORAGE_KEYS } from "@/lib/server";
-import type { WalletConfig } from "../config";
 import { connect as weldConnect } from "../connect";
-import { getPersistedValue } from "../persistence";
+import type { WalletConfig } from "./config";
 
 export type WalletProps = WalletInfo & {
   isConnected: boolean;
@@ -252,15 +251,6 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
 
       setupAutoUpdate(safeUpdateState, lifecycle, "wallet", configOverrides);
 
-      // let prevCount = 0;
-      // setupAutoUpdate(
-      //   () => {
-      //     handleUpdateError(new Error(`Error #${++prevCount}`));
-      //   },
-      //   updateConfig,
-      //   lifecycle,
-      // );
-
       if (weld.config.getState().enablePersistence) {
         weld.config.getState().storage.set(STORAGE_KEYS.connectedWallet, newState.key);
       }
@@ -304,7 +294,7 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
         typeof window !== "undefined" &&
         weld.config.getState().enablePersistence
       ) {
-        const persisted = getPersistedValue("connectedWallet");
+        const persisted = weld.config.getState().getPersistedValue("connectedWallet");
         tryToReconnectTo = persisted;
       }
 

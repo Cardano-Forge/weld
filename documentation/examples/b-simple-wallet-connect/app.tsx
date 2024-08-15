@@ -1,5 +1,5 @@
 import { ExampleContainer } from "@/documentation/commons/example-container";
-import { SUPPORTED_WALLETS } from "@/lib/main";
+import { SUPPORTED_WALLETS, weld } from "@/lib/main";
 import { WeldProvider, useExtensions, useWallet } from "@/lib/react";
 import { useState } from "react";
 // import { useEffect } from "react";
@@ -75,7 +75,6 @@ function onUpdateError(error: unknown) {
 }
 
 export const App = () => {
-  const [c, setC] = useState(0);
   const [updateOnWindowFocus, setUpdateOnWindowFocus] = useState(true);
 
   return (
@@ -83,21 +82,19 @@ export const App = () => {
       onUpdateError={(store, error) => {
         console.log("global", store, error);
       }}
-      updateOnWindowFocus={updateOnWindowFocus}
-      wallet={{
-        updateInterval: false,
-        onUpdateError: (error) => {
-          if (c < 4) {
-            console.log("wallet error", error);
-            setC((p) => p + 1);
-          }
-        },
+      extensions={{
+        onUpdateError,
+        updateInterval: 6000,
+        updateOnWindowFocus,
       }}
-      extensions={{ onUpdateError }}
     >
       <ExampleContainer>
         <Extensions />
         <Wallet />
+        <button type="button" onClick={updateExtensionsUpdateInterval}>
+          Update extensions update interval
+        </button>
+        <br />
         <button type="button" onClick={() => setUpdateOnWindowFocus((p) => !p)}>
           Update on window focus? {!updateOnWindowFocus}
         </button>
@@ -105,3 +102,12 @@ export const App = () => {
     </WeldProvider>
   );
 };
+
+function updateExtensionsUpdateInterval() {
+  const curr = weld.config.getState().extensions.updateInterval;
+  weld.config.getState().update({
+    extensions: {
+      updateInterval: curr === 500 ? 6000 : 500,
+    },
+  });
+}
