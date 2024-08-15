@@ -3,7 +3,7 @@ import { memo, useEffect } from "react";
 import { initialize } from "@/lib/main/initialize";
 import type { WalletApi, WalletProps, WalletStoreState } from "@/lib/main/stores/wallet";
 
-import { type WeldConfig, defaults, weld } from "../main";
+import { type WeldConfig, weld } from "../main";
 import { createContextFromStore } from "./context";
 
 const walletContext = createContextFromStore(weld.wallet);
@@ -23,28 +23,20 @@ export const useExtensions = extensionsContext.hook;
 
 export type WeldProviderProps = React.PropsWithChildren<Partial<WeldConfig>>;
 
-export const WeldProvider = memo(
-  ({ children, wallet, extensions, ...config }: WeldProviderProps) => {
-    useEffect(() => {
-      console.time("config update");
-      Object.assign(defaults, config);
-      if (wallet) {
-        Object.assign(defaults.wallet, wallet);
-      }
-      if (extensions) {
-        Object.assign(defaults.extensions, extensions);
-      }
-      console.timeEnd("config update");
-    });
+export const WeldProvider = memo(({ children, ...config }: WeldProviderProps) => {
+  useEffect(() => {
+    console.time("config update");
+    weld.config.getState().update(config);
+    console.timeEnd("config update");
+  });
 
-    useEffect(() => {
-      initialize();
-    }, []);
+  useEffect(() => {
+    initialize();
+  }, []);
 
-    return (
-      <WalletProvider>
-        <ExtensionsProvider>{children}</ExtensionsProvider>
-      </WalletProvider>
-    );
-  },
-);
+  return (
+    <WalletProvider>
+      <ExtensionsProvider>{children}</ExtensionsProvider>
+    </WalletProvider>
+  );
+});

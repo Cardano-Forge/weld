@@ -16,7 +16,7 @@ export type WalletConfig = UpdateConfig & {
   onUpdateError(error: unknown): void;
 };
 
-export type ExtensionsConfig = Omit<UpdateConfig, "updateUtxosInterval"> & {
+export type ExtensionsConfig = UpdateConfig & {
   onUpdateError(error: unknown): void;
 };
 
@@ -42,20 +42,3 @@ export const defaults: WeldConfig = {
   wallet: {},
   extensions: {},
 };
-
-export function getUpdateConfig(
-  store: keyof StoreConfig,
-  ...overrides: (Partial<UpdateConfig> | undefined)[]
-): UpdateConfig {
-  const config: UpdateConfig = {
-    updateInterval: defaults.updateInterval,
-    updateOnWindowFocus: defaults.updateOnWindowFocus,
-  };
-  Object.assign(config, defaults[store]);
-  for (const override of overrides) {
-    if (override) {
-      Object.assign(config, override);
-    }
-  }
-  return config;
-}

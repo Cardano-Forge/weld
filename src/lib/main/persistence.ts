@@ -1,5 +1,5 @@
 import { STORAGE_KEYS } from "../server";
-import { defaults } from "./config";
+import { weld } from "./stores";
 
 export type WeldStorage = {
   get(key: string): string | undefined;
@@ -11,7 +11,7 @@ export type WeldStorage = {
  * Retrieves a value from storage.
  */
 export function getPersistedValue(key: keyof typeof STORAGE_KEYS): string | undefined {
-  return defaults.storage.get(STORAGE_KEYS[key]) ?? undefined;
+  return weld.config.getState().storage.get(STORAGE_KEYS[key]) ?? undefined;
 }
 
 export const defaultStorage: WeldStorage = {

@@ -12,9 +12,10 @@ import {
   type WalletInfo,
   WalletUtxosUpdateError,
   lovelaceToAda,
+  weld,
 } from "@/lib/main";
 import { STORAGE_KEYS } from "@/lib/server";
-import { type WalletConfig, defaults, getUpdateConfig } from "../config";
+import type { WalletConfig } from "../config";
 import { connect as weldConnect } from "../connect";
 import { getPersistedValue } from "../persistence";
 
@@ -100,8 +101,8 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
   };
 
   const handleUpdateError = (error: unknown) => {
-    defaults.onUpdateError?.("wallet", error);
-    defaults.wallet.onUpdateError?.(error);
+    weld.config.getState().onUpdateError?.("wallet", error);
+    weld.config.getState().wallet.onUpdateError?.(error);
   };
 
   const disconnect: WalletApi["disconnect"] = () => {
@@ -111,8 +112,8 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
     }
     lifecycle.subscriptions.clearAll();
     setState(initialWalletState);
-    if (defaults.enablePersistence) {
-      defaults.storage.remove(STORAGE_KEYS.connectedWallet);
+    if (weld.config.getState().enablePersistence) {
+      weld.config.getState().storage.remove(STORAGE_KEYS.connectedWallet);
     }
   };
 
@@ -126,7 +127,8 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
 
       let abortTimeout: NodeJS.Timeout | undefined = undefined;
 
-      const connectTimeout = configOverrides?.connectTimeout ?? defaults.wallet?.connectTimeout;
+      const connectTimeout =
+        configOverrides?.connectTimeout ?? weld.config.getState().wallet?.connectTimeout;
 
       if (connectTimeout) {
         abortTimeout = setTimeout(() => {
@@ -199,6 +201,7 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
       // utxos are purposefully omitted here since getUtxos can take a long time
       // to resolve and we don't want it to affect connection speed
       const updateState = async () => {
+        console.log("updateState");
         const balanceLovelace = await handler.getBalanceLovelace();
 
         const prevState = getState();
@@ -247,11 +250,19 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
         throw new WalletConnectionAbortedError();
       }
 
-      const updateConfig = getUpdateConfig("wallet", configOverrides);
-      setupAutoUpdate(safeUpdateState, updateConfig, lifecycle);
+      setupAutoUpdate(safeUpdateState, lifecycle, "wallet", configOverrides);
 
-      if (defaults.enablePersistence) {
-        defaults.storage.set(STORAGE_KEYS.connectedWallet, newState.key);
+      // let prevCount = 0;
+      // setupAutoUpdate(
+      //   () => {
+      //     handleUpdateError(new Error(`Error #${++prevCount}`));
+      //   },
+      //   updateConfig,
+      //   lifecycle,
+      // );
+
+      if (weld.config.getState().enablePersistence) {
+        weld.config.getState().storage.set(STORAGE_KEYS.connectedWallet, newState.key);
       }
 
       if (abortTimeout) {
@@ -286,9 +297,13 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
     disconnect,
     ensureUtxos,
     init() {
-      let tryToReconnectTo = defaults.wallet.tryToReconnectTo;
+      let tryToReconnectTo = weld.config.getState().wallet.tryToReconnectTo;
 
-      if (!tryToReconnectTo && typeof window !== "undefined" && defaults.enablePersistence) {
+      if (
+        !tryToReconnectTo &&
+        typeof window !== "undefined" &&
+        weld.config.getState().enablePersistence
+      ) {
         const persisted = getPersistedValue("connectedWallet");
         tryToReconnectTo = persisted;
       }

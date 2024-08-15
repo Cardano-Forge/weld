@@ -1,10 +1,12 @@
-import { defaults, setupStores, weld } from "@/lib/main";
+import { setupStores, weld } from "@/lib/main";
 
 setupStores(weld.wallet, weld.extensions);
 
-defaults.extensions = {
-  updateInterval: false,
-};
+weld.config.getState().update({
+  extensions: {
+    updateInterval: false,
+  },
+});
 
 weld.wallet.subscribeWithSelector(
   (s) => s.utxos,

@@ -1,7 +1,7 @@
 import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/internal/store";
 import { setupAutoUpdate } from "@/internal/update";
-import { defaults, getUpdateConfig } from "../config";
+import { weld } from ".";
 import {
   type InstalledExtensions,
   getInstalledExtensions,
@@ -31,8 +31,8 @@ export const createExtensionsStore = createStoreFactory<ExtensionsStoreState>(
     const lifecycle = new LifeCycleManager();
 
     const handleUpdateError = (error: unknown) => {
-      defaults.onUpdateError?.("extensions", error);
-      defaults.wallet.onUpdateError?.(error);
+      weld.config.getState().onUpdateError?.("extensions", error);
+      weld.config.getState().wallet.onUpdateError?.(error);
     };
 
     const update: ExtensionsApi["update"] = async (signal?: InFlightSignal) => {
@@ -68,8 +68,7 @@ export const createExtensionsStore = createStoreFactory<ExtensionsStoreState>(
             if (signal.aborted) {
               return;
             }
-            const updateConfig = getUpdateConfig("extensions");
-            setupAutoUpdate(update, updateConfig, lifecycle);
+            setupAutoUpdate(update, lifecycle, "extensions");
           })
           .finally(() => {
             lifecycle.inFlight.remove(signal);

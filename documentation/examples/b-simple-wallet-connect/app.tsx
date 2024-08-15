@@ -70,15 +70,22 @@ export const Extensions = () => {
   );
 };
 
+function onUpdateError(error: unknown) {
+  console.log("extensions error", error);
+}
+
 export const App = () => {
   const [c, setC] = useState(0);
+  const [updateOnWindowFocus, setUpdateOnWindowFocus] = useState(true);
 
   return (
     <WeldProvider
       onUpdateError={(store, error) => {
         console.log("global", store, error);
       }}
+      updateOnWindowFocus={updateOnWindowFocus}
       wallet={{
+        updateInterval: false,
         onUpdateError: (error) => {
           if (c < 4) {
             console.log("wallet error", error);
@@ -86,15 +93,14 @@ export const App = () => {
           }
         },
       }}
-      extensions={{
-        onUpdateError(error) {
-          console.log("extensions error", error);
-        },
-      }}
+      extensions={{ onUpdateError }}
     >
       <ExampleContainer>
         <Extensions />
         <Wallet />
+        <button type="button" onClick={() => setUpdateOnWindowFocus((p) => !p)}>
+          Update on window focus? {!updateOnWindowFocus}
+        </button>
       </ExampleContainer>
     </WeldProvider>
   );
