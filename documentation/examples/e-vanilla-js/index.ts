@@ -23,7 +23,11 @@ weld.wallet.subscribeWithSelector(
 
 weld.extensions.subscribeWithSelector(
   (s) => s.allArr,
-  (ext) => console.log("ext", ext.map(e => e.info.displayName)),
+  (ext) =>
+    console.log(
+      "ext",
+      ext.map((e) => e.info.displayName),
+    ),
 );
 
 weld.wallet.subscribeWithSelector(

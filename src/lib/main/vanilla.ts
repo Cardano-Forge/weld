@@ -1,4 +1,4 @@
-import { hasLifeCycleMethods, type Store } from "@/internal/store";
+import { type Store, hasLifeCycleMethods } from "@/internal/store";
 import { initialize } from "./initialize";
 
 /**
