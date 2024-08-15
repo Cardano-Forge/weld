@@ -1,17 +1,21 @@
-import { type ExtractStoreState, type Store, hasLifeCycleMethods } from "@/internal/store";
+import { type ExtractStoreState, hasLifeCycleMethods } from "@/internal/store";
 import { identity } from "@/internal/utils/identity";
 import { createContext, useContext, useEffect, useState } from "react";
+import { weld } from "../main";
 import { useCompare } from "./compare";
 import { useStore } from "./store";
 
-export function createContextFromStore<TStore extends Store>(vanillaStore: TStore) {
+export function createContextFromStore<TName extends keyof typeof weld>(name: TName) {
+  type TStore = (typeof weld)[TName];
   type TState = ExtractStoreState<TStore>;
 
   const Context = createContext<TStore | undefined>(undefined);
 
   function provider({ children }: { children: React.ReactNode }) {
     // Setup store and initial state
-    const [store] = useState(() => vanillaStore);
+    const [store] = useState(() => {
+      return weld[name];
+    });
 
     // Setup lifecycle methods
     useEffect(() => {

@@ -36,7 +36,6 @@ export const createExtensionsStore = createStoreFactory<ExtensionsStoreState>(
     };
 
     const update: ExtensionsApi["update"] = async (signal?: InFlightSignal) => {
-      console.log("updateExtensions");
       try {
         if (getState()?.isFetching || signal?.aborted) {
           return;

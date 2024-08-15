@@ -84,6 +84,10 @@ export type WalletStoreState<
 };
 export type WalletStore = Store<WalletStoreState>;
 
+export type ExtendedWalletStoreState = WalletStoreState & {
+  __persist(isConnectingTo?: string): void;
+};
+
 export const createWalletStore = createStoreFactory<WalletStoreState>((setState, getState) => {
   const lifecycle = new LifeCycleManager();
 
@@ -200,7 +204,6 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
       // utxos are purposefully omitted here since getUtxos can take a long time
       // to resolve and we don't want it to affect connection speed
       const updateState = async () => {
-        console.log("updateState");
         const balanceLovelace = await handler.getBalanceLovelace();
 
         const prevState = getState();
@@ -280,34 +283,39 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
       });
   };
 
-  const initialState: WalletStoreState = {
+  const init: WalletApi["init"] = () => {
+    if (initialState.isConnectingTo) {
+      connect(initialState.isConnectingTo);
+    }
+  };
+
+  const __persist: ExtendedWalletStoreState["__persist"] = (serverIsConnectingTo?: string) => {
+    let isConnectingTo = serverIsConnectingTo;
+    if (
+      !isConnectingTo &&
+      typeof window !== "undefined" &&
+      weld.config.getState().enablePersistence
+    ) {
+      isConnectingTo = weld.config.getState().getPersistedValue("connectedWallet");
+    }
+    initialState.isConnectingTo = isConnectingTo;
+    initialState.isConnecting = !!isConnectingTo;
+  };
+
+  const cleanup: WalletApi["cleanup"] = () => {
+    lifecycle.cleanup();
+  };
+
+  const initialState: ExtendedWalletStoreState = {
     ...initialWalletState,
     connect,
     connectAsync,
     disconnect,
     ensureUtxos,
-    init() {
-      let tryToReconnectTo = weld.config.getState().wallet.tryToReconnectTo;
-
-      if (
-        !tryToReconnectTo &&
-        typeof window !== "undefined" &&
-        weld.config.getState().enablePersistence
-      ) {
-        const persisted = weld.config.getState().getPersistedValue("connectedWallet");
-        tryToReconnectTo = persisted;
-      }
-
-      if (tryToReconnectTo) {
-        this.isConnectingTo = tryToReconnectTo;
-        this.isConnecting = true;
-        connect(tryToReconnectTo);
-      }
-    },
-    cleanup() {
-      lifecycle.cleanup();
-    },
+    init,
+    cleanup,
+    __persist,
   };
 
-  return initialState;
+  return initialState as WalletStoreState;
 });

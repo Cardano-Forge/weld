@@ -7,7 +7,6 @@ function mergeConfigs<TKey extends keyof UpdateConfig>(
   base: UpdateConfig,
   ...configs: (Partial<UpdateConfig> | undefined | false)[]
 ): UpdateConfig[TKey] {
-  console.log("base", base);
   for (let i = configs.length - 1; i >= 0; i--) {
     const config = configs[i];
     const value = typeof config === "boolean" ? undefined : config?.[key];
@@ -29,7 +28,6 @@ export function setupAutoUpdate(
     weld.config.subscribeWithSelector(
       (config) => mergeConfigs("updateInterval", config, store && config[store], ...overrides),
       (updateInterval) => {
-        console.log("update interval for", store);
         if (unsubInterval) {
           unsubInterval();
           unsubInterval = undefined;
@@ -50,7 +48,6 @@ export function setupAutoUpdate(
     weld.config.subscribeWithSelector(
       (config) => mergeConfigs("updateOnWindowFocus", config, store && config[store], ...overrides),
       (updateOnWindowFocus) => {
-        console.log("update window focus for", store);
         if (unsubWindowFocus) {
           unsubWindowFocus();
           unsubWindowFocus = undefined;
