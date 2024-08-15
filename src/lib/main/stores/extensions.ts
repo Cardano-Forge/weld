@@ -1,12 +1,7 @@
 import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
-import {
-  type Store,
-  type StoreLifeCycleMethods,
-  type StoreUpdateErrorMethods,
-  createStoreFactory,
-} from "@/internal/store";
+import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/internal/store";
 import { setupAutoUpdate } from "@/internal/update";
-import { getUpdateConfig } from "../config";
+import { defaults, getUpdateConfig } from "../config";
 import {
   type InstalledExtensions,
   getInstalledExtensions,
@@ -26,8 +21,7 @@ const initialExtensionsState: ExtensionsState = {
 
 export type ExtensionsApi = {
   update(): Promise<void>;
-} & StoreLifeCycleMethods &
-  StoreUpdateErrorMethods;
+} & StoreLifeCycleMethods;
 
 export type ExtensionsStoreState = ExtensionsState & ExtensionsApi;
 export type ExtensionsStore = Store<ExtensionsStoreState>;
@@ -35,7 +29,11 @@ export type ExtensionsStore = Store<ExtensionsStoreState>;
 export const createExtensionsStore = createStoreFactory<ExtensionsStoreState>(
   (setState, getState) => {
     const lifecycle = new LifeCycleManager();
-    const updateErrorHandlers = new Set<(error: unknown) => void>();
+
+    const handleUpdateError = (error: unknown) => {
+      defaults.onUpdateError?.("extensions", error);
+      defaults.wallet.onUpdateError?.(error);
+    };
 
     const update: ExtensionsApi["update"] = async (signal?: InFlightSignal) => {
       try {
@@ -53,9 +51,7 @@ export const createExtensionsStore = createStoreFactory<ExtensionsStoreState>(
           isFetching: false,
         });
       } catch (error) {
-        for (const handler of updateErrorHandlers) {
-          handler(error);
-        }
+        handleUpdateError(error);
         setState({
           isLoading: false,
           isFetching: false,
@@ -85,21 +81,11 @@ export const createExtensionsStore = createStoreFactory<ExtensionsStoreState>(
       lifecycle.cleanup();
     };
 
-    const addUpdateErrorHandler = (handler: (error: unknown) => void) => {
-      updateErrorHandlers.add(handler);
-    };
-
-    const removeUpdateErrorHandler = (handler: (error: unknown) => void) => {
-      updateErrorHandlers.delete(handler);
-    };
-
     return {
       ...initialExtensionsState,
       update,
       init,
       cleanup,
-      addUpdateErrorHandler,
-      removeUpdateErrorHandler,
     };
   },
 );

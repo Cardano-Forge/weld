@@ -1,12 +1,7 @@
 import { handleAccountChangeErrors } from "@/internal/account-change";
 import type { WalletHandler } from "@/internal/handler";
 import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
-import {
-  type Store,
-  type StoreLifeCycleMethods,
-  type StoreUpdateErrorMethods,
-  createStoreFactory,
-} from "@/internal/store";
+import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/internal/store";
 import { setupAutoUpdate } from "@/internal/update";
 import { deferredPromise } from "@/internal/utils/deferred-promise";
 import { getFailureReason } from "@/internal/utils/errors";
@@ -71,9 +66,7 @@ export type WalletApi = {
   connectAsync: (key: string, config?: Partial<WalletConfig>) => Promise<ConnectedWalletState>;
   disconnect(): void;
   ensureUtxos(): Promise<string[]>;
-  setInitialState(values: Partial<Pick<WalletStoreState, "isConnectingTo">>): void;
-} & StoreLifeCycleMethods &
-  StoreUpdateErrorMethods;
+} & StoreLifeCycleMethods;
 
 export type WalletState<TKeys extends keyof WalletProps = keyof WalletProps> =
   | { [TKey in TKeys]: TKey extends "isConnected" ? true : WalletProps[TKey] }
@@ -94,8 +87,6 @@ export type WalletStore = Store<WalletStoreState>;
 export const createWalletStore = createStoreFactory<WalletStoreState>((setState, getState) => {
   const lifecycle = new LifeCycleManager();
 
-  const updateErrorHandlers = new Set<(error: unknown) => void>();
-
   let inFlightUtxosUpdate:
     | {
         signal: InFlightSignal;
@@ -106,6 +97,11 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
 
   const ensureUtxos: WalletApi["ensureUtxos"] = async () => {
     return inFlightUtxosUpdate?.promise ?? getState().utxos ?? [];
+  };
+
+  const handleUpdateError = (error: unknown) => {
+    defaults.onUpdateError?.("wallet", error);
+    defaults.wallet.onUpdateError?.(error);
   };
 
   const disconnect: WalletApi["disconnect"] = () => {
@@ -181,10 +177,7 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
             }
           })
           .catch((error) => {
-            const updateError = new WalletUtxosUpdateError(getFailureReason(error));
-            for (const handler of updateErrorHandlers) {
-              handler(updateError);
-            }
+            handleUpdateError(new WalletUtxosUpdateError(getFailureReason(error)));
 
             if (!signal.aborted) {
               setState({ isUpdatingUtxos: false, utxos: [] });
@@ -238,9 +231,7 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
         try {
           return await updateState();
         } catch (error) {
-          for (const handler of updateErrorHandlers) {
-            handler(error);
-          }
+          handleUpdateError(error);
           disconnect();
         }
       };
@@ -288,54 +279,29 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
       });
   };
 
-  const addUpdateErrorHandler = (handler: (error: unknown) => void) => {
-    updateErrorHandlers.add(handler);
-  };
-
-  const removeUpdateErrorHandler = (handler: (error: unknown) => void) => {
-    updateErrorHandlers.delete(handler);
-  };
-
   const initialState: WalletStoreState = {
     ...initialWalletState,
     connect,
     connectAsync,
     disconnect,
     ensureUtxos,
-    addUpdateErrorHandler,
-    removeUpdateErrorHandler,
-    // Gets overridden below
-    // TODO: Maybe this can be refactored using functions and `this`?
-    init: () => {},
-    cleanup: () => {},
-    setInitialState: () => {},
-  };
+    init() {
+      let tryToReconnectTo = defaults.wallet.tryToReconnectTo;
 
-  initialState.setInitialState = (values: Partial<Pick<WalletProps, "isConnectingTo">>) => {
-    Object.assign(initialState, values);
-    if (values.isConnectingTo) {
-      initialState.isConnecting = true;
-    }
-  };
+      if (!tryToReconnectTo && typeof window !== "undefined" && defaults.enablePersistence) {
+        const persisted = getPersistedValue("connectedWallet");
+        tryToReconnectTo = persisted;
+      }
 
-  initialState.init = () => {
-    if (
-      !initialState.isConnectingTo &&
-      typeof window !== "undefined" &&
-      defaults.enablePersistence
-    ) {
-      const persisted = getPersistedValue("connectedWallet");
-      initialState.isConnectingTo = persisted;
-      initialState.isConnecting = !!persisted;
-    }
-
-    if (initialState.isConnectingTo) {
-      connect(initialState.isConnectingTo);
-    }
-  };
-
-  initialState.cleanup = () => {
-    lifecycle.cleanup();
+      if (tryToReconnectTo) {
+        this.isConnectingTo = tryToReconnectTo;
+        this.isConnecting = true;
+        connect(tryToReconnectTo);
+      }
+    },
+    cleanup() {
+      lifecycle.cleanup();
+    },
   };
 
   return initialState;

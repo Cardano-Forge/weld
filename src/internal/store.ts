@@ -129,30 +129,3 @@ export function hasLifeCycleMethods(store: unknown): store is StoreLifeCycleMeth
   if ("cleanup" in store && typeof store.cleanup === "function") return true;
   return false;
 }
-
-export type StoreUpdateErrorMethods = {
-  addUpdateErrorHandler: (handler: (error: unknown) => void) => void;
-  removeUpdateErrorHandler: (handler: (error: unknown) => void) => void;
-};
-
-export function hasUpdateErrorMethods(store: unknown): store is StoreUpdateErrorMethods {
-  if (!store || typeof store !== "object" || store === null) {
-    return false;
-  }
-  const hasAddFct =
-    "addUpdateErrorHandler" in store && typeof store.addUpdateErrorHandler === "function";
-  const hasRemoveFct =
-    "removeUpdateErrorHandler" in store && typeof store.removeUpdateErrorHandler === "function";
-  return hasAddFct && hasRemoveFct;
-}
-
-export type StoreInitialStateMethods = {
-  setInitialState: (values: unknown) => void;
-};
-
-export function hasInitialStateMethods(store: unknown): store is StoreInitialStateMethods {
-  if (!store || typeof store !== "object" || store === null) {
-    return false;
-  }
-  return "setInitialState" in store && typeof store.setInitialState === "function";
-}

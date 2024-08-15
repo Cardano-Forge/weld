@@ -1,23 +1,24 @@
 import { ExampleContainer } from "@/documentation/commons/example-container";
 import { SUPPORTED_WALLETS } from "@/lib/main";
-import { useExtensions, useWallet } from "@/lib/react";
-import { useEffect } from "react";
+import { WeldProvider, useExtensions, useWallet } from "@/lib/react";
+import { useState } from "react";
+// import { useEffect } from "react";
 
 const Connected = () => {
   const connectedTo = useWallet((state) => state.key);
-  useEffect(() => console.log("isConnected"));
+  //  useEffect(() => console.log("isConnected"));
   return <div>Connected {connectedTo ?? "-"}</div>;
 };
 
 const ConnectingTo = () => {
   const isConnectingTo = useWallet("isConnectingTo");
-  useEffect(() => console.log("isConnectingTo"));
+  //  useEffect(() => console.log("isConnectingTo"));
   return <div>Connecting to {isConnectingTo ?? "-"}</div>;
 };
 
 const Balance = () => {
   const balance = useWallet((state) => state.balanceAda?.toFixed(2));
-  useEffect(() => console.log("balance"));
+  //  useEffect(() => console.log("balance"));
   return <div>Balance {balance ?? "-"}</div>;
 };
 
@@ -51,7 +52,7 @@ export const Wallet = () => {
 export const Extensions = () => {
   const extensions = useExtensions((state) => state.allArr);
   const update = useExtensions("update");
-  useEffect(() => console.log("extensions updated"));
+  //  useEffect(() => console.log("extensions updated"));
   return (
     <article className="card bg-base-100 shadow-xl max-w-[800px] mx-auto">
       <div className="card-body text-center">
@@ -70,10 +71,31 @@ export const Extensions = () => {
 };
 
 export const App = () => {
+  const [c, setC] = useState(0);
+
   return (
-    <ExampleContainer>
-      <Extensions />
-      <Wallet />
-    </ExampleContainer>
+    <WeldProvider
+      onUpdateError={(store, error) => {
+        console.log("global", store, error);
+      }}
+      wallet={{
+        onUpdateError: (error) => {
+          if (c < 4) {
+            console.log("wallet error", error);
+            setC((p) => p + 1);
+          }
+        },
+      }}
+      extensions={{
+        onUpdateError(error) {
+          console.log("extensions error", error);
+        },
+      }}
+    >
+      <ExampleContainer>
+        <Extensions />
+        <Wallet />
+      </ExampleContainer>
+    </WeldProvider>
   );
 };

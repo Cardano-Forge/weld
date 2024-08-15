@@ -12,13 +12,17 @@ export type UpdateConfig = {
 
 export type WalletConfig = UpdateConfig & {
   connectTimeout: number | false;
+  tryToReconnectTo: string;
+  onUpdateError(error: unknown): void;
 };
 
-export type ExtensionsConfig = Omit<UpdateConfig, "updateUtxosInterval">;
+export type ExtensionsConfig = Omit<UpdateConfig, "updateUtxosInterval"> & {
+  onUpdateError(error: unknown): void;
+};
 
 export type StoreConfig = {
-  wallet?: Partial<WalletConfig>;
-  extensions?: Partial<ExtensionsConfig>;
+  wallet: Partial<WalletConfig>;
+  extensions: Partial<ExtensionsConfig>;
 };
 
 export type WeldConfig = UpdateConfig &
@@ -26,6 +30,7 @@ export type WeldConfig = UpdateConfig &
     ignoreUnsafeUsageError: boolean;
     enablePersistence: boolean;
     storage: WeldStorage;
+    onUpdateError?(context: string, error: unknown): void;
   };
 
 export const defaults: WeldConfig = {
@@ -34,6 +39,8 @@ export const defaults: WeldConfig = {
   ignoreUnsafeUsageError: false,
   enablePersistence: true,
   storage: defaultStorage,
+  wallet: {},
+  extensions: {},
 };
 
 export function getUpdateConfig(
@@ -44,9 +51,7 @@ export function getUpdateConfig(
     updateInterval: defaults.updateInterval,
     updateOnWindowFocus: defaults.updateOnWindowFocus,
   };
-  if (defaults[store]) {
-    Object.assign(config, defaults[store]);
-  }
+  Object.assign(config, defaults[store]);
   for (const override of overrides) {
     if (override) {
       Object.assign(config, override);

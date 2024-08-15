@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { memo, useEffect } from "react";
 
 import { initialize } from "@/lib/main/initialize";
 import type { WalletApi, WalletProps, WalletStoreState } from "@/lib/main/stores/wallet";
@@ -21,50 +21,30 @@ const extensionsContext = createContextFromStore(weld.extensions);
 const ExtensionsProvider = extensionsContext.provider;
 export const useExtensions = extensionsContext.hook;
 
-export type WeldProviderProps = React.PropsWithChildren<
-  Partial<Omit<WeldConfig, "wallet" | "extensions">> & {
-    onUpdateError?(store: "wallet" | "extensions", error: unknown): void;
-    wallet?: Omit<React.ComponentProps<typeof WalletProvider>, "children">;
-    extensions?: Omit<React.ComponentProps<typeof ExtensionsProvider>, "children">;
-  }
->;
+export type WeldProviderProps = React.PropsWithChildren<Partial<WeldConfig>>;
 
-export function WeldProvider({
-  children,
-  wallet,
-  extensions,
-  onUpdateError,
-  ...config
-}: WeldProviderProps) {
-  useState(() => {
-    Object.assign(defaults, config);
-  });
+export const WeldProvider = memo(
+  ({ children, wallet, extensions, ...config }: WeldProviderProps) => {
+    useEffect(() => {
+      console.time("config update");
+      Object.assign(defaults, config);
+      if (wallet) {
+        Object.assign(defaults.wallet, wallet);
+      }
+      if (extensions) {
+        Object.assign(defaults.extensions, extensions);
+      }
+      console.timeEnd("config update");
+    });
 
-  useEffect(() => {
-    initialize();
-  }, []);
+    useEffect(() => {
+      initialize();
+    }, []);
 
-  const handleWalletUpdateError = useCallback(
-    (error: unknown) => {
-      onUpdateError?.("wallet", error);
-      wallet?.onUpdateError?.(error);
-    },
-    [wallet?.onUpdateError, onUpdateError],
-  );
-
-  const handleExtensionsUpdateError = useCallback(
-    (error: unknown) => {
-      onUpdateError?.("extensions", error);
-      extensions?.onUpdateError?.(error);
-    },
-    [extensions?.onUpdateError, onUpdateError],
-  );
-
-  return (
-    <WalletProvider {...wallet} onUpdateError={handleWalletUpdateError}>
-      <ExtensionsProvider {...extensions} onUpdateError={handleExtensionsUpdateError}>
-        {children}
-      </ExtensionsProvider>
-    </WalletProvider>
-  );
-}
+    return (
+      <WalletProvider>
+        <ExtensionsProvider>{children}</ExtensionsProvider>
+      </WalletProvider>
+    );
+  },
+);

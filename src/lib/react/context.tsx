@@ -1,10 +1,4 @@
-import {
-  type ExtractStoreState,
-  type Store,
-  hasInitialStateMethods,
-  hasLifeCycleMethods,
-  hasUpdateErrorMethods,
-} from "@/internal/store";
+import { type ExtractStoreState, type Store, hasLifeCycleMethods } from "@/internal/store";
 import { identity } from "@/internal/utils/identity";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useCompare } from "./compare";
@@ -13,42 +7,11 @@ import { useStore } from "./store";
 export function createContextFromStore<TStore extends Store>(vanillaStore: TStore) {
   type TState = ExtractStoreState<TStore>;
 
-  type TInitialState = TState extends { setInitialState: (values: infer TValues) => void }
-    ? TValues
-    : never;
-
-  type TUpdateErrorHandler = TState extends {
-    addUpdateErrorHandler: (handler: (error: unknown) => void) => void;
-  }
-    ? (error: unknown) => void
-    : never;
-
-  type TPropsRestricted = {
-    [key in "initialState" as TInitialState extends never ? never : key]?: TInitialState;
-  } & {
-    [key in "onUpdateError" as TUpdateErrorHandler extends never
-      ? never
-      : key]?: TUpdateErrorHandler;
-  };
-
-  type TProps = {
-    initialState?: TInitialState;
-    onUpdateError?: TUpdateErrorHandler;
-  };
-
   const Context = createContext<TStore | undefined>(undefined);
 
-  function provider({ children, ...rest }: React.PropsWithChildren<TPropsRestricted>) {
-    const props = rest as TProps;
-
+  function provider({ children }: { children: React.ReactNode }) {
     // Setup store and initial state
-    const [store] = useState(() => {
-      const state = vanillaStore.getState();
-      if (hasInitialStateMethods(state) && props.initialState) {
-        state?.setInitialState?.(props.initialState);
-      }
-      return vanillaStore;
-    });
+    const [store] = useState(() => vanillaStore);
 
     // Setup lifecycle methods
     useEffect(() => {
@@ -60,19 +23,6 @@ export function createContextFromStore<TStore extends Store>(vanillaStore: TStor
         };
       }
     }, [store]);
-
-    // Setup update error handlers
-    useEffect(() => {
-      const state = store.getState();
-      if (hasUpdateErrorMethods(state) && props.onUpdateError) {
-        state.addUpdateErrorHandler(props.onUpdateError);
-      }
-      return () => {
-        if (hasUpdateErrorMethods(state) && props.onUpdateError) {
-          state.removeUpdateErrorHandler(props.onUpdateError);
-        }
-      };
-    }, [props.onUpdateError, store]);
 
     return <Context.Provider value={store}>{children}</Context.Provider>;
   }
