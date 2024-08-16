@@ -59,7 +59,7 @@ export default defineConfig({
       ),
     },
     rollupOptions: {
-      external: ["react", "react-dom", "@types/react", "@types/react-dom"],
+      external: ["react", "react-dom", "@types/react", "@types/react-dom", "@solana/web3.js"],
       output: {
         banner(chunk) {
           const banners: string[] = [];

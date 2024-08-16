@@ -21,6 +21,11 @@
       "import": "./server.js",
       "require": "./server.cjs",
       "types": "./server.d.ts"
+    },
+    "./sol": {
+      "import": "./sol.js",
+      "require": "./sol.cjs",
+      "types": "./sol.d.ts"
     }
   },
   "files": ["**"],
