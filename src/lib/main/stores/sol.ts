@@ -1,14 +1,14 @@
 import { LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/internal/store";
 
+import { setupAutoUpdate } from "@/internal/update";
+import { get } from "@/internal/utils/get";
 import type {
   SendOptions,
   Transaction,
   TransactionSignature,
   VersionedTransaction,
 } from "@solana/web3.js";
-import { get } from "@/internal/utils/get";
-import { setupAutoUpdate } from "@/internal/update";
 
 export type SolAdapter = {
   isPhantom?: boolean;
