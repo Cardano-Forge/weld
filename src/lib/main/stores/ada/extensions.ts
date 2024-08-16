@@ -1,12 +1,12 @@
 import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/internal/store";
 import { setupAutoUpdate } from "@/internal/update";
-import { weld } from ".";
+import { weld } from "..";
 import {
   type InstalledExtensions,
   getInstalledExtensions,
   newInstalledExtensions,
-} from "../extensions";
+} from "../../extensions";
 
 export type ExtensionsState = InstalledExtensions & {
   isLoading: boolean;

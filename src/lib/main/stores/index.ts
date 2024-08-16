@@ -1,31 +1,42 @@
-export * from "./extensions";
-export * from "./wallet";
+export * from "./ada/extensions";
+export * from "./ada/wallet";
 
+import { type ExtensionsStore, createExtensionsStore } from "./ada/extensions";
+import { type WalletStore, createWalletStore } from "./ada/wallet";
 import { type ConfigStore, createConfigStore } from "./config";
-import { type ExtensionsStore, createExtensionsStore } from "./extensions";
-import { type WalletStore, createWalletStore } from "./wallet";
+import { type SolStore, createSolStore } from "./sol";
 
-let defaultConfigStore: ConfigStore;
-let defaultWalletStore: WalletStore;
-let defaultExtensionsStore: ExtensionsStore;
+let configStore: ConfigStore;
+let walletStore: WalletStore;
+let extensionsStore: ExtensionsStore;
+let solStore: SolStore;
 
 export const weld = {
+  // Common
   get config() {
-    if (!defaultConfigStore) {
-      defaultConfigStore = createConfigStore();
+    if (!configStore) {
+      configStore = createConfigStore();
     }
-    return defaultConfigStore;
+    return configStore;
   },
+  // Cardano
   get wallet() {
-    if (!defaultWalletStore) {
-      defaultWalletStore = createWalletStore();
+    if (!walletStore) {
+      walletStore = createWalletStore();
     }
-    return defaultWalletStore;
+    return walletStore;
   },
   get extensions() {
-    if (!defaultExtensionsStore) {
-      defaultExtensionsStore = createExtensionsStore();
+    if (!extensionsStore) {
+      extensionsStore = createExtensionsStore();
     }
-    return defaultExtensionsStore;
+    return extensionsStore;
+  },
+  // Crosschain
+  get sol() {
+    if (!solStore) {
+      solStore = createSolStore();
+    }
+    return solStore;
   },
 };

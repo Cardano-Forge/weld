@@ -6,7 +6,7 @@ import type {
   WalletApi,
   WalletProps,
   WalletStoreState,
-} from "@/lib/main/stores/wallet";
+} from "@/lib/main/stores";
 
 import { weld } from "../main";
 import type { WeldConfig } from "../main/stores/config";

@@ -1,12 +1,19 @@
 import { setupStores, weld } from "@/lib/main";
 
-setupStores(weld.wallet, weld.extensions);
+setupStores(weld.wallet, weld.extensions, weld.sol);
 
 weld.config.getState().update({
   extensions: {
     updateInterval: false,
   },
 });
+
+weld.sol.subscribeWithSelector(
+  (sol) => sol.supportedExtensionsMap,
+  (ext) => {
+    console.log("ext", ext);
+  },
+);
 
 weld.wallet.subscribeWithSelector(
   (s) => s.utxos,
@@ -25,11 +32,12 @@ weld.wallet.subscribeWithSelector(
 
 weld.extensions.subscribeWithSelector(
   (s) => s.allArr,
-  (ext) =>
-    console.log(
-      "ext",
-      ext.map((e) => e.info.displayName),
-    ),
+  (ext) => {
+    // console.log(
+    //   "ext",
+    //   ext.map((e) => e.info.displayName),
+    // );
+  },
 );
 
 weld.wallet.subscribeWithSelector(

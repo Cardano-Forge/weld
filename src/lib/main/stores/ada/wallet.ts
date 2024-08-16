@@ -15,8 +15,8 @@ import {
   weld,
 } from "@/lib/main";
 import { STORAGE_KEYS } from "@/lib/server";
-import { connect as weldConnect } from "../connect";
-import type { WalletConfig } from "./config";
+import { connect as weldConnect } from "../../connect";
+import type { WalletConfig } from "../config";
 
 export type WalletProps = WalletInfo & {
   isConnected: boolean;
