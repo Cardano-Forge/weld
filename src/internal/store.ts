@@ -129,3 +129,9 @@ export function hasLifeCycleMethods(store: unknown): store is StoreLifeCycleMeth
   if ("cleanup" in store && typeof store.cleanup === "function") return true;
   return false;
 }
+
+export function hasPersistMethod(store: unknown): store is { __persist(): void } {
+  if (!store || typeof store !== "object" || store === null) return false;
+  if ("__persist" in store && typeof store.__persist === "function") return true;
+  return false;
+}

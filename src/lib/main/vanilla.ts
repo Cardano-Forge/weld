@@ -1,4 +1,4 @@
-import { type Store, hasLifeCycleMethods } from "@/internal/store";
+import { type Store, hasLifeCycleMethods, hasPersistMethod } from "@/internal/store";
 import { initialize } from "./initialize";
 
 /**
@@ -10,6 +10,9 @@ export function setupStores(...stores: Store[]) {
     window.addEventListener("load", () => {
       initialize();
       const state = store.getState();
+      if (hasPersistMethod(state)) {
+        state.__persist?.();
+      }
       if (hasLifeCycleMethods(state)) {
         state.init?.();
       }
