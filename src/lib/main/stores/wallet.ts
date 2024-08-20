@@ -1,4 +1,5 @@
 import { handleAccountChangeErrors } from "@/internal/account-change";
+import { compare } from "@/internal/compare";
 import type { WalletHandler } from "@/internal/handler";
 import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/internal/store";
@@ -159,6 +160,25 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
         throw new WalletConnectionAbortedError();
       }
 
+      // Since the utxos update is triggered whenever the balance changes,
+      // we know the utxos must have changed when this function is called.
+      // This function fetches the utxos in loop until the result is different than the previous utxos
+      const getNextUtxos = async () => {
+        const state = getState();
+        const prevUtxos = state.utxos ? [...state.utxos] : undefined;
+        let retryCount = 0;
+        let nextUtxos = await handler.getUtxos();
+        while (
+          typeof prevUtxos !== "undefined" &&
+          retryCount++ < 8 &&
+          compare(prevUtxos, nextUtxos)
+        ) {
+          await new Promise((resolve) => setTimeout(resolve, 3000));
+          nextUtxos = await handler.getUtxos();
+        }
+        return nextUtxos;
+      };
+
       const updateUtxos = () => {
         const { promise, resolve } = deferredPromise<string[]>();
         const signal = lifecycle.inFlight.add();
@@ -166,8 +186,7 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
           inFlightUtxosUpdate.signal.aborted = true;
         }
         inFlightUtxosUpdate = { promise, signal, resolve };
-        handler
-          .getUtxos()
+        getNextUtxos()
           .then((res) => {
             const utxos = res ?? [];
 
