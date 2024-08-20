@@ -160,15 +160,15 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
         throw new WalletConnectionAbortedError();
       }
 
-      // Since the utxos update is triggered whenever the balance changes,
-      // we know the utxos must have changed when this function is called.
-      // This function fetches the utxos in loop until the result is different than the previous utxos
-      const getNextUtxos = async () => {
+      // When the balance updates, we know the utxos must have changed as well
+      // in which case the `getUtxos` function gets called repeatedly until a change is observed
+      const getNextUtxos = async ({ expectChange = false } = {}) => {
         const state = getState();
         const prevUtxos = state.utxos ? [...state.utxos] : undefined;
         let retryCount = 0;
         let nextUtxos = await handler.getUtxos();
         while (
+          expectChange &&
           typeof prevUtxos !== "undefined" &&
           retryCount++ < 8 &&
           compare(prevUtxos, nextUtxos)
@@ -179,14 +179,14 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
         return nextUtxos;
       };
 
-      const updateUtxos = () => {
+      const updateUtxos = ({ expectChange = false } = {}) => {
         const { promise, resolve } = deferredPromise<string[]>();
         const signal = lifecycle.inFlight.add();
         if (inFlightUtxosUpdate) {
           inFlightUtxosUpdate.signal.aborted = true;
         }
         inFlightUtxosUpdate = { promise, signal, resolve };
-        getNextUtxos()
+        getNextUtxos({ expectChange })
           .then((res) => {
             const utxos = res ?? [];
 
@@ -220,6 +220,8 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
           });
       };
 
+      let nbOfUpdatesSinceUtxosUpdate = 0;
+
       // utxos are purposefully omitted here since getUtxos can take a long time
       // to resolve and we don't want it to affect connection speed
       const updateState = async () => {
@@ -243,9 +245,14 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
           ...handler.info,
         };
 
-        if (hasBalanceChanged) {
-          updateUtxos();
+        console.log("nbOfUpdatesSinceUtxosUpdate", nbOfUpdatesSinceUtxosUpdate);
+
+        if (hasBalanceChanged || nbOfUpdatesSinceUtxosUpdate > 10) {
+          updateUtxos({ expectChange: hasBalanceChanged });
           newState.isUpdatingUtxos = true;
+          nbOfUpdatesSinceUtxosUpdate = 0;
+        } else {
+          nbOfUpdatesSinceUtxosUpdate++;
         }
 
         setState(newState);
