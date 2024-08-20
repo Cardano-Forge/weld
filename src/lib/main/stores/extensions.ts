@@ -6,7 +6,7 @@ import {
   type InstalledExtensions,
   getInstalledExtensions,
   newInstalledExtensions,
-} from "../../extensions";
+} from "../extensions";
 
 export type ExtensionsState = InstalledExtensions & {
   isLoading: boolean;

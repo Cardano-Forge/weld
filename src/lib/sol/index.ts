@@ -1,4 +1,4 @@
-import { type SolStore, createSolStore } from "../main/stores/sol";
+import { type SolStore, createSolStore } from "./store";
 
 let store: SolStore | undefined = undefined;
 
