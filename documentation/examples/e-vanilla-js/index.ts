@@ -1,20 +1,12 @@
 import { setupStores, weld } from "@/lib/main";
-import { sol } from "@/lib/sol";
 
-setupStores(weld.wallet, weld.extensions, sol.store);
+setupStores(weld.wallet, weld.extensions);
 
 weld.config.getState().update({
   extensions: {
     updateInterval: false,
   },
 });
-
-sol.store.subscribeWithSelector(
-  (sol) => sol.supportedExtensionsMap,
-  (ext) => {
-    console.log("ext", ext);
-  },
-);
 
 weld.wallet.subscribeWithSelector(
   (s) => s.utxos,
