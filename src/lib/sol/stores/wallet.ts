@@ -163,7 +163,7 @@ export const createSolWalletStore = createStoreFactory<SolWalletState>((setState
       setupAutoUpdate(safeUpdateState, lifecycle, "wallet", configOverrides);
 
       if (weldSol.config.getState().enablePersistence) {
-        weldSol.config.getState().storage.set(STORAGE_KEYS.connectedWallet, newState.key);
+        weldSol.config.getState().storage.set(STORAGE_KEYS.connectedSolWallet, newState.key);
       }
 
       if (abortTimeout) {
