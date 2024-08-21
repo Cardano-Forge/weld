@@ -10,7 +10,7 @@ import type {
   VersionedTransaction,
 } from "@solana/web3.js";
 
-export type SolAdapter = {
+export type SolHandler = {
   isPhantom?: boolean;
   publicKey?: { toBytes(): Uint8Array };
   isConnected: boolean;
@@ -27,7 +27,7 @@ export type SolAdapter = {
   disconnect(): Promise<void>;
 };
 
-function isSolAdapter(obj: unknown): obj is SolAdapter {
+function isSolHandler(obj: unknown): obj is SolHandler {
   return (
     typeof obj === "object" && obj !== null && "connect" in obj && typeof obj.connect === "function"
   );
@@ -35,32 +35,32 @@ function isSolAdapter(obj: unknown): obj is SolAdapter {
 
 export type SolExtension = {
   key: string;
-  adapterPath: string;
+  handlerPath: string;
   displayName: string;
   isInstalled: boolean;
-  adapter?: SolAdapter;
+  handler?: SolHandler;
 };
 
-const SOL_EXTENSIONS: Omit<SolExtension, "isInstalled" | "adapter">[] = [
+const SOL_EXTENSIONS: Omit<SolExtension, "isInstalled" | "handler">[] = [
   {
     key: "phantom",
     displayName: "Phantom",
-    adapterPath: "phantom.solana",
+    handlerPath: "phantom.solana",
   },
   {
     key: "nufi",
     displayName: "NuFi",
-    adapterPath: "nufiSolana",
+    handlerPath: "nufiSolana",
   },
   {
     key: "coinbase",
     displayName: "CoinBase",
-    adapterPath: "coinbaseSolana",
+    handlerPath: "coinbaseSolana",
   },
   {
     key: "exodus",
     displayName: "Exodus",
-    adapterPath: "exodus.solana",
+    handlerPath: "exodus.solana",
   },
 ];
 
@@ -90,6 +90,7 @@ export type SolStore = Store<SolStoreState>;
 export const createSolStore = createStoreFactory<SolStoreState>((setState, getState) => {
   const lifecycle = new LifeCycleManager();
 
+
   const updateExtensions = () => {
     if (typeof window === "undefined") {
       return;
@@ -97,11 +98,11 @@ export const createSolStore = createStoreFactory<SolStoreState>((setState, getSt
     const newState = newInitialSolState();
     for (const info of SOL_EXTENSIONS) {
       const cached = getState().supportedExtensionsMap.get(info.key);
-      const adapter = get(window, info.adapterPath);
+      const handler = get(window, info.handlerPath);
       const extension = cached ?? { ...info, isInstalled: false };
-      if (isSolAdapter(adapter)) {
+      if (isSolHandler(handler)) {
         extension.isInstalled = true;
-        extension.adapter = adapter;
+        extension.handler = handler;
         newState.installedExtensionsMap.set(info.key, extension);
         newState.installedExtensionsArr.push(extension);
       }
