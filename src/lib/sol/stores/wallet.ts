@@ -3,10 +3,11 @@ import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/in
 
 import { setupAutoUpdate } from "@/internal/update";
 import type { PartialWithDiscriminant } from "@/internal/utils/types";
-import { WalletConnectionAbortedError, WalletDisconnectAccountError, weld } from "@/lib/main";
+import { WalletConnectionAbortedError, WalletDisconnectAccountError } from "@/lib/main";
 import type { WalletConfig } from "@/lib/main/stores/config";
 import { STORAGE_KEYS } from "@/lib/server";
 import type { SolExtensionInfo, SolHandler } from "../types";
+import { weldSol } from ".";
 
 export type SolWalletProps = SolExtensionInfo & {
   isConnected: boolean;
@@ -55,15 +56,15 @@ export const createSolWalletStore = createStoreFactory<SolWalletStoreState>(
     const lifecycle = new LifeCycleManager();
 
     const handleUpdateError = (error: unknown) => {
-      weld.config.getState().onUpdateError?.("wallet", error);
-      weld.config.getState().wallet.onUpdateError?.(error);
+      weldSol.config.getState().onUpdateError?.("wallet", error);
+      weldSol.config.getState().wallet.onUpdateError?.(error);
     };
 
     const disconnect: SolWalletApi["disconnect"] = () => {
       lifecycle.subscriptions.clearAll();
       setState(newInitialSolState());
-      if (weld.config.getState().enablePersistence) {
-        weld.config.getState().storage.remove(STORAGE_KEYS.connectedSolWallet);
+      if (weldSol.config.getState().enablePersistence) {
+        weldSol.config.getState().storage.remove(STORAGE_KEYS.connectedSolWallet);
       }
     };
 
@@ -78,7 +79,7 @@ export const createSolWalletStore = createStoreFactory<SolWalletStoreState>(
         let abortTimeout: NodeJS.Timeout | undefined = undefined;
 
         const connectTimeout =
-          configOverrides?.connectTimeout ?? weld.config.getState().wallet?.connectTimeout;
+          configOverrides?.connectTimeout ?? weldSol.config.getState().wallet?.connectTimeout;
 
         if (connectTimeout) {
           abortTimeout = setTimeout(() => {
@@ -87,8 +88,7 @@ export const createSolWalletStore = createStoreFactory<SolWalletStoreState>(
           }, connectTimeout);
         }
 
-        // biome-ignore lint/suspicious/noExplicitAny: TODO: Get handler
-        const handler: SolHandler = {} as any;
+        const handler = weldSol.wallet
 
         if (signal.aborted) {
           throw new WalletConnectionAbortedError();
@@ -130,8 +130,8 @@ export const createSolWalletStore = createStoreFactory<SolWalletStoreState>(
 
         setupAutoUpdate(safeUpdateState, lifecycle, "wallet", configOverrides);
 
-        if (weld.config.getState().enablePersistence) {
-          weld.config.getState().storage.set(STORAGE_KEYS.connectedWallet, newState.key);
+        if (weldSol.config.getState().enablePersistence) {
+          weldSol.config.getState().storage.set(STORAGE_KEYS.connectedWallet, newState.key);
         }
 
         if (abortTimeout) {
@@ -173,9 +173,9 @@ export const createSolWalletStore = createStoreFactory<SolWalletStoreState>(
       if (
         !isConnectingTo &&
         typeof window !== "undefined" &&
-        weld.config.getState().enablePersistence
+        weldSol.config.getState().enablePersistence
       ) {
-        isConnectingTo = weld.config.getState().getPersistedValue("connectedWallet");
+        isConnectingTo = weldSol.config.getState().getPersistedValue("connectedWallet");
       }
       initialState.isConnectingTo = isConnectingTo;
       initialState.isConnecting = !!isConnectingTo;
