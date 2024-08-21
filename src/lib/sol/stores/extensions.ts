@@ -3,30 +3,7 @@ import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/in
 
 import { setupAutoUpdate } from "@/internal/update";
 import { get } from "@/internal/utils/get";
-import { type SolExtension, isSolHandler } from "../types";
-
-const SOL_EXTENSIONS: Omit<SolExtension, "isInstalled" | "handler">[] = [
-  {
-    key: "phantom",
-    displayName: "Phantom",
-    handlerPath: "phantom.solana",
-  },
-  {
-    key: "nufi",
-    displayName: "NuFi",
-    handlerPath: "nufiSolana",
-  },
-  {
-    key: "coinbase",
-    displayName: "CoinBase",
-    handlerPath: "coinbaseSolana",
-  },
-  {
-    key: "exodus",
-    displayName: "Exodus",
-    handlerPath: "exodus.solana",
-  },
-];
+import { type SolExtension, isSolHandler, SOL_EXTENSIONS } from "../types";
 
 export type SolExtensionsProps = {
   supportedArr: SolExtension[];

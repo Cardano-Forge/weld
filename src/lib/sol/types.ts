@@ -38,3 +38,28 @@ export type SolExtension = SolExtensionInfo & {
   isInstalled: boolean;
   handler?: SolHandler;
 };
+
+export const SOL_EXTENSIONS = [
+  {
+    key: "phantom",
+    displayName: "Phantom",
+    handlerPath: "phantom.solana",
+  },
+  {
+    key: "nufi",
+    displayName: "NuFi",
+    handlerPath: "nufiSolana",
+  },
+  {
+    key: "coinbase",
+    displayName: "CoinBase",
+    handlerPath: "coinbaseSolana",
+  },
+  {
+    key: "exodus",
+    displayName: "Exodus",
+    handlerPath: "exodus.solana",
+  },
+] as const satisfies Omit<SolExtension, "isInstalled" | "handler">[];
+
+export type SolExtensionKey = (typeof SOL_EXTENSIONS)[number]["key"];
