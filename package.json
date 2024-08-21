@@ -21,6 +21,11 @@
       "import": "./server.js",
       "require": "./server.cjs",
       "types": "./server.d.ts"
+    },
+    "./sol": {
+      "import": "./sol.js",
+      "require": "./sol.cjs",
+      "types": "./sol.d.ts"
     }
   },
   "files": ["**"],
@@ -37,6 +42,7 @@
   "devDependencies": {
     "@actions/core": "^1.10.1",
     "@biomejs/biome": "^1.8.3",
+    "@solana/web3.js": "^1.95.2",
     "@tailwindcss/typography": "^0.5.13",
     "@types/cbor-js": "^0.1.1",
     "@types/node": "^20.12.7",
@@ -58,13 +64,17 @@
   },
   "peerDependencies": {
     "@types/react": ">=17.0.0",
-    "react": ">=17.0.0"
+    "react": ">=17.0.0",
+    "@solana/web3.js": ">=1.95.2"
   },
   "peerDependenciesMeta": {
     "@types/react": {
       "optional": true
     },
     "react": {
+      "optional": true
+    },
+    "@solana/web3.js": {
       "optional": true
     }
   },
