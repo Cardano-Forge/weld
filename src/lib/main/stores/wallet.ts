@@ -6,6 +6,7 @@ import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/inte
 import { setupAutoUpdate } from "@/internal/update";
 import { deferredPromise } from "@/internal/utils/deferred-promise";
 import { getFailureReason } from "@/internal/utils/errors";
+import type { PartialWithDiscriminant } from "@/internal/utils/types";
 import {
   type NetworkId,
   WalletConnectionAbortedError,
@@ -57,7 +58,7 @@ const initialWalletState: WalletState = {
   utxos: undefined,
 };
 
-type ConnectWalletCallbacks = {
+export type ConnectWalletCallbacks = {
   onSuccess(wallet: ConnectedWalletState): void;
   onError(error: unknown): void;
 };
@@ -70,10 +71,7 @@ export type WalletApi = {
 };
 
 export type WalletState<TKeys extends keyof WalletProps = keyof WalletProps> =
-  | { [TKey in TKeys]: TKey extends "isConnected" ? true : WalletProps[TKey] }
-  | {
-      [TKey in TKeys]: TKey extends "isConnected" ? false : WalletProps[TKey] | undefined;
-    };
+  PartialWithDiscriminant<WalletProps, "isConnected", TKeys>;
 
 export type ConnectedWalletState = Extract<WalletState, { isConnected: true }>;
 export type DiconnectedWalletState = Extract<WalletState, { isConnected: false }>;
