@@ -6,11 +6,11 @@ import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/in
 import { setupAutoUpdate } from "@/internal/update";
 import { get } from "@/internal/utils/get";
 
-export type EvmAdapter = Eip1193Provider & {
+export type EvmHandler = Eip1193Provider & {
   isConnected: () => boolean;
 };
 
-function isEvmAdapter(obj: unknown): obj is EvmAdapter {
+function isEvmHandler(obj: unknown): obj is EvmHandler {
   return (
     typeof obj === "object" && obj !== null && "connect" in obj && typeof obj.connect === "function"
   );
@@ -18,27 +18,27 @@ function isEvmAdapter(obj: unknown): obj is EvmAdapter {
 
 export type EvmExtension = {
   key: string;
-  adapterPath: string;
+  handlerPath: string;
   displayName: string;
   isInstalled: boolean;
-  adapter?: EvmAdapter;
+  handler?: EvmHandler;
 };
 
-const EVM_EXTENSIONS: Omit<EvmExtension, "isInstalled" | "adapter">[] = [
+const EVM_EXTENSIONS: Omit<EvmExtension, "isInstalled" | "handler">[] = [
   {
     key: "metamask",
     displayName: "Metamask",
-    adapterPath: "ethereum",
+    handlerPath: "ethereum",
   },
   {
     key: "phantom",
     displayName: "Phantom",
-    adapterPath: "phantom.ethereum",
+    handlerPath: "phantom.ethereum",
   },
   {
     key: "exodus",
     displayName: "Exodus",
-    adapterPath: "exodus.ethereum",
+    handlerPath: "exodus.ethereum",
   },
 ];
 
@@ -75,11 +75,11 @@ export const createEvmStore = createStoreFactory<EvmStoreState>((setState, getSt
     const newState = newInitialEvmState();
     for (const info of EVM_EXTENSIONS) {
       const cached = getState().supportedExtensionsMap.get(info.key);
-      const adapter = get(window, info.adapterPath);
+      const handler = get(window, info.handlerPath);
       const extension = cached ?? { ...info, isInstalled: false };
-      if (isEvmAdapter(adapter)) {
+      if (isEvmHandler(handler)) {
         extension.isInstalled = true;
-        extension.adapter = adapter;
+        extension.handler = handler;
         newState.installedExtensionsMap.set(info.key, extension);
         newState.installedExtensionsArr.push(extension);
       }
