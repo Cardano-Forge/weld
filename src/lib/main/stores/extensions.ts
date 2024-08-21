@@ -8,12 +8,12 @@ import {
   newInstalledExtensions,
 } from "../extensions";
 
-export type ExtensionsState = InstalledExtensions & {
+export type ExtensionsProps = InstalledExtensions & {
   isLoading: boolean;
   isFetching: boolean;
 };
 
-const initialExtensionsState: ExtensionsState = {
+const initialExtensionsState: ExtensionsProps = {
   ...newInstalledExtensions(),
   isLoading: true,
   isFetching: false,
@@ -23,7 +23,8 @@ export type ExtensionsApi = {
   update(): Promise<void>;
 };
 
-export type ExtensionsStoreState = ExtensionsState & ExtensionsApi;
+export type ExtensionsStoreState = ExtensionsProps & ExtensionsApi;
+
 export type ExtensionsStore = Store<ExtensionsStoreState>;
 
 type ExtendedExtensionsStoreState = ExtensionsStoreState & StoreSetupFunctions;

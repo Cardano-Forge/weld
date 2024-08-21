@@ -320,7 +320,7 @@ If you disable the persistence feature, you can still use the `getPersistedValue
 
 ```typescript
 function initFunction() {
-  const lastConnectedWallet = getPersistedValue("connectedWallet");
+  const lastConnectedWallet = getPersistedValue("weld_connected-wallet");
   if (lastConnectedWallet) {
     weld.wallet.getState().connect(lastConnectedWallet);
   }
