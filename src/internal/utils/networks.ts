@@ -1,4 +1,4 @@
-import type { NetworkId, NetworkType } from "@/lib/utils";
+import type { NetworkId, NetworkType } from "@/lib/main";
 
 export const Networks = new Map<NetworkId, NetworkType>([
   [1, "mainnet"],

@@ -1,3 +1,5 @@
+import { hexToView } from "@/internal/utils/hex-to-view";
+import { viewToString } from "@/internal/utils/view-to-string";
 import {
   type AddressBech32,
   type AddressHex,
@@ -15,10 +17,8 @@ import {
   WalletBalanceDecodeError,
   type WalletInfo,
   type WalletKey,
-} from "@/lib/utils";
-import { hexToBech32 } from "@/lib/utils/hex-to-bech32";
-import { hexToView } from "@/lib/utils/hex-to-view";
-import { viewToString } from "@/lib/utils/view-to-string";
+  hexToBech32,
+} from "@/lib/main";
 import cbor from "cbor-js";
 import { decodeBalance } from "./utils/decode-balance";
 

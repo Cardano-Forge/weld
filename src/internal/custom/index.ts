@@ -1,7 +1,6 @@
-import type { WalletKey } from "@/lib/utils/wallets";
-
 import type { DefaultWalletHandler, WalletHandler } from "@/internal/handler";
 
+import type { WalletKey } from "@/lib/main";
 import type { AnyFunction } from "../utils/types";
 import { eternl } from "./eternl";
 import type { CustomWallet } from "./type";

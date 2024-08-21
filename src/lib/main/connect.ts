@@ -1,10 +1,9 @@
-import type { WalletKey } from "@/lib/utils";
+import { type WalletKey, weld } from "@/lib/main";
 
 import { getDefaultWalletConnector } from "@/internal/connector";
 import { type WalletHandlerByKey, customWallets, hasCustomImplementation } from "@/internal/custom";
 import type { WalletHandler } from "@/internal/handler";
 import { UNSAFE_LIB_USAGE_ERROR, isBrowser } from "@/internal/utils/browser";
-import { defaults } from "./config";
 
 /**
  * Connect and enable a user wallet extension
@@ -15,7 +14,7 @@ import { defaults } from "./config";
 export async function connect<T extends WalletKey>(key: T): Promise<WalletHandlerByKey[T]>;
 export async function connect(key: string): Promise<WalletHandler>;
 export async function connect(key: string): Promise<WalletHandler> {
-  if (!isBrowser() && !defaults.ignoreUnsafeUsageError) {
+  if (!isBrowser() && !weld.config.getState().ignoreUnsafeUsageError) {
     console.error(UNSAFE_LIB_USAGE_ERROR);
   }
 

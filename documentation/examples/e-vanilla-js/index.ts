@@ -1,28 +1,11 @@
-import { defaults, getPersistedValue } from "@/lib/main";
-import { STORAGE_KEYS } from "@/lib/server";
-import { weld } from "@/lib/vanilla";
+import { setupStores, weld } from "@/lib/main";
 
-// Disable auto persistence
-defaults.enablePersistence = false;
+setupStores(weld.wallet, weld.extensions);
 
-// Manually persist connection
-weld.wallet.subscribeWithSelector(
-  (state) => state.key,
-  (key) => {
-    if (key) {
-      defaults.storage.set(STORAGE_KEYS.connectedWallet, key);
-    } else {
-      defaults.storage.remove(STORAGE_KEYS.connectedWallet);
-    }
+weld.config.getState().update({
+  extensions: {
+    updateInterval: false,
   },
-);
-
-defaults.extensions = {
-  updateInterval: false,
-};
-
-weld.extensions.subscribe((state) => {
-  console.log("state", state);
 });
 
 weld.wallet.subscribeWithSelector(
@@ -42,7 +25,12 @@ weld.wallet.subscribeWithSelector(
 
 weld.extensions.subscribeWithSelector(
   (s) => s.allArr,
-  (ext) => console.log("ext", ext),
+  (ext) => {
+    console.log(
+      "ext",
+      ext.map((e) => e.info.displayName),
+    );
+  },
 );
 
 weld.wallet.subscribeWithSelector(
@@ -79,18 +67,3 @@ document.querySelector("#connect")?.addEventListener("click", () => {
 document.querySelector("#disconnect")?.addEventListener("click", () => {
   weld.wallet.getState().disconnect();
 });
-
-// Auto reconnect
-const lastConnectedWallet = getPersistedValue("connectedWallet");
-if (lastConnectedWallet) {
-  weld.wallet.getState().connect(lastConnectedWallet, {
-    onSuccess() {
-      weld.wallet
-        .getState()
-        .ensureUtxos()
-        .then((ensured) => {
-          console.log("ensured", ensured);
-        });
-    },
-  });
-}

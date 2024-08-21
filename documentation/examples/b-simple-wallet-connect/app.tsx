@@ -1,23 +1,24 @@
 import { ExampleContainer } from "@/documentation/commons/example-container";
-import { useExtensions, useWallet } from "@/lib/react";
-import { SUPPORTED_WALLETS } from "@/lib/utils";
-import { useEffect } from "react";
+import { SUPPORTED_WALLETS, weld } from "@/lib/main";
+import { WeldProvider, useExtensions, useWallet } from "@/lib/react";
+import { useState } from "react";
+// import { useEffect } from "react";
 
 const Connected = () => {
   const connectedTo = useWallet((state) => state.key);
-  useEffect(() => console.log("isConnected"));
+  //  useEffect(() => console.log("isConnected"));
   return <div>Connected {connectedTo ?? "-"}</div>;
 };
 
 const ConnectingTo = () => {
   const isConnectingTo = useWallet("isConnectingTo");
-  useEffect(() => console.log("isConnectingTo"));
+  //  useEffect(() => console.log("isConnectingTo"));
   return <div>Connecting to {isConnectingTo ?? "-"}</div>;
 };
 
 const Balance = () => {
   const balance = useWallet((state) => state.balanceAda?.toFixed(2));
-  useEffect(() => console.log("balance"));
+  //  useEffect(() => console.log("balance"));
   return <div>Balance {balance ?? "-"}</div>;
 };
 
@@ -51,7 +52,7 @@ export const Wallet = () => {
 export const Extensions = () => {
   const extensions = useExtensions((state) => state.allArr);
   const update = useExtensions("update");
-  useEffect(() => console.log("extensions updated"));
+  //  useEffect(() => console.log("extensions updated"));
   return (
     <article className="card bg-base-100 shadow-xl max-w-[800px] mx-auto">
       <div className="card-body text-center">
@@ -69,11 +70,44 @@ export const Extensions = () => {
   );
 };
 
+function onUpdateError(error: unknown) {
+  console.log("extensions error", error);
+}
+
 export const App = () => {
+  const [updateOnWindowFocus, setUpdateOnWindowFocus] = useState(true);
+
   return (
-    <ExampleContainer>
-      <Extensions />
-      <Wallet />
-    </ExampleContainer>
+    <WeldProvider
+      onUpdateError={(store, error) => {
+        console.log("global", store, error);
+      }}
+      extensions={{
+        onUpdateError,
+        updateInterval: 6000,
+        updateOnWindowFocus,
+      }}
+    >
+      <ExampleContainer>
+        <Extensions />
+        <Wallet />
+        <button type="button" onClick={updateExtensionsUpdateInterval}>
+          Update extensions update interval
+        </button>
+        <br />
+        <button type="button" onClick={() => setUpdateOnWindowFocus((p) => !p)}>
+          Update on window focus? {!updateOnWindowFocus}
+        </button>
+      </ExampleContainer>
+    </WeldProvider>
   );
 };
+
+function updateExtensionsUpdateInterval() {
+  const curr = weld.config.getState().extensions.updateInterval;
+  weld.config.getState().update({
+    extensions: {
+      updateInterval: curr === 500 ? 6000 : 500,
+    },
+  });
+}

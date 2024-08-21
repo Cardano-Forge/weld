@@ -1,22 +1,18 @@
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
 import { initialize } from "@/lib/main/initialize";
-import {
-  type CreateExtensionsStoreOpts,
-  createExtensionsStore,
-} from "@/lib/main/stores/extensions";
-import {
-  type CreateWalletStoreOpts,
-  type WalletApi,
-  type WalletProps,
-  type WalletStoreState,
-  createWalletStore,
-} from "@/lib/main/stores/wallet";
+import type {
+  ExtendedWalletStoreState,
+  WalletApi,
+  WalletProps,
+  WalletStoreState,
+} from "@/lib/main/stores";
 
-import { type WeldConfig, defaults } from "../main";
+import { weld } from "../main";
+import type { WeldConfig } from "../main/stores/config";
 import { createContextFromStore } from "./context";
 
-const walletContext = createContextFromStore("wallet", createWalletStore);
+const walletContext = createContextFromStore("wallet");
 const WalletProvider = walletContext.provider;
 export const useWallet: {
   (): WalletStoreState;
@@ -26,30 +22,21 @@ export const useWallet: {
     ...keys: [...TKeys]
   ): WalletStoreState<TKeys[number]>;
 } = walletContext.hook;
-export const useWalletStore = walletContext.storeHook;
 
-const extensionsContext = createContextFromStore("extensions", createExtensionsStore);
+const extensionsContext = createContextFromStore("extensions");
 const ExtensionsProvider = extensionsContext.provider;
 export const useExtensions = extensionsContext.hook;
-export const useExtensionsStore = extensionsContext.storeHook;
 
-export type WeldProviderProps = React.PropsWithChildren<
-  Partial<Omit<WeldConfig, "wallet" | "extensions">> & {
-    onUpdateError?(store: "wallet" | "extensions", error: unknown): void;
-    wallet?: CreateWalletStoreOpts;
-    extensions?: CreateExtensionsStoreOpts;
-  }
->;
+export type WeldProviderProps = React.PropsWithChildren<Partial<WeldConfig>>;
 
-export function WeldProvider({
-  children,
-  wallet,
-  extensions,
-  onUpdateError,
-  ...config
-}: WeldProviderProps) {
+export const WeldProvider = memo(({ children, ...config }: WeldProviderProps) => {
   useState(() => {
-    Object.assign(defaults, config);
+    (weld.wallet.getState() as ExtendedWalletStoreState).__persist(config.wallet?.tryToReconnectTo);
+  });
+
+  // Keep config store in sync with provider props
+  useEffect(() => {
+    weld.config.getState().update(config);
   });
 
   useEffect(() => {
@@ -57,22 +44,8 @@ export function WeldProvider({
   }, []);
 
   return (
-    <WalletProvider
-      {...wallet}
-      onUpdateError={(error) => {
-        onUpdateError?.("wallet", error);
-        wallet?.onUpdateError?.(error);
-      }}
-    >
-      <ExtensionsProvider
-        {...extensions}
-        onUpdateError={(error) => {
-          onUpdateError?.("extensions", error);
-          extensions?.onUpdateError?.(error);
-        }}
-      >
-        {children}
-      </ExtensionsProvider>
+    <WalletProvider>
+      <ExtensionsProvider>{children}</ExtensionsProvider>
     </WalletProvider>
   );
-}
+});

@@ -12,11 +12,6 @@
       "require": "./main.cjs",
       "types": "./main.d.ts"
     },
-    "./utils": {
-      "import": "./utils.js",
-      "require": "./utils.cjs",
-      "types": "./utils.d.ts"
-    },
     "./react": {
       "import": "./react.js",
       "require": "./react.cjs",
@@ -26,17 +21,13 @@
       "import": "./server.js",
       "require": "./server.cjs",
       "types": "./server.d.ts"
-    },
-    "./vanilla": {
-      "import": "./vanilla.js",
-      "require": "./vanilla.cjs",
-      "types": "./vanilla.d.ts"
     }
   },
   "files": ["**"],
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && vite build --config ./cdn.config.ts",
+    "build:cdn": "tsc && vite build --config ./cdn.config.ts",
     "lint": "biome lint --write .",
     "format": "biome format --write .",
     "check": "biome check --write .",

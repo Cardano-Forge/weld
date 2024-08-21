@@ -57,23 +57,24 @@ As developers, we aim to concentrate on our applications and objectives. However
 We aim to bridge the gap between our ideal dApp functionalities and the current market offerings by:
 
 - Standardizing usage across different wallets
-- Implementing reactive variables for addresses, stake address, network, and balance
-- Dispatching custom events upon relevant wallet changes
+- Implementing reactive variables for addresses, stake address, network, utxos and balance
+- Make a reactive system that can be used with or without any frontend frameworks
 
 ### What's not new
 
-Basic functions remain accessible through the library. Our goal is not to complicate the process, but to streamline the implementation of the default wallet API. By integrating reactive variables and custom events, we aim to enhance clarity and transparency regarding the activities on the dApp side.
+Basic functions remain accessible through the library. Our goal is not to complicate the process, but to streamline the implementation of the default wallet API.
+By making wallets reactive throught subscribable stores, we aim to enhance clarity and transparency regarding the activities on the dApp side.
 
 ## Get started
 
-### Weld provider
+### React provider
 
-After installing the library, wrap your App within the `WeldProvider`.
+After installing the library, wrap your React app within the `WeldProvider`.
 
 ```typescript
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { WeldProvider } from "@/lib/react/contexts/weld.context";
+import { WeldProvider } from "@ada-anvil/weld/react";
 import { App } from "./app";
 
 const root = document.querySelector("#root");
@@ -91,23 +92,30 @@ if (root) {
 
 ## Usage
 
-Here are common use cases for an app utilizing this library.
+Here are common use cases for this library.
 
 ### Wallet connection
 
-Use the exported `SUPPORTED_WALLETS` constant to display the available wallets.
-Additionally, you can use the `useExtensions` hooke to identify installed extensions, even if they are not officially supported.
+Use the exported `SUPPORTED_WALLETS` constant to display known wallets that are supported by the library, whether they are installed on the user's system or not
+Additionally, you can use the `useExtensions` hook to retrive only the extensions that are installed on the user's system.
 
 ```tsx
+// Extensions are exported as Maps to facilitate single access:
 const supportedExtensions = useExtensions((s) => s.supportedMap);
 const unsupportedExtensions = useExtensions((s) => s.unsupportedMap);
 const allExtensions = useExtensions((s) => s.allMap);
 
-// or
+const nami = allExtensions.get("nami");
+
+// ...and as Arrays to facilitate looping
 
 const supportedExtensions = useExtensions((s) => s.supportedArr);
 const unsupportedExtensions = useExtensions((s) => s.unsupportedArr);
 const allExtensions = useExtensions((s) => s.allArr);
+
+for (const extension of allExtensions) {
+  console.log("extension", extension);
+}
 ```
 
 You will be able to connect the wallet using one of the two connect functions exported from the `useWallet` hook.
@@ -119,10 +127,14 @@ walletHook.connect(key);
 
 // or
 
-const wallet = await walletHook.connectAsync(key);
+try {
+  const wallet = await walletHook.connectAsync(key);
+} catch (error) {
+  // Handle connection error
+}
 ```
 
-See [this implemantation](documentation/commons/wallet-dialog/index.tsx) for a use case example.
+See [this implementation](documentationkcommons/wallet-dialog/index.tsx) for a use case example.
 
 ### Error handling
 
@@ -154,7 +166,7 @@ walletHook.connect(key, {
 });
 ```
 
-See [this implemantation](documentation/commons/wallet-dialog/index.tsx) for a use case example.
+See [this implementation](documentation/commons/wallet-dialog/index.tsx) for a use case example.
 
 Alternatively, you can use the `connectAsync` function, which returns a promise containing the wallet handler and throws errors when they occur.
 
@@ -178,7 +190,7 @@ The provider wraps the asynchronous error events that are related to the current
 
 ```tsx
 <WeldProvider
-  onUpdateError={(type, error) => handleError(error)}
+  onUpdateError={(context, error) => handleError(context, error)}
   extensions={{ onUpdateError: (error) => handleError(error) }}
   wallet={{ onUpdateError: (error) => handleError(error) }}
 >
@@ -188,9 +200,12 @@ The provider wraps the asynchronous error events that are related to the current
 
 ### Reactive variable
 
-This very simple example would not be a real use case. But it shows that those values would be automatically updated if they are changing. This might seems trivial, but right now the default wallets API does not allow to achieve this easily. A valid use case for reactive variables are the connect button on a website header where the wallet icon is usally displayed as well as the balance.
+This very simple example would not be a real use case. But it shows that those values would be automatically updated if they are changing.
+This might seems trivial, but right now the default wallets API does not allow to achieve this easily.
+A valid use case for reactive variables are the connect button on a website header where the wallet icon is usally displayed as well as the balance.
 
-This simple example may not reflect a practical use case, yet it demonstrates how these values are automatically updated upon change. While this may seem trivial, achieving this is not straightforward with the current default wallets API.
+This simple example may not reflect a practical use case, yet it demonstrates how these values are automatically updated upon change.
+While this may seem trivial, achieving this is not straightforward with the current default wallets API.
 
 A pertinent application for reactive variables would be the connect button on a website's header, where the wallet icon and balance are typically displayed.
 
@@ -222,11 +237,15 @@ const wallet = useWallet();
 await wallet.handler.signTx("YOUR_TX", true);
 ```
 
-See [this implemantation](documentation/examples/d-other-methods/app.tsx) for a use case example.
+See [this implementation](documentation/examples/d-other-methods/app.tsx) for a use case example.
 
 ## Selectors
 
-React state selectors are functions or hooks that help manage and access specific parts of a component's state. They allow you to efficiently retrieve and update only the necessary pieces of state within a component, **reducing the need for re-rendering the entire component tree** when changes occur. By using state selectors, you can **optimize performance** by ensuring that only the relevant parts of the UI are updated, improving responsiveness and efficiency. This targeted state management makes your application more maintainable and scalable, as it prevents unnecessary computations and enhances overall performance.
+Ract state selectors are functions or hooks that help manage and access specific parts of a component's state.
+They allow you to efficiently retrieve and update only the necessary pieces of state within a component,
+**reducing the need for re-rendering the entire component tree** when changes occur.
+By using state selectors, you can **optimize performance** by ensuring that only the relevant parts of the UI are updated, improving responsiveness and efficiency.
+This targeted state management makes your application more maintainable and scalable, as it prevents unnecessary computations and enhances overall performance.
 
 > It is crucial to keep the state minimal and derive additional values from it whenever possible.
 
@@ -260,7 +279,7 @@ const { displayName, icon } = useWallet((state) => ({
 Deriving data can be helpful for simple tasks such as formatting the ADA balance, as shown in this [example](documentation/examples/b-simple-wallet-connect/app.tsx)
 
 ```typescript
-const balance = useWallet((state) => state.balanceAda?.toFixed(2));
+const balance = useWallet((state) => state.balanceAda?.toFixed(2) ?? "-");
 ```
 
 It can also be used to create custom states, as demonstrated in our [example](documentation/commons/wallet-dialog/wallet-btn.tsx).
@@ -268,13 +287,14 @@ It can also be used to create custom states, as demonstrated in our [example](do
 ```typescript
 const wallet = useWallet((s) => ({
   isConnectingTo: s.isConnectingTo,
-  isLoading: info.key === s.isConnectingTo,
+  isConnectingToNami: s.isConnectingTo === "nami",
 }));
 ```
 
 ## Persistence
 
-Weld offers a flexible interface for managing wallet connection persistence. In most cases, you shouldn't need to use this feature.
+Weld offers a flexible interface for managing wallet connection persistence.
+In most cases, you shouldn't need to use this feature as it's automatically handled by the wallet store.
 
 ```typescript
 weld.wallet.subscribeWithSelector(
@@ -293,14 +313,14 @@ weld.wallet.subscribeWithSelector(
 
 When using the library, an attempt will be made to reconnect the persisted wallet on first mount.
 
-If you are not using the automatic reconnection, you can use the `getPersistedValue` helper function to retrieve the persisted wallet and connect it during the initialization of your app.
+If you disable the persistence feature, you can still use the `getPersistedValue` helper function to retrieve the persisted wallet and connect it during the initialization of your app.
 
 ```typescript
-const walletHook = useWallet();
-const lastConnectedWallet = getPersistedValue("connectedWallet");
-
-if (lastConnectedWallet) {
-  walletHook.connect(lastConnectedWallet);
+function initFunction() {
+  const lastConnectedWallet = getPersistedValue("connectedWallet");
+  if (lastConnectedWallet) {
+    weld.wallet.getState().connect(lastConnectedWallet);
+  }
 }
 ```
 
@@ -308,8 +328,8 @@ _Note: `getPersistedValue` always returns `undefined` when persistence is disabl
 
 ### Configuration
 
-By default, the user's wallet connection is persisted to [local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage).
-This behavior can be customized by providing a different [Storage](https://developer.mozilla.org/en-US/docs/Web/API/Storage) interface to the global configuration object.
+By default, the user's wallet connection is persisted in a cookie to allow support for SSR.
+This behavior can be customized by updating the configuration store to provide a different [Storage](https://developer.mozilla.org/en-US/docs/Web/API/Storage) interface.
 
 Here’s how to customize the persistence using the WeldProvider:
 
@@ -344,29 +364,33 @@ export default function RootLayout({ children }) {
 Here’s an example using the default configuration.
 
 ```typescript
-defaults.persistence.storage = {
-  get(key) {
-    if (typeof window !== "undefined") {
-      return window.localStorage.getItem(key) ?? undefined;
-    }
+weld.config.getState().update({
+  storage: {
+    get(key) {
+      if (typeof window !== "undefined") {
+        return window.localStorage.getItem(key) ?? undefined;
+      }
+    },
+    set(key, value) {
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(key, value);
+      }
+    },
+    remove(key) {
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem(key);
+      }
+    },
   },
-  set(key, value) {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(key, value);
-    }
-  },
-  remove(key) {
-    if (typeof window !== "undefined") {
-      window.localStorage.removeItem(key);
-    }
-  },
-};
+});
 ```
 
-The persistence features can be disabled through the global configuration object:
+The persistence features can be disabled through the configuration store:
 
 ```typescript
-defaults.persistence.enabled = false;
+weld.config.getState().update({
+  enablePersistence: false,
+});
 ```
 
 _Note: When using a SSR framework, make sure to set configuration options inside a client side file_
@@ -382,15 +406,13 @@ import { STORAGE_KEYS } from "@ada-anvil/weld/server";
 import { WeldProvider } from "@ada-anvil/weld/react";
 
 export default function RootLayout({ children }) {
-  const isConnectingTo = cookies().get(STORAGE_KEYS.connectedWallet)?.value;
+  const lastConnectedWallet = cookies().get(STORAGE_KEYS.connectedWallet)?.value;
   return (
     <WeldProvider
-      config={{
-        wallet: {
-          initialState: { isConnectingTo },
-        },
+      wallet={{
+        tryToReconnectTo: isConnectingTo,
       }}
-    >
+  >
       {children}
     </WeldProvider>
   );
@@ -399,7 +421,7 @@ export default function RootLayout({ children }) {
 
 ## Examples
 
-> A recent version of Node.js is required for this project.
+> A recent version of Node.js is required to run the demo server and view the examples.
 
 To run the examples, navigate to the project's root directory and execute `npm install`, then `npm run dev`.
 
