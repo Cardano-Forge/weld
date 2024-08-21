@@ -3,7 +3,7 @@ import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/in
 
 import { setupAutoUpdate } from "@/internal/update";
 import { get } from "@/internal/utils/get";
-import { type SolExtension, isSolHandler, SOL_EXTENSIONS } from "../types";
+import { SOL_EXTENSIONS, type SolExtension, isSolHandler } from "../types";
 
 export type SolExtensionsProps = {
   supportedArr: SolExtension[];
@@ -12,15 +12,15 @@ export type SolExtensionsProps = {
   installedMap: Map<string, SolExtension>;
 };
 
-export type SolApi = {
+export type SolExtensionsApi = {
   updateExtensions(): void;
 } & StoreLifeCycleMethods;
 
-export type SolExtensionsState = SolExtensionsProps;
+export type SolExtensionsState = SolExtensionsProps & SolExtensionsApi;
 
 export type SolExtensionsStore = Store<SolExtensionsState>;
 
-function newInitialSolState(): SolExtensionsState {
+function newInitialSolState(): SolExtensionsProps {
   return {
     supportedArr: [],
     supportedMap: new Map(),

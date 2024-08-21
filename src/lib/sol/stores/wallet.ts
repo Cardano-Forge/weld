@@ -10,14 +10,20 @@ import {
 } from "@/lib/main";
 import type { WalletConfig } from "@/lib/main/stores/config";
 import { STORAGE_KEYS } from "@/lib/server";
-import type { SolExtensionInfo, SolExtensionKey, SolHandler } from "../types";
+import { Connection, PublicKey, clusterApiUrl } from "@solana/web3.js";
 import { weldSol } from ".";
+import type { SolExtensionInfo, SolExtensionKey, SolHandler } from "../types";
+import { lamportToSol } from "../utils";
 
 export type SolWalletProps = SolExtensionInfo & {
   isConnected: boolean;
   isConnecting: boolean;
   isConnectingTo: SolExtensionKey | undefined;
+  balanceLamport: number;
+  balanceSol: number;
   handler: SolHandler;
+  connection: Connection;
+  publicKey: PublicKey;
 };
 
 export type ConnectedSolWalletState = Extract<SolWalletState, { isConnected: true }>;
@@ -30,7 +36,11 @@ function newInitialSolState(): PartialWithDiscriminant<SolWalletProps, "isConnec
     isConnected: false,
     isConnecting: false,
     isConnectingTo: undefined,
+    balanceLamport: undefined,
+    balanceSol: undefined,
     handler: undefined,
+    connection: undefined,
+    publicKey: undefined,
   };
 }
 
@@ -92,9 +102,14 @@ export const createSolWalletStore = createStoreFactory<SolWalletState>((setState
         }, connectTimeout);
       }
 
+      // Make sure the extensions are loaded
+      weldSol.extensions.getState().updateExtensions();
       const extension = weldSol.extensions.getState().installedMap.get(key);
+      const handler = extension?.handler;
 
-      if (!extension?.handler) {
+      await handler?.connect();
+
+      if (!extension || !handler?.publicKey) {
         throw new WalletConnectionError(`The ${key} extension is not installed`);
       }
 
@@ -102,7 +117,13 @@ export const createSolWalletStore = createStoreFactory<SolWalletState>((setState
         throw new WalletConnectionAbortedError();
       }
 
+      const publicKey = new PublicKey(handler.publicKey.toBytes());
+
+      const connection = new Connection(clusterApiUrl("devnet"));
+
       const updateState = async () => {
+        const balanceLamport = await connection.getBalance(publicKey);
+
         const newState: Partial<ConnectedSolWalletState> = {
           key: extension.key,
           displayName: extension.displayName,
@@ -110,6 +131,10 @@ export const createSolWalletStore = createStoreFactory<SolWalletState>((setState
           isConnecting: false,
           isConnectingTo: undefined,
           handler: extension.handler,
+          balanceLamport,
+          balanceSol: lamportToSol(balanceLamport),
+          connection,
+          publicKey,
         };
 
         setState(newState);

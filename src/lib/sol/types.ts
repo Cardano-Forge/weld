@@ -60,6 +60,6 @@ export const SOL_EXTENSIONS = [
     displayName: "Exodus",
     handlerPath: "exodus.solana",
   },
-] as const satisfies Omit<SolExtension, "isInstalled" | "handler">[];
+] as const satisfies readonly Omit<SolExtension, "isInstalled" | "handler">[];
 
 export type SolExtensionKey = (typeof SOL_EXTENSIONS)[number]["key"];

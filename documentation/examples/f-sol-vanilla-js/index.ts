@@ -12,14 +12,14 @@ weldSol.wallet.subscribeWithSelector(
   },
 );
 
-// weldSol.wallet.subscribeWithSelector(
-//   (state) => state.balanceAda?.toFixed(2) ?? "-",
-//   (balance) => {
-//     console.log("balance", balance);
-//     // biome-ignore lint/style/noNonNullAssertion: We know the element exists
-//     document.querySelector("#balance")!.textContent = balance;
-//   },
-// );
+weldSol.wallet.subscribeWithSelector(
+  (state) => state.balanceSol?.toFixed(2) ?? "-",
+  (balance) => {
+    console.log("balance", balance);
+    // biome-ignore lint/style/noNonNullAssertion: We know the element exists
+    document.querySelector("#balance")!.textContent = balance;
+  },
+);
 
 weldSol.wallet.subscribeWithSelector(
   (state) => state.isConnectingTo ?? "-",
@@ -31,7 +31,12 @@ weldSol.wallet.subscribeWithSelector(
 );
 
 document.querySelector("#connect")?.addEventListener("click", () => {
-  weldSol.wallet.getState().connect("phantom");
+  console.log("click");
+  weldSol.wallet.getState().connect("phantom", {
+    onError(error) {
+      console.log("error", error);
+    },
+  });
 });
 
 document.querySelector("#disconnect")?.addEventListener("click", () => {
