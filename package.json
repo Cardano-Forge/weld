@@ -26,6 +26,16 @@
       "import": "./sol.js",
       "require": "./sol.cjs",
       "types": "./sol.d.ts"
+    },
+    "./eth": {
+      "import": "./eth.js",
+      "require": "./eth.cjs",
+      "types": "./eth.d.ts"
+    },
+    "./matic": {
+      "import": "./matic.js",
+      "require": "./matic.cjs",
+      "types": "./matic.d.ts"
     }
   },
   "files": ["**"],
@@ -63,9 +73,10 @@
     "vitest": "^2.0.5"
   },
   "peerDependencies": {
+    "@solana/web3.js": ">=1.95.2",
     "@types/react": ">=17.0.0",
-    "react": ">=17.0.0",
-    "@solana/web3.js": ">=1.95.2"
+    "ethers": "^6.13.2",
+    "react": ">=17.0.0"
   },
   "peerDependenciesMeta": {
     "@types/react": {
@@ -75,6 +86,9 @@
       "optional": true
     },
     "@solana/web3.js": {
+      "optional": true
+    },
+    "ethers": {
       "optional": true
     }
   },
