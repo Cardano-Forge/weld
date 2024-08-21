@@ -3,7 +3,11 @@ import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/in
 
 import { setupAutoUpdate } from "@/internal/update";
 import type { PartialWithDiscriminant } from "@/internal/utils/types";
-import { WalletConnectionAbortedError, WalletDisconnectAccountError } from "@/lib/main";
+import {
+  WalletConnectionAbortedError,
+  WalletConnectionError,
+  WalletDisconnectAccountError,
+} from "@/lib/main";
 import type { WalletConfig } from "@/lib/main/stores/config";
 import { STORAGE_KEYS } from "@/lib/server";
 import type { SolExtensionInfo, SolHandler } from "../types";
@@ -88,21 +92,24 @@ export const createSolWalletStore = createStoreFactory<SolWalletStoreState>(
           }, connectTimeout);
         }
 
-        const handler = weldSol.wallet
+        const extension = weldSol.extensions.getState().installedMap.get(key);
+
+        if (!extension?.handler) {
+          throw new WalletConnectionError(`The ${key} extension is not installed`);
+        }
 
         if (signal.aborted) {
           throw new WalletConnectionAbortedError();
         }
 
         const updateState = async () => {
-          const prevState = getState();
           const newState: Partial<ConnectedSolWalletState> = {
-            key: prevState.key,
-            displayName: prevState.displayName,
+            key: extension.key,
+            displayName: extension.displayName,
             isConnected: true,
             isConnecting: false,
             isConnectingTo: undefined,
-            handler,
+            handler: extension.handler,
           };
 
           setState(newState);
