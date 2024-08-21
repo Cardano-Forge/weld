@@ -58,7 +58,7 @@ We aim to bridge the gap between our ideal dApp functionalities and the current 
 
 - Standardizing usage across different wallets
 - Implementing reactive variables for addresses, stake address, network, utxos and balance
-- Make a reactive system that can be used with or without any frontend frameworks 
+- Make a reactive system that can be used with or without any frontend frameworks
 
 ### What's not new
 
@@ -99,9 +99,8 @@ Here are common use cases for this library.
 Use the exported `SUPPORTED_WALLETS` constant to display known wallets that are supported by the library, whether they are installed on the user's system or not
 Additionally, you can use the `useExtensions` hook to retrive only the extensions that are installed on the user's system.
 
-
 ```tsx
-// Extensions are exported as Maps to facilitate single access: 
+// Extensions are exported as Maps to facilitate single access:
 const supportedExtensions = useExtensions((s) => s.supportedMap);
 const unsupportedExtensions = useExtensions((s) => s.unsupportedMap);
 const allExtensions = useExtensions((s) => s.allMap);
@@ -115,7 +114,7 @@ const unsupportedExtensions = useExtensions((s) => s.unsupportedArr);
 const allExtensions = useExtensions((s) => s.allArr);
 
 for (const extension of allExtensions) {
-    console.log("extension", extension);
+  console.log("extension", extension);
 }
 ```
 
@@ -129,9 +128,9 @@ walletHook.connect(key);
 // or
 
 try {
-    const wallet = await walletHook.connectAsync(key);
+  const wallet = await walletHook.connectAsync(key);
 } catch (error) {
-    // Handle connection error
+  // Handle connection error
 }
 ```
 
@@ -201,11 +200,11 @@ The provider wraps the asynchronous error events that are related to the current
 
 ### Reactive variable
 
-This very simple example would not be a real use case. But it shows that those values would be automatically updated if they are changing. 
-This might seems trivial, but right now the default wallets API does not allow to achieve this easily. 
+This very simple example would not be a real use case. But it shows that those values would be automatically updated if they are changing.
+This might seems trivial, but right now the default wallets API does not allow to achieve this easily.
 A valid use case for reactive variables are the connect button on a website header where the wallet icon is usally displayed as well as the balance.
 
-This simple example may not reflect a practical use case, yet it demonstrates how these values are automatically updated upon change. 
+This simple example may not reflect a practical use case, yet it demonstrates how these values are automatically updated upon change.
 While this may seem trivial, achieving this is not straightforward with the current default wallets API.
 
 A pertinent application for reactive variables would be the connect button on a website's header, where the wallet icon and balance are typically displayed.
@@ -242,10 +241,10 @@ See [this implementation](documentation/examples/d-other-methods/app.tsx) for a 
 
 ## Selectors
 
-Ract state selectors are functions or hooks that help manage and access specific parts of a component's state. 
+Ract state selectors are functions or hooks that help manage and access specific parts of a component's state.
 They allow you to efficiently retrieve and update only the necessary pieces of state within a component,
-**reducing the need for re-rendering the entire component tree** when changes occur. 
-By using state selectors, you can **optimize performance** by ensuring that only the relevant parts of the UI are updated, improving responsiveness and efficiency. 
+**reducing the need for re-rendering the entire component tree** when changes occur.
+By using state selectors, you can **optimize performance** by ensuring that only the relevant parts of the UI are updated, improving responsiveness and efficiency.
 This targeted state management makes your application more maintainable and scalable, as it prevents unnecessary computations and enhances overall performance.
 
 > It is crucial to keep the state minimal and derive additional values from it whenever possible.
@@ -294,7 +293,7 @@ const wallet = useWallet((s) => ({
 
 ## Persistence
 
-Weld offers a flexible interface for managing wallet connection persistence. 
+Weld offers a flexible interface for managing wallet connection persistence.
 In most cases, you shouldn't need to use this feature as it's automatically handled by the wallet store.
 
 ```typescript
@@ -318,10 +317,10 @@ If you disable the persistence feature, you can still use the `getPersistedValue
 
 ```typescript
 function initFunction() {
-    const lastConnectedWallet = getPersistedValue("connectedWallet");
-    if (lastConnectedWallet) {
-        weld.wallet.getState().connect(lastConnectedWallet);
-    }
+  const lastConnectedWallet = getPersistedValue("connectedWallet");
+  if (lastConnectedWallet) {
+    weld.wallet.getState().connect(lastConnectedWallet);
+  }
 }
 ```
 
@@ -366,23 +365,23 @@ Here’s an example using the default configuration.
 
 ```typescript
 weld.config.getState().update({
-    storage: {
-        get(key) {
-          if (typeof window !== "undefined") {
-            return window.localStorage.getItem(key) ?? undefined;
-          }
-        },
-        set(key, value) {
-          if (typeof window !== "undefined") {
-            window.localStorage.setItem(key, value);
-          }
-        },
-        remove(key) {
-          if (typeof window !== "undefined") {
-            window.localStorage.removeItem(key);
-          }
-        },
-    }
+  storage: {
+    get(key) {
+      if (typeof window !== "undefined") {
+        return window.localStorage.getItem(key) ?? undefined;
+      }
+    },
+    set(key, value) {
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(key, value);
+      }
+    },
+    remove(key) {
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem(key);
+      }
+    },
+  },
 });
 ```
 
@@ -390,7 +389,7 @@ The persistence features can be disabled through the configuration store:
 
 ```typescript
 weld.config.getState().update({
-    enablePersistence: false,
+  enablePersistence: false,
 });
 ```
 
@@ -409,7 +408,7 @@ import { WeldProvider } from "@ada-anvil/weld/react";
 export default function RootLayout({ children }) {
   const lastConnectedWallet = cookies().get(STORAGE_KEYS.connectedWallet)?.value;
   return (
-    <WeldProvider 
+    <WeldProvider
       wallet={{
         tryToReconnectTo: isConnectingTo,
       }}
