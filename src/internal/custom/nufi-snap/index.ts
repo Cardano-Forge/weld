@@ -8,6 +8,7 @@ import { runOnce } from "@/internal/utils/run-once";
 
 class NufiSnapHandler extends DefaultWalletHandler {
   async disconnect(): Promise<void> {
+    super.disconnect();
     nufiCoreSdk.getApi().hideWidget();
   }
 }

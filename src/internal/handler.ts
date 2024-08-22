@@ -42,6 +42,7 @@ export type WalletHandler = {
   signTx(tx: string, partialSign?: boolean): Promise<string>;
   submitTx(tx: string): Promise<string>;
   signData(payload: string): Promise<Signature>;
+  isDisconnected: boolean;
   disconnect(): Promise<void>;
 };
 
@@ -239,5 +240,11 @@ export class DefaultWalletHandler implements WalletHandler {
     return this._enabledApi.signData(stake, payload);
   }
 
-  async disconnect(): Promise<void> {}
+  protected _isDisconnected = false;
+  get isDisconnected() {
+    return this._isDisconnected;
+  }
+  async disconnect(): Promise<void> {
+    this._isDisconnected = true;
+  }
 }

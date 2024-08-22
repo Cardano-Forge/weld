@@ -193,7 +193,7 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
           .then((res) => {
             const utxos = res ?? [];
 
-            if (!signal.aborted) {
+            if (!signal.aborted && !handler.isDisconnected) {
               setState({ isUpdatingUtxos: false, utxos });
             }
 
@@ -206,7 +206,7 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
           .catch((error) => {
             handleUpdateError(new WalletUtxosUpdateError(getFailureReason(error)));
 
-            if (!signal.aborted) {
+            if (!signal.aborted && !handler.isDisconnected) {
               setState({ isUpdatingUtxos: false, utxos: [] });
             }
 
@@ -256,7 +256,9 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
           nbOfUpdatesSinceUtxosUpdate++;
         }
 
-        setState(newState);
+        if (!handler.isDisconnected) {
+          setState(newState);
+        }
       };
 
       const safeUpdateState = async () => {

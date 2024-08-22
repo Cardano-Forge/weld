@@ -3,6 +3,9 @@ import { setupStores, weld } from "@/lib/main";
 setupStores(weld.wallet, weld.extensions);
 
 weld.config.getState().update({
+  wallet: {
+    updateInterval: 8000,
+  },
   extensions: {
     updateInterval: false,
   },
