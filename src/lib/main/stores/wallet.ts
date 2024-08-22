@@ -110,11 +110,12 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
   };
 
   const disconnect: WalletApi["disconnect"] = () => {
+    lifecycle.subscriptions.clearAll();
     if (inFlightUtxosUpdate) {
       inFlightUtxosUpdate.signal.aborted = true;
       inFlightUtxosUpdate.resolve([]);
     }
-    lifecycle.subscriptions.clearAll();
+    getState().handler?.disconnect();
     setState(initialWalletState);
     if (weld.config.getState().enablePersistence) {
       weld.config.getState().storage.remove(STORAGE_KEYS.connectedWallet);
@@ -122,6 +123,8 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
   };
 
   const connectAsync: WalletApi["connectAsync"] = async (key, configOverrides) => {
+    disconnect();
+
     const signal = lifecycle.inFlight.add();
 
     try {
@@ -190,7 +193,7 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
           .then((res) => {
             const utxos = res ?? [];
 
-            if (!signal.aborted) {
+            if (!signal.aborted && !handler.isDisconnected) {
               setState({ isUpdatingUtxos: false, utxos });
             }
 
@@ -203,7 +206,7 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
           .catch((error) => {
             handleUpdateError(new WalletUtxosUpdateError(getFailureReason(error)));
 
-            if (!signal.aborted) {
+            if (!signal.aborted && !handler.isDisconnected) {
               setState({ isUpdatingUtxos: false, utxos: [] });
             }
 
@@ -245,8 +248,6 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
           ...handler.info,
         };
 
-        console.log("nbOfUpdatesSinceUtxosUpdate", nbOfUpdatesSinceUtxosUpdate);
-
         if (hasBalanceChanged || nbOfUpdatesSinceUtxosUpdate > 10) {
           updateUtxos({ expectChange: hasBalanceChanged });
           newState.isUpdatingUtxos = true;
@@ -255,7 +256,9 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
           nbOfUpdatesSinceUtxosUpdate++;
         }
 
-        setState(newState);
+        if (!handler.isDisconnected) {
+          setState(newState);
+        }
       };
 
       const safeUpdateState = async () => {

@@ -3,6 +3,9 @@ import { setupStores, weld } from "@/lib/main";
 setupStores(weld.wallet, weld.extensions);
 
 weld.config.getState().update({
+  wallet: {
+    updateInterval: 8000,
+  },
   extensions: {
     updateInterval: false,
   },
@@ -25,11 +28,25 @@ weld.wallet.subscribeWithSelector(
 
 weld.extensions.subscribeWithSelector(
   (s) => s.allArr,
-  (ext) => {
-    console.log(
-      "ext",
-      ext.map((e) => e.info.displayName),
-    );
+  (extensions) => {
+    const select = document.querySelector("#wallet-selector select");
+    if (!(select instanceof HTMLSelectElement)) {
+      return;
+    }
+    const options = [];
+    for (const extension of extensions) {
+      const option = document.createElement("option");
+      option.value = extension.info.key;
+      option.innerText = extension.info.displayName;
+      options.push(option);
+    }
+    if (options.length === 0) {
+      const option = document.createElement("option");
+      option.value = "";
+      option.innerText = "No wallets";
+      options.push(option);
+    }
+    select.replaceChildren(...options);
   },
 );
 
@@ -60,9 +77,17 @@ weld.wallet.subscribeWithSelector(
   },
 );
 
-document.querySelector("#connect")?.addEventListener("click", () => {
-  weld.wallet.getState().connect("nami");
-});
+const form = document.querySelector("#wallet-selector");
+if (form instanceof HTMLFormElement) {
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const data = new FormData(form);
+    const walletKey = data.get("wallet-key")?.toString();
+    if (walletKey) {
+      weld.wallet.getState().connect(walletKey);
+    }
+  });
+}
 
 document.querySelector("#disconnect")?.addEventListener("click", () => {
   weld.wallet.getState().disconnect();

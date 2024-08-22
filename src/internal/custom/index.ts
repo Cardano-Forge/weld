@@ -2,11 +2,14 @@ import type { DefaultWalletHandler, WalletHandler } from "@/internal/handler";
 
 import type { WalletKey } from "@/lib/main";
 import type { AnyFunction } from "../utils/types";
-import { eternl } from "./eternl";
 import type { CustomWallet } from "./type";
+
+import { eternl } from "./eternl";
+import { nufiSnap } from "./nufi-snap";
 
 export const customWallets = {
   eternl,
+  nufiSnap,
 } satisfies Partial<Record<WalletKey, CustomWallet>>;
 
 export type CustomWallets = typeof customWallets;
