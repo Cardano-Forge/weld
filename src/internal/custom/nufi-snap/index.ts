@@ -1,8 +1,16 @@
 import { initNufiDappCardanoSdk } from "@nufi/dapp-client-cardano";
 import nufiCoreSdk from "@nufi/dapp-client-core";
 
+import { getDefaultWalletConnector } from "@/internal/connector";
 import { createCustomWallet } from "@/internal/custom/type";
+import { DefaultWalletHandler } from "@/internal/handler";
 import { runOnce } from "@/internal/utils/run-once";
+
+class NufiSnapHandler extends DefaultWalletHandler {
+  async disconnect(): Promise<void> {
+    nufiCoreSdk.getApi().hideWidget();
+  }
+}
 
 export const nufiSnap = createCustomWallet({
   initialize: runOnce(async () => {
@@ -10,4 +18,5 @@ export const nufiSnap = createCustomWallet({
     initNufiDappCardanoSdk(nufiCoreSdk, "snap");
     return true;
   }),
+  connector: getDefaultWalletConnector(NufiSnapHandler),
 });

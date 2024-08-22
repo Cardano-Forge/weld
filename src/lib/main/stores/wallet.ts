@@ -114,6 +114,7 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
       inFlightUtxosUpdate.signal.aborted = true;
       inFlightUtxosUpdate.resolve([]);
     }
+    getState().handler?.disconnect();
     lifecycle.subscriptions.clearAll();
     setState(initialWalletState);
     if (weld.config.getState().enablePersistence) {

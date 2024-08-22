@@ -42,6 +42,7 @@ export type WalletHandler = {
   signTx(tx: string, partialSign?: boolean): Promise<string>;
   submitTx(tx: string): Promise<string>;
   signData(payload: string): Promise<Signature>;
+  disconnect(): Promise<void>;
 };
 
 export class DefaultWalletHandler implements WalletHandler {
@@ -237,4 +238,6 @@ export class DefaultWalletHandler implements WalletHandler {
     const stake = await this.getStakeAddressHex();
     return this._enabledApi.signData(stake, payload);
   }
+
+  async disconnect(): Promise<void> {}
 }
