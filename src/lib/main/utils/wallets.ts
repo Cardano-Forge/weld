@@ -75,7 +75,7 @@ export const SUPPORTED_WALLETS = [
   {
     supported: true,
     key: "nufiSnap",
-    displayName: "NuFi Snap",
+    displayName: "MetaMask",
     icon: "https://raw.githubusercontent.com/cardano-forge/universal-wallet-connector/main/images/wallets/nufi-snap.svg",
     website:
       "https://chrome.google.com/webstore/detail/nufi/gpnihlnnodeiiaakbikldcihojploeca?hl=en-US",

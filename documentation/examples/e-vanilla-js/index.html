@@ -21,7 +21,18 @@
     <div>
       Balance: <span id="balance">-</span>
     </div>
-    <button id="connect">Connect</button>
+
+    <form id="wallet-selector">
+      <select name="wallet-key" value="" style="min-width: 100px;">
+        <option value="">
+          Loading...
+        </option>
+      </select>
+      <button type="submit">
+        Connect
+      </button>
+    </form>
+
     <button id="disconnect">Disconnect</button>
   </main>
   <script type="module" src="/documentation/examples/e-vanilla-js/index.ts"></script>

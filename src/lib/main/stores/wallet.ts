@@ -245,8 +245,6 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
           ...handler.info,
         };
 
-        console.log("nbOfUpdatesSinceUtxosUpdate", nbOfUpdatesSinceUtxosUpdate);
-
         if (hasBalanceChanged || nbOfUpdatesSinceUtxosUpdate > 10) {
           updateUtxos({ expectChange: hasBalanceChanged });
           newState.isUpdatingUtxos = true;
