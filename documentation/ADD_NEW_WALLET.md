@@ -33,7 +33,7 @@ To add a new wallet, you will need the following:
        supported: true,
        key: "my_custom_wallet",
        displayName: "My Custom Wallet",
-       icon: "https://raw.githubusercontent.com/cardano-forge/universal-wallet-connector/main/images/wallets/my_custom_wallet.svg",
+       icon: "https://raw.githubusercontent.com/cardano-forge/weld/main/images/wallets/my_custom_wallet.svg",
        website: "https://ada-anvil.io/",
      },
    ] as const satisfies AbstractWalletInfo[];
@@ -55,4 +55,4 @@ Then, navigate to : `http://localhost:5173`
 
 5. **Open a Pull Request**
 
-- Once everything is tested, open a PR on the _Cardano-Forge/universal-wallet-connector_ repository.
+- Once everything is tested, open a PR on the _Cardano-Forge/weld_ repository.

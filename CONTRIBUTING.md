@@ -2,11 +2,11 @@
 
 ## How to report a bug
 
-<a href="https://github.com/Cardano-Forge/universal-wallet-connector/issues/new?labels=bug&template=bug-report.md">Report Bug</a>
+<a href="https://github.com/Cardano-Forge/weld/issues/new?labels=bug&template=bug-report.md">Report Bug</a>
 
 ## How to request a new feature
 
-<a href="https://github.com/Cardano-Forge/universal-wallet-connector/issues/new?labels=enhancement&template=feature-request.md">Request Feature</a>
+<a href="https://github.com/Cardano-Forge/weld/issues/new?labels=enhancement&template=feature-request.md">Request Feature</a>
 
 ## Need help getting started ?
 

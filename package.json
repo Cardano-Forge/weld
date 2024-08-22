@@ -79,12 +79,12 @@
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
-  "homepage": "https://github.com/Cardano-Forge/universal-wallet-connector",
+  "homepage": "https://github.com/Cardano-Forge/weld",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Cardano-Forge/universal-wallet-connector.git"
+    "url": "https://github.com/Cardano-Forge/weld.git"
   },
   "bugs": {
-    "url": "https://github.com/Cardano-Forge/universal-wallet-connector/issues"
+    "url": "https://github.com/Cardano-Forge/weld/issues"
   }
 }

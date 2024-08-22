@@ -8,9 +8,9 @@
   <p align="center">
     The last wallet connector you will need!
     <br />
-    <a href="https://github.com/Cardano-Forge/universal-wallet-connector/issues/new?labels=bug&template=bug-report.md">Report Bug</a>
+    <a href="https://github.com/Cardano-Forge/weld/issues/new?labels=bug&template=bug-report.md">Report Bug</a>
     ·
-    <a href="https://github.com/Cardano-Forge/universal-wallet-connector/issues/new?labels=enhancement&template=feature-request.md">Request Feature</a>
+    <a href="https://github.com/Cardano-Forge/weld/issues/new?labels=enhancement&template=feature-request.md">Request Feature</a>
   </p>
 </div>
 
