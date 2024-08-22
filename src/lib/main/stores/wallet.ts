@@ -110,12 +110,12 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
   };
 
   const disconnect: WalletApi["disconnect"] = () => {
+    lifecycle.subscriptions.clearAll();
     if (inFlightUtxosUpdate) {
       inFlightUtxosUpdate.signal.aborted = true;
       inFlightUtxosUpdate.resolve([]);
     }
     getState().handler?.disconnect();
-    lifecycle.subscriptions.clearAll();
     setState(initialWalletState);
     if (weld.config.getState().enablePersistence) {
       weld.config.getState().storage.remove(STORAGE_KEYS.connectedWallet);
@@ -123,6 +123,8 @@ export const createWalletStore = createStoreFactory<WalletStoreState>((setState,
   };
 
   const connectAsync: WalletApi["connectAsync"] = async (key, configOverrides) => {
+    disconnect();
+
     const signal = lifecycle.inFlight.add();
 
     try {
