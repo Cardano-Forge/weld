@@ -6,9 +6,11 @@ import { initialize } from "./initialize";
  * _When using weld with React, setup is performed through the WeldProvider, so no need to call it manually_.
  */
 export function setupStores(...stores: Store[]) {
+  window.addEventListener("load", () => {
+    initialize();
+  });
   for (const store of stores) {
     window.addEventListener("load", () => {
-      initialize();
       const state = store.getState();
       if (hasPersistMethod(state)) {
         state.__persist?.();
