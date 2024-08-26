@@ -1,11 +1,18 @@
 // adapted from https://github.com/pmndrs/zustand/blob/main/src/vanilla.ts
 
 import { compare } from "./compare";
+import { initCustomWallets } from "./custom/init";
 
 export type StoreListener<T> = (state: T, prevState: T | undefined) => void;
 
+export type StoreSetupFunctions = {
+  __init?(): void;
+  __cleanup?(): void;
+  __persist?(data?: unknown): void;
+};
+
 // biome-ignore lint/suspicious/noExplicitAny: Allow any store for generics
-export type Store<TState = any> = {
+export type Store<TState = any, TPersistData = never> = {
   getState: () => TState;
   getInitialState: () => TState;
   setState: (
@@ -17,25 +24,31 @@ export type Store<TState = any> = {
     listener: StoreListener<TSlice>,
     opts?: { fireImmediately?: boolean },
   ) => () => void;
+  init: (persistData?: TPersistData) => void;
+  cleanup: () => void;
 };
 
-export type StoreHandler<TState, TParams extends ReadonlyArray<unknown> = []> = (
-  setState: Store<TState>["setState"],
-  getState: Store<TState>["getState"],
+export type StoreHandler<
+  TState,
+  TPersistData = never,
+  TParams extends ReadonlyArray<unknown> = [],
+> = (
+  setState: Store<TState, TPersistData>["setState"],
+  getState: Store<TState, TPersistData>["getState"],
   ...params: TParams
 ) => TState;
 
-export type ReadonlyStore<TState> = Omit<Store<TState>, "setState">;
+export type ReadonlyStore<TState, TPersistData> = Omit<Store<TState, TPersistData>, "setState">;
 
 export type ExtractStoreState<TStore> = TStore extends { getState: () => infer T } ? T : never;
 
-export function createStore<TState extends object>(
+export function createStore<TState extends object, TPersistData = never>(
   createState: StoreHandler<TState>,
-): Store<TState> {
+): Store<TState, TPersistData> {
   let state: TState;
   const listeners = new Set<StoreListener<TState>>();
 
-  const setState: Store<TState>["setState"] = (partial) => {
+  const setState: Store<TState, TPersistData>["setState"] = (partial) => {
     const partialNext = typeof partial === "function" ? partial(state) : partial;
     const next =
       typeof partialNext !== "object" || partialNext === null
@@ -87,7 +100,33 @@ export function createStore<TState extends object>(
     };
   };
 
-  const store = { setState, getState, getInitialState, subscribe, subscribeWithSelector };
+  let isPersisted = false;
+
+  const init = (data?: unknown) => {
+    initCustomWallets();
+    const state = getState() as StoreSetupFunctions | undefined;
+    if (!isPersisted) {
+      state?.__persist?.(data);
+      isPersisted = true;
+    }
+    state?.__init?.();
+  };
+
+  const cleanup = () => {
+    const state = getState() as StoreSetupFunctions | undefined;
+    state?.__cleanup?.();
+    listeners.clear();
+  };
+
+  const store = {
+    setState,
+    getState,
+    getInitialState,
+    subscribe,
+    subscribeWithSelector,
+    init,
+    cleanup,
+  };
 
   const initialState = createState(setState, getState);
   state = initialState;
@@ -95,43 +134,28 @@ export function createStore<TState extends object>(
   return store;
 }
 
-export type StoreFactory<TState extends object, TParams extends ReadonlyArray<unknown>> = (
-  ...params: TParams
-) => Store<TState>;
+export type StoreFactory<
+  TState extends object,
+  TPersistData = never,
+  TParams extends ReadonlyArray<unknown> = [],
+> = (...params: TParams) => Store<TState, TPersistData>;
 
 export function createStoreFactory<
   TState extends object,
+  TPersistData = never,
   TParams extends ReadonlyArray<unknown> = [],
 >(
   storeHandler: (
-    setState: Store<TState>["setState"],
-    getState: Store<TState>["getState"],
+    setState: Store<TState, TPersistData>["setState"],
+    getState: Store<TState, TPersistData>["getState"],
     ...params: TParams
   ) => TState,
 ) {
   const factory = (...params: TParams) => {
-    return createStore<TState>((s, g) => {
+    return createStore<TState, TPersistData>((s, g) => {
       return storeHandler(s, g, ...params);
     });
   };
 
   return factory;
-}
-
-export type StoreLifeCycleMethods = {
-  init?(): void;
-  cleanup?(): void;
-};
-
-export function hasLifeCycleMethods(store: unknown): store is StoreLifeCycleMethods {
-  if (!store || typeof store !== "object" || store === null) return false;
-  if ("init" in store && typeof store.init === "function") return true;
-  if ("cleanup" in store && typeof store.cleanup === "function") return true;
-  return false;
-}
-
-export function hasPersistMethod(store: unknown): store is { __persist(): void } {
-  if (!store || typeof store !== "object" || store === null) return false;
-  if ("__persist" in store && typeof store.__persist === "function") return true;
-  return false;
 }

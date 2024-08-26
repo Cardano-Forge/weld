@@ -1,6 +1,12 @@
-import { setupStores, weld } from "@/lib/main";
+import { weld } from "@/lib/main";
 
-setupStores(weld.wallet, weld.extensions);
+window.addEventListener("load", () => {
+  weld.init();
+});
+
+window.addEventListener("unload", () => {
+  weld.cleanup();
+});
 
 weld.config.getState().update({
   wallet: {
