@@ -101,13 +101,9 @@ export function createStore<TState extends object, TPersistData = never>(
     };
   };
 
-  let isPersisted = false;
   const persistServerData = (data?: unknown) => {
     const state = getState() as StoreSetupFunctions | undefined;
-    if (!isPersisted) {
-      state?.__persist?.(data);
-      isPersisted = true;
-    }
+    state?.__persist?.(data);
   };
 
   const init = () => {
