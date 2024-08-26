@@ -1,5 +1,5 @@
 import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
-import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/internal/store";
+import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
 import { setupAutoUpdate } from "@/internal/update";
 import { weld } from "..";
 import {
@@ -21,10 +21,12 @@ const initialExtensionsState: ExtensionsState = {
 
 export type ExtensionsApi = {
   update(): Promise<void>;
-} & StoreLifeCycleMethods;
+};
 
 export type ExtensionsStoreState = ExtensionsState & ExtensionsApi;
 export type ExtensionsStore = Store<ExtensionsStoreState>;
+
+type ExtendedExtensionsStoreState = ExtensionsStoreState & StoreSetupFunctions;
 
 export const createExtensionsStore = createStoreFactory<ExtensionsStoreState>(
   (setState, getState) => {
@@ -59,7 +61,7 @@ export const createExtensionsStore = createStoreFactory<ExtensionsStoreState>(
       }
     };
 
-    const init = () => {
+    const __init = () => {
       if (typeof window !== "undefined") {
         lifecycle.subscriptions.clearAll();
         const signal = lifecycle.inFlight.add();
@@ -76,15 +78,17 @@ export const createExtensionsStore = createStoreFactory<ExtensionsStoreState>(
       }
     };
 
-    const cleanup = () => {
+    const __cleanup = () => {
       lifecycle.cleanup();
     };
 
-    return {
+    const initialState: ExtendedExtensionsStoreState = {
       ...initialExtensionsState,
       update,
-      init,
-      cleanup,
+      __init,
+      __cleanup,
     };
+
+    return initialState as ExtensionsStoreState;
   },
 );

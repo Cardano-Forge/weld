@@ -2,15 +2,17 @@ import type { ExtractStoreState, ReadonlyStore } from "@/internal/store";
 import { identity } from "@/internal/utils/identity";
 import { useSyncExternalStoreWithSelector } from "use-sync-external-store/with-selector";
 
-export function useStore<TStore extends ReadonlyStore<unknown>>(
+// biome-ignore lint/suspicious/noExplicitAny: Allow any store for generics
+export function useStore<TStore extends ReadonlyStore<unknown, any>>(
   store: TStore,
 ): ExtractStoreState<TStore>;
-export function useStore<TStore extends ReadonlyStore<unknown>, TSlice>(
+// biome-ignore lint/suspicious/noExplicitAny: Allow any store for generics
+export function useStore<TStore extends ReadonlyStore<unknown, any>, TSlice>(
   store: TStore,
   selector: (state: ExtractStoreState<TStore>) => TSlice,
 ): TSlice;
 export function useStore<TState, TSlice>(
-  store: ReadonlyStore<TState>,
+  store: ReadonlyStore<TState, never>,
   selector: (state: TState) => TSlice = identity,
 ) {
   return useSyncExternalStoreWithSelector(

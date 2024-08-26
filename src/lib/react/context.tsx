@@ -1,34 +1,20 @@
-import { type ExtractStoreState, hasLifeCycleMethods } from "@/internal/store";
+import type { ExtractStoreState } from "@/internal/store";
 import { identity } from "@/internal/utils/identity";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext } from "react";
 import { weld } from "../main";
 import { useCompare } from "./compare";
 import { useStore } from "./store";
 
-export function createContextFromStore<TName extends keyof typeof weld>(name: TName) {
+export function createContextFromStore<TName extends "config" | "wallet" | "extensions">(
+  name: TName,
+) {
   type TStore = (typeof weld)[TName];
   type TState = ExtractStoreState<TStore>;
 
   const Context = createContext<TStore | undefined>(undefined);
 
   function provider({ children }: { children: React.ReactNode }) {
-    // Setup store and initial state
-    const [store] = useState(() => {
-      return weld[name];
-    });
-
-    // Setup lifecycle methods
-    useEffect(() => {
-      const state = store.getState();
-      if (hasLifeCycleMethods(state)) {
-        state.init?.();
-        return () => {
-          state.cleanup?.();
-        };
-      }
-    }, [store]);
-
-    return <Context.Provider value={store}>{children}</Context.Provider>;
+    return <Context.Provider value={weld[name]}>{children}</Context.Provider>;
   }
 
   function hook(): TState;

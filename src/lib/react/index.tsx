@@ -1,12 +1,6 @@
 import { memo, useEffect, useState } from "react";
 
-import { initialize } from "@/lib/main/initialize";
-import type {
-  ExtendedWalletStoreState,
-  WalletApi,
-  WalletProps,
-  WalletStoreState,
-} from "@/lib/main/stores";
+import type { WalletApi, WalletProps, WalletStoreState } from "@/lib/main/stores";
 
 import { weld } from "../main";
 import type { WeldConfig } from "../main/stores/config";
@@ -30,17 +24,20 @@ export const useExtensions = extensionsContext.hook;
 export type WeldProviderProps = React.PropsWithChildren<Partial<WeldConfig>>;
 
 export const WeldProvider = memo(({ children, ...config }: WeldProviderProps) => {
-  useState(() => {
-    (weld.wallet.getState() as ExtendedWalletStoreState).__persist(config.wallet?.tryToReconnectTo);
-  });
-
   // Keep config store in sync with provider props
   useEffect(() => {
     weld.config.getState().update(config);
   });
 
+  useState(() => {
+    weld.persistServerData(config);
+  });
+
   useEffect(() => {
-    initialize();
+    weld.init();
+    return () => {
+      weld.cleanup();
+    };
   }, []);
 
   return (

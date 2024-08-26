@@ -1,13 +1,9 @@
-import { setupStores, weld } from "@/lib/main";
+import { weld } from "@/lib/main";
 
 declare global {
   interface Window {
-    Weld: typeof weld & {
-      setupStores: typeof setupStores;
-    };
+    Weld: typeof weld;
   }
 }
 
-window.Weld = weld as typeof window.Weld;
-
-Object.assign(window.Weld, { setupStores });
+window.Weld = weld;
