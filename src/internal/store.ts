@@ -24,7 +24,8 @@ export type Store<TState = any, TPersistData = never> = {
     listener: StoreListener<TSlice>,
     opts?: { fireImmediately?: boolean },
   ) => () => void;
-  init: (persistData?: TPersistData) => void;
+  persistServerData: (persistData?: TPersistData) => void;
+  init: () => void;
   cleanup: () => void;
 };
 
@@ -101,14 +102,17 @@ export function createStore<TState extends object, TPersistData = never>(
   };
 
   let isPersisted = false;
-
-  const init = (data?: unknown) => {
-    initCustomWallets();
+  const persistServerData = (data?: unknown) => {
     const state = getState() as StoreSetupFunctions | undefined;
     if (!isPersisted) {
       state?.__persist?.(data);
       isPersisted = true;
     }
+  };
+
+  const init = () => {
+    initCustomWallets();
+    const state = getState() as StoreSetupFunctions | undefined;
     state?.__init?.();
   };
 
@@ -124,6 +128,7 @@ export function createStore<TState extends object, TPersistData = never>(
     getInitialState,
     subscribe,
     subscribeWithSelector,
+    persistServerData,
     init,
     cleanup,
   };

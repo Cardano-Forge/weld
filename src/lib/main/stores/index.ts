@@ -29,10 +29,16 @@ export const weld = {
     }
     return extensionsStore;
   },
-  init(config?: Partial<WeldConfig>) {
+  /** Only required to prevent content flashing due to hydration in SSR contexts */
+  persistServerData(config?: Partial<WeldConfig>) {
+    this.config.persistServerData();
+    this.wallet.persistServerData({ tryToReconnectTo: config?.wallet?.tryToReconnectTo });
+    this.extensions.persistServerData();
+  },
+  init() {
     initCustomWallets();
     this.config.init();
-    this.wallet.init({ tryToReconnectTo: config?.wallet?.tryToReconnectTo });
+    this.wallet.init();
     this.extensions.init();
   },
   cleanup() {

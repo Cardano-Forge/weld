@@ -1,4 +1,4 @@
-import { memo, useEffect } from "react";
+import { memo, useEffect, useState } from "react";
 
 import type { WalletApi, WalletProps, WalletStoreState } from "@/lib/main/stores";
 
@@ -29,9 +29,12 @@ export const WeldProvider = memo(({ children, ...config }: WeldProviderProps) =>
     weld.config.getState().update(config);
   });
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Persistence should only be performed once
+  useState(() => {
+    weld.persistServerData(config);
+  });
+
   useEffect(() => {
-    weld.init(config);
+    weld.init();
     return () => {
       weld.cleanup();
     };
