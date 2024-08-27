@@ -39,6 +39,9 @@
 - [Wallet hook exports](#wallet-hook-exports)
   - [Variables](#variables)
   - [Methods](#methods)
+- [Other JS Frameworks](#other-js-frameworks)
+  - [Vue.js](#vuejs)
+  - [Svelte](#svelte)
 
 ## Introduction
 
@@ -436,6 +439,144 @@ Alternatively, you can directly explore the code by browsing the <a href="/docum
 ### Methods
 
 `connect`, `connectAsync`, `disconnect`
+
+## Other JS Frameworks
+
+Here are some basic examples of how to use Weld with Vanilla JS, which can also be adapted for frameworks like Vue.js, Svelte or any other javascript framework. While these examples may not represent the most optimal way to manage values, it's up to you to set up proper data handling within a store. However, they demonstrate how you can access data and leverage the power of Weld.
+
+### Vue.js
+
+```typescript
+<script setup lang="ts">
+import { ref, onUnmounted, onBeforeMount } from "vue";
+import { InstalledExtension } from "@ada-anvil/weld";
+import { weld } from "@ada-anvil/weld";
+
+// Define reactive references
+const wallets = ref<InstalledExtension[]>([]);
+const walletName = ref("-");
+const walletBalance = ref("-");
+const connectingTo = ref("-");
+
+onBeforeMount(() => {
+  // Initialize Weld - you only need to do this once
+  // Ideally, do it as soon as you can in your app
+  weld.init();
+
+  // Subscribe to extensions and update wallets
+  weld.extensions.subscribeWithSelector(
+    (state) => state.supportedArr,
+    (extensions) => {
+      wallets.value = extensions;
+    }
+  );
+
+  weld.wallet.subscribeWithSelector(
+    (state) => ({
+      displayName: state.displayName ?? "-",
+      balance: state.balanceAda?.toFixed(2) ?? "-",
+      isConnectingTo: state.isConnectingTo ?? "-",
+    }),
+    ({ displayName, balance, isConnectingTo }) => {
+      walletName.value = displayName;
+      walletBalance.value = balance;
+      connectingTo.value = isConnectingTo;
+    }
+  );
+
+  onUnmounted(() => {
+    // Cleanup subscriptions when the component is unmounted - you only need to do this once
+    // Ideally, do it as soon as you can in your app
+    weld.cleanup();
+  });
+});
+
+// Function to connect to a selected wallet
+const connect = (walletKey: InstalledExtension["info"]["key"]) => {
+  weld.wallet.getState().connect(walletKey);
+};
+</script>
+
+<template>
+  <div>
+    <div>IsConnectingTo: {{ connectingTo }}</div>
+    <div>Balance: {{ walletBalance }}</div>
+    <div>Wallet name: {{ walletName }}</div>
+    <div v-for="wallet in wallets" :key="wallet.info.key">
+      <button type="button" @click="connect(wallet.info.key)">
+        {{ wallet.info.displayName }}
+      </button>
+    </div>
+  </div>
+</template>
+```
+
+### Svelte
+
+```typescript
+<script lang="ts">
+  import { onMount, onDestroy } from "svelte";
+  import type { InstalledExtension } from "@ada-anvil/weld";
+  import { weld } from "@ada-anvil/weld";
+  import { writable } from "svelte/store";
+
+  // Define reactive stores
+  const wallets = writable<InstalledExtension[]>([]);
+  const walletName = writable("-");
+  const walletBalance = writable("-");
+  const connectingTo = writable("-");
+
+  onMount(() => {
+    // Initialize Weld - you only need to do this once
+    // Ideally, do it as soon as you can in your app
+    weld.init();
+
+    // Subscribe to extensions and update wallets
+    weld.extensions.subscribeWithSelector(
+      (state) => state.supportedArr,
+      (extensions) => {
+        wallets.set(extensions);
+      }
+    );
+
+    weld.wallet.subscribeWithSelector(
+      (state) => ({
+        displayName: state.displayName ?? "-",
+        balance: state.balanceAda?.toFixed(2) ?? "-",
+        isConnectingTo: state.isConnectingTo ?? "-",
+      }),
+      ({ displayName, balance, isConnectingTo }) => {
+        walletName.set(displayName);
+        walletBalance.set(balance);
+        connectingTo.set(isConnectingTo);
+      }
+    );
+
+    onDestroy(() => {
+      // Cleanup subscriptions when the component is unmounted - you only need to do this once
+      // Ideally, do it as soon as you can in your app
+      weld.cleanup();
+    });
+  });
+
+  // Function to connect to a selected wallet
+  function connect(walletKey: InstalledExtension["info"]["key"]) {
+    weld.wallet.getState().connect(walletKey);
+  }
+</script>
+
+<!-- Template -->
+<div>
+  <div>IsConnectingTo: {$connectingTo}</div>
+  <div>Balance: {$walletBalance}</div>
+  <div>Wallet name: {$walletName}</div>
+  {#each $wallets as wallet (wallet.info.key)}
+    <button type="button" on:click={() => connect(wallet.info.key)}>
+      {wallet.info.displayName}
+    </button>
+  {/each}
+</div>
+```
 
 ---
 
