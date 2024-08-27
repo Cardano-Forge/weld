@@ -3,24 +3,24 @@ import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/in
 
 import { setupAutoUpdate } from "@/internal/update";
 import { get } from "@/internal/utils/get";
-import { ETH_EXTENSIONS, type EthExtension, isEthHandler } from "../types";
+import { type EvmExtension, isEvmHandler, type EvmExtensionPath } from "./types";
 
-export type EthExtensionsProps = {
-  supportedArr: EthExtension[];
-  supportedMap: Map<string, EthExtension>;
-  installedArr: EthExtension[];
-  installedMap: Map<string, EthExtension>;
+export type EvmExtensionsProps = {
+  supportedArr: EvmExtension[];
+  supportedMap: Map<string, EvmExtension>;
+  installedArr: EvmExtension[];
+  installedMap: Map<string, EvmExtension>;
 };
 
-export type EthExtensionsApi = {
+export type EvmExtensionsApi = {
   updateExtensions(): void;
 } & StoreLifeCycleMethods;
 
-export type EthExtensionsState = EthExtensionsProps & EthExtensionsApi;
+export type EvmExtensionsState = EvmExtensionsProps & EvmExtensionsApi;
 
-export type EthExtensionsStore = Store<EthExtensionsState>;
+export type EvmExtensionsStore = Store<EvmExtensionsState>;
 
-function newInitialEthState(): EthExtensionsProps {
+function newInitialEvmState(): EvmExtensionsProps {
   return {
     supportedArr: [],
     supportedMap: new Map(),
@@ -29,20 +29,20 @@ function newInitialEthState(): EthExtensionsProps {
   };
 }
 
-export const createEthExtensionsStore = createStoreFactory<EthExtensionsState>(
-  (setState, getState) => {
+export const createEvmExtensionsStore = (extensions: readonly EvmExtensionPath[]) =>
+  createStoreFactory<EvmExtensionsState>((setState, getState) => {
     const lifecycle = new LifeCycleManager();
 
     const updateExtensions = () => {
       if (typeof window === "undefined") {
         return;
       }
-      const newState = newInitialEthState();
-      for (const info of ETH_EXTENSIONS) {
+      const newState = newInitialEvmState();
+      for (const info of extensions) {
         const cached = getState().supportedMap.get(info.key);
         const handler = get(window, info.handlerPath);
         const extension = cached ?? { ...info, isInstalled: false };
-        if (isEthHandler(handler)) {
+        if (isEvmHandler(handler)) {
           extension.isInstalled = true;
           extension.handler = handler;
           newState.installedMap.set(info.key, extension);
@@ -64,10 +64,9 @@ export const createEthExtensionsStore = createStoreFactory<EthExtensionsState>(
     };
 
     return {
-      ...newInitialEthState(),
+      ...newInitialEvmState(),
       init,
       cleanup,
       updateExtensions,
     };
-  },
-);
+  });

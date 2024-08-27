@@ -1,13 +1,14 @@
-export * from "./extensions";
+export * from "@/internal/evm/extensions";
 export * from "./wallet";
 
 import { type ConfigStore, createConfigStore } from "@/lib/main/stores/config";
-import { type EthExtensionsStore, createEthExtensionsStore } from "./extensions";
 import { type EthWalletStore, createEthWalletStore } from "./wallet";
+import { createEvmExtensionsStore, type EvmExtensionsStore } from "@/internal/evm/extensions";
+import { ETH_EXTENSIONS } from "../types";
 
 let configStore: ConfigStore;
 let walletStore: EthWalletStore;
-let extensionsStore: EthExtensionsStore;
+let extensionsStore: EvmExtensionsStore;
 
 export const weldEth = {
   get config() {
@@ -24,7 +25,7 @@ export const weldEth = {
   },
   get extensions() {
     if (!extensionsStore) {
-      extensionsStore = createEthExtensionsStore();
+      extensionsStore = createEvmExtensionsStore(ETH_EXTENSIONS)();
     }
     return extensionsStore;
   },

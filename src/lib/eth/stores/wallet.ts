@@ -11,19 +11,20 @@ import {
 import type { WalletConfig } from "@/lib/main/stores/config";
 import { STORAGE_KEYS } from "@/lib/server";
 import { weldEth } from ".";
-import type { EthExtensionInfo, EthExtensionKey, EthHandler } from "../types";
+import type { EthExtensionKey } from "../types";
 import { ethers, formatEther } from "ethers";
 import type { AddressLike, BrowserProvider, JsonRpcSigner } from "ethers";
+import type { EvmHandler, EvmExtensionInfo } from "@/internal/evm/types";
 
 export const ethChainId = "0x1"; // todo centralize chainId
 
-export type EthWalletProps = EthExtensionInfo & {
+export type EthWalletProps = EvmExtensionInfo & {
   isConnected: boolean;
   isConnecting: boolean;
   isConnectingTo: EthExtensionKey | undefined;
   balanceWei: bigint;
   balanceEth: string;
-  handler: EthHandler;
+  handler: EvmHandler;
   provider: BrowserProvider;
   signer: JsonRpcSigner;
   account: AddressLike;

@@ -1,23 +1,4 @@
-import type { Eip1193Provider } from "ethers";
-
-export type EthHandler = Eip1193Provider;
-
-export function isEthHandler(obj: unknown): obj is EthHandler {
-  return (
-    typeof obj === "object" && obj !== null && "request" in obj && typeof obj.request === "function"
-  );
-}
-
-export type EthExtensionInfo = {
-  key: string;
-  displayName: string;
-};
-
-export type EthExtension = EthExtensionInfo & {
-  handlerPath: string;
-  isInstalled: boolean;
-  handler?: EthHandler;
-};
+import type { EvmExtensionPath } from "@/internal/evm/types";
 
 export const ETH_EXTENSIONS = [
   {
@@ -35,6 +16,6 @@ export const ETH_EXTENSIONS = [
     displayName: "Exodus",
     handlerPath: "exodus.ethereum",
   },
-] as const satisfies readonly Omit<EthExtension, "isInstalled" | "handler">[];
+] as const satisfies readonly EvmExtensionPath[];
 
 export type EthExtensionKey = (typeof ETH_EXTENSIONS)[number]["key"];
