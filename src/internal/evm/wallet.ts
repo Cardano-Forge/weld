@@ -17,9 +17,11 @@ import {
 } from "@/lib/main";
 import type { ConfigStore, WalletConfig } from "@/lib/main/stores/config";
 import type { StorageKeysType } from "@/lib/server";
-import { ethers, formatEther, parseEther } from "ethers";
+import { ethers, formatEther, parseEther, parseUnits } from "ethers";
 import type { AddressLike, BrowserProvider, JsonRpcSigner } from "ethers";
 import type { BigNumberish } from "ethers";
+import type { TransactionResponse } from "ethers";
+import abi from "./index";
 
 export type EvmWalletProps = EvmExtensionInfo & {
   isConnected: boolean;
@@ -64,7 +66,12 @@ export type EvmWalletApi = {
     config?: Partial<WalletConfig>,
   ) => Promise<ConnectedEvmWalletState>;
   disconnect(): void;
-  send({ to, amount }: { to: AddressLike; amount: string }): Promise<string>;
+  send({
+    to,
+    amount,
+    tokenAddress,
+  }: { to: string; amount: string; tokenAddress?: string }): Promise<string>;
+  getTokenBalance(tokenAddress: string, options?: { formatted: boolean }): Promise<string>;
 } & StoreLifeCycleMethods;
 
 export type EvmWalletState = PartialWithDiscriminant<EvmWalletProps, "isConnected"> & EvmWalletApi;
@@ -227,8 +234,7 @@ export const createEvmWalletStore = (storeOptions: StoreOptions) =>
       }
     };
 
-    // todo - add token support
-    const send = async ({ to, amount }: { to: AddressLike; amount: string }) => {
+    const getTokenBalance = async (tokenAddress: string, options?: { formatted: boolean }) => {
       const { provider, signer } = getState();
 
       if (!signer) throw new Error("Signer not initialized");
@@ -240,10 +246,58 @@ export const createEvmWalletStore = (storeOptions: StoreOptions) =>
         },
       ]);
 
-      const balance = await getState().balance;
+      const contract = new ethers.Contract(tokenAddress, abi, signer);
+
+      if (!contract.decimals || !contract.balanceOf)
+        throw new Error("Ethers contract implemantation not found");
+
+      const decimals = await contract.decimals();
+      const unformattedBalance: number = await contract.balanceOf(signer.address);
+
+      if (options?.formatted) return ethers.formatUnits(unformattedBalance, decimals);
+      return String(unformattedBalance);
+    };
+
+    const send = async ({
+      to,
+      amount,
+      tokenAddress,
+    }: { to: AddressLike; amount: string; tokenAddress?: string }) => {
+      const { provider, signer } = getState();
+
+      if (!signer) throw new Error("Signer not initialized");
+      if (!provider) throw new Error("Provider not initialized");
+
+      await provider.send("wallet_switchEthereumChain", [
+        {
+          chainId: storeOptions.chainId,
+        },
+      ]);
+
+      // if the user is trying to send tokens
+      if (tokenAddress) {
+        const balance = await getTokenBalance(tokenAddress, { formatted: true });
+        const contract = new ethers.Contract(tokenAddress, abi, signer);
+
+        if (!contract.decimals || !contract.transfer)
+          throw new Error("Evmers contract implemantation not found");
+
+        const decimals = await contract.decimals();
+        if (Number(balance) < Number(amount)) {
+          throw new Error("Insufficient balance");
+        }
+
+        const numberOfTokens = parseUnits(amount, decimals);
+        const tx: TransactionResponse = await contract.transfer(to, numberOfTokens);
+
+        return tx.hash;
+      }
+
+      // otherwise, it is a simple transfer
+      const balanceSmallestUnit = await getState().balanceSmallestUnit;
       const value = parseEther(amount.toString()) as BigNumberish;
 
-      if (Number(balance) < Number(value)) {
+      if (Number(balanceSmallestUnit) < Number(value)) {
         throw new Error("Insufficient balance");
       }
 
@@ -275,6 +329,7 @@ export const createEvmWalletStore = (storeOptions: StoreOptions) =>
       connectAsync,
       disconnect,
       send,
+      getTokenBalance,
       init,
       cleanup,
       __persist,

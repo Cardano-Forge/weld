@@ -42,3 +42,10 @@ document.querySelector("#connect")?.addEventListener("click", () => {
 document.querySelector("#disconnect")?.addEventListener("click", () => {
   weldPoly.wallet.getState().disconnect();
 });
+
+document.querySelector("#send")?.addEventListener("click", () => {
+  console.log("send");
+  weldPoly.wallet
+    .getState()
+    .send({ to: "0xAD68508FCb4D5ee8e764b031a695d12830bCc324", amount: "0.0001" });
+});

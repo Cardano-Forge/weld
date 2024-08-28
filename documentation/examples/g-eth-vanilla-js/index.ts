@@ -42,3 +42,12 @@ document.querySelector("#connect")?.addEventListener("click", () => {
 document.querySelector("#disconnect")?.addEventListener("click", () => {
   weldEth.wallet.getState().disconnect();
 });
+
+document.querySelector("#send")?.addEventListener("click", () => {
+  console.log("send");
+  weldEth.wallet.getState().send({
+    to: "0xAD68508FCb4D5ee8e764b031a695d12830bCc324",
+    amount: "100",
+    tokenAddress: "0x6982508145454Ce325dDbE47a25d4ec3d2311933", // PEPE tokens
+  });
+});
