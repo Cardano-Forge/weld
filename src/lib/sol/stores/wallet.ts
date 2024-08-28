@@ -23,7 +23,7 @@ export type SolWalletProps = SolExtensionInfo & {
   balance: number;
   handler: SolHandler;
   connection: Connection;
-  publicKey: PublicKey;
+  address: PublicKey;
 };
 
 export type ConnectedSolWalletState = Extract<SolWalletState, { isConnected: true }>;
@@ -40,7 +40,7 @@ function newInitialSolState(): PartialWithDiscriminant<SolWalletProps, "isConnec
     balance: undefined,
     handler: undefined,
     connection: undefined,
-    publicKey: undefined,
+    address: undefined,
   };
 }
 
@@ -134,7 +134,7 @@ export const createSolWalletStore = createStoreFactory<SolWalletState>((setState
           balanceSmallestUnit,
           balance: lamportToSol(balanceSmallestUnit),
           connection,
-          publicKey,
+          address: publicKey,
         };
 
         setState(newState);

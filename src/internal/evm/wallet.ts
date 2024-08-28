@@ -17,8 +17,9 @@ import {
 } from "@/lib/main";
 import type { ConfigStore, WalletConfig } from "@/lib/main/stores/config";
 import type { StorageKeysType } from "@/lib/server";
-import { ethers, formatEther } from "ethers";
+import { ethers, formatEther, parseEther } from "ethers";
 import type { AddressLike, BrowserProvider, JsonRpcSigner } from "ethers";
+import type { BigNumberish } from "ethers";
 
 export type EvmWalletProps = EvmExtensionInfo & {
   isConnected: boolean;
@@ -29,7 +30,7 @@ export type EvmWalletProps = EvmExtensionInfo & {
   handler: EvmHandler;
   provider: BrowserProvider;
   signer: JsonRpcSigner;
-  account: AddressLike;
+  address: AddressLike;
 };
 
 export type ConnectedEvmWalletState = Extract<EvmWalletState, { isConnected: true }>;
@@ -47,7 +48,7 @@ function newInitialEvmState(): PartialWithDiscriminant<EvmWalletProps, "isConnec
     handler: undefined,
     provider: undefined,
     signer: undefined,
-    account: undefined,
+    address: undefined,
   };
 }
 
@@ -63,6 +64,7 @@ export type EvmWalletApi = {
     config?: Partial<WalletConfig>,
   ) => Promise<ConnectedEvmWalletState>;
   disconnect(): void;
+  send({ to, amount }: { to: AddressLike; amount: string }): Promise<string>;
 } & StoreLifeCycleMethods;
 
 export type EvmWalletState = PartialWithDiscriminant<EvmWalletProps, "isConnected"> & EvmWalletApi;
@@ -159,7 +161,7 @@ export const createEvmWalletStore = (storeOptions: StoreOptions) =>
             balance: formatEther(balanceSmallestUnit),
             provider,
             signer,
-            account,
+            address: account,
           };
 
           setState(newState);
@@ -225,6 +227,31 @@ export const createEvmWalletStore = (storeOptions: StoreOptions) =>
       }
     };
 
+    // todo - add token support
+    const send = async ({ to, amount }: { to: AddressLike; amount: string }) => {
+      const { provider, signer } = getState();
+
+      if (!signer) throw new Error("Signer not initialized");
+      if (!provider) throw new Error("Provider not initialized");
+
+      await provider.send("wallet_switchEthereumChain", [
+        {
+          chainId: storeOptions.chainId,
+        },
+      ]);
+
+      const balance = await getState().balance;
+      const value = parseEther(amount.toString()) as BigNumberish;
+
+      if (Number(balance) < Number(value)) {
+        throw new Error("Insufficient balance");
+      }
+
+      const tx = await signer.sendTransaction({ to, value });
+
+      return tx.hash;
+    };
+
     const __persist: ExtendedEvmWalletState["__persist"] = (serverIsConnectingTo?: string) => {
       let isConnectingTo = serverIsConnectingTo;
       if (
@@ -247,6 +274,7 @@ export const createEvmWalletStore = (storeOptions: StoreOptions) =>
       connect,
       connectAsync,
       disconnect,
+      send,
       init,
       cleanup,
       __persist,
