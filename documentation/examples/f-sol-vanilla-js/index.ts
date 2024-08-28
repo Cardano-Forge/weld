@@ -42,3 +42,12 @@ document.querySelector("#connect")?.addEventListener("click", () => {
 document.querySelector("#disconnect")?.addEventListener("click", () => {
   weldSol.wallet.getState().disconnect();
 });
+
+document.querySelector("#send")?.addEventListener("click", () => {
+  console.log("send");
+  weldSol.wallet.getState().send({
+    to: "3rTMfB64SpBvnA2ErfSSs7zYa9sHJciVw2uaWuCmb7Gd",
+    amount: "0.1",
+    tokenAddress: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263", // Bonk token
+  });
+});

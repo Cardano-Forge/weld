@@ -150,11 +150,11 @@ export const createEvmWalletStore = (storeOptions: StoreOptions) =>
           },
         ]);
 
-        // Get the signer (which is the first account connected)
-        const signer = await provider.getSigner();
-        const account = await signer.getAddress();
-
         const updateState = async () => {
+          // Get the signer (which is the first account connected)
+          const signer = await provider.getSigner();
+          const account = await signer.getAddress();
+
           const balanceSmallestUnit = await provider.getBalance(signer.address);
 
           const newState: Partial<ConnectedEvmWalletState> = {
@@ -262,7 +262,7 @@ export const createEvmWalletStore = (storeOptions: StoreOptions) =>
       to,
       amount,
       tokenAddress,
-    }: { to: AddressLike; amount: string; tokenAddress?: string }) => {
+    }: { to: string; amount: string; tokenAddress?: string }) => {
       const { provider, signer } = getState();
 
       if (!signer) throw new Error("Signer not initialized");
