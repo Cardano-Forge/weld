@@ -3,7 +3,7 @@ import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/in
 
 import { setupAutoUpdate } from "@/internal/update";
 import { get } from "@/internal/utils/get";
-import { type EvmExtension, isEvmHandler, type EvmExtensionPath } from "./types";
+import { type EvmExtension, type EvmExtensionPath, isEvmHandler } from "./types";
 
 export type EvmExtensionsProps = {
   supportedArr: EvmExtension[];

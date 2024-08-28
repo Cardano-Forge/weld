@@ -1,9 +1,9 @@
+import { weldPoly } from "@/lib/poly";
 import { setupStores } from "@/lib/main";
-import { weldSol } from "@/lib/sol";
 
-setupStores(weldSol.wallet, weldSol.extensions);
+setupStores(weldPoly.wallet, weldPoly.extensions);
 
-weldSol.wallet.subscribeWithSelector(
+weldPoly.wallet.subscribeWithSelector(
   (state) => state.displayName ?? "-",
   (displayName) => {
     console.log("displayName", displayName);
@@ -12,8 +12,8 @@ weldSol.wallet.subscribeWithSelector(
   },
 );
 
-weldSol.wallet.subscribeWithSelector(
-  (state) => state.balance?.toFixed(2) ?? "-",
+weldPoly.wallet.subscribeWithSelector(
+  (state) => state.balance ?? "-",
   (balance) => {
     console.log("balance", balance);
     // biome-ignore lint/style/noNonNullAssertion: We know the element exists
@@ -21,7 +21,7 @@ weldSol.wallet.subscribeWithSelector(
   },
 );
 
-weldSol.wallet.subscribeWithSelector(
+weldPoly.wallet.subscribeWithSelector(
   (state) => state.isConnectingTo ?? "-",
   (isConnectingTo) => {
     console.log("isConnectingTo", isConnectingTo);
@@ -32,7 +32,7 @@ weldSol.wallet.subscribeWithSelector(
 
 document.querySelector("#connect")?.addEventListener("click", () => {
   console.log("click");
-  weldSol.wallet.getState().connect("phantom", {
+  weldPoly.wallet.getState().connect("metamask", {
     onError(error) {
       console.log("error", error);
     },
@@ -40,5 +40,5 @@ document.querySelector("#connect")?.addEventListener("click", () => {
 });
 
 document.querySelector("#disconnect")?.addEventListener("click", () => {
-  weldSol.wallet.getState().disconnect();
+  weldPoly.wallet.getState().disconnect();
 });

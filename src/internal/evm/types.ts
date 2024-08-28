@@ -1,4 +1,11 @@
+import type { EthExtensionKey } from "@/lib/eth";
+import type { PolyExtensionKey } from "@/lib/poly";
 import type { Eip1193Provider } from "ethers";
+
+export enum EvmChainId {
+  ETH = "0x1",
+  POLY = "0x89",
+}
 
 export type EvmHandler = Eip1193Provider;
 
@@ -20,3 +27,5 @@ export type EvmExtension = EvmExtensionInfo & {
 };
 
 export type EvmExtensionPath = Omit<EvmExtension, "isInstalled" | "handler">;
+
+export type EvmExtensionKey = EthExtensionKey | PolyExtensionKey;

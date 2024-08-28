@@ -19,8 +19,8 @@ export type SolWalletProps = SolExtensionInfo & {
   isConnected: boolean;
   isConnecting: boolean;
   isConnectingTo: SolExtensionKey | undefined;
-  balanceLamport: number;
-  balanceSol: number;
+  balanceSmallestUnit: number;
+  balance: number;
   handler: SolHandler;
   connection: Connection;
   publicKey: PublicKey;
@@ -36,8 +36,8 @@ function newInitialSolState(): PartialWithDiscriminant<SolWalletProps, "isConnec
     isConnected: false,
     isConnecting: false,
     isConnectingTo: undefined,
-    balanceLamport: undefined,
-    balanceSol: undefined,
+    balanceSmallestUnit: undefined,
+    balance: undefined,
     handler: undefined,
     connection: undefined,
     publicKey: undefined,
@@ -122,7 +122,7 @@ export const createSolWalletStore = createStoreFactory<SolWalletState>((setState
       const connection = new Connection(clusterApiUrl("devnet"));
 
       const updateState = async () => {
-        const balanceLamport = await connection.getBalance(publicKey);
+        const balanceSmallestUnit = await connection.getBalance(publicKey);
 
         const newState: Partial<ConnectedSolWalletState> = {
           key: extension.key,
@@ -131,8 +131,8 @@ export const createSolWalletStore = createStoreFactory<SolWalletState>((setState
           isConnecting: false,
           isConnectingTo: undefined,
           handler: extension.handler,
-          balanceLamport,
-          balanceSol: lamportToSol(balanceLamport),
+          balanceSmallestUnit,
+          balance: lamportToSol(balanceSmallestUnit),
           connection,
           publicKey,
         };

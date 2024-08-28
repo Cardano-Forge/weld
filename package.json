@@ -38,9 +38,7 @@
       "types": "./matic.d.ts"
     }
   },
-  "files": [
-    "**"
-  ],
+  "files": ["**"],
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && vite build --config ./cdn.config.ts",

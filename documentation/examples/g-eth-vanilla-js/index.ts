@@ -1,5 +1,5 @@
-import { setupStores } from "@/lib/main";
 import { weldEth } from "@/lib/eth";
+import { setupStores } from "@/lib/main";
 
 setupStores(weldEth.wallet, weldEth.extensions);
 
@@ -13,7 +13,7 @@ weldEth.wallet.subscribeWithSelector(
 );
 
 weldEth.wallet.subscribeWithSelector(
-  (state) => state.balanceEth ?? "-",
+  (state) => state.balance ?? "-",
   (balance) => {
     console.log("balance", balance);
     // biome-ignore lint/style/noNonNullAssertion: We know the element exists
