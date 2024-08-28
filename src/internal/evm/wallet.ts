@@ -145,8 +145,6 @@ export const createEvmWalletStore = (storeOptions: StoreOptions) =>
         const signer = await provider.getSigner();
         const account = await signer.getAddress();
 
-        console.log("Connected account:", account);
-
         const updateState = async () => {
           const balanceSmallestUnit = await provider.getBalance(signer.address);
 
@@ -234,7 +232,7 @@ export const createEvmWalletStore = (storeOptions: StoreOptions) =>
         typeof window !== "undefined" &&
         storeOptions.config.getState().enablePersistence
       ) {
-        isConnectingTo = storeOptions.config.getState().getPersistedValue("connectedWallet");
+        isConnectingTo = storeOptions.config.getState().getPersistedValue(storeOptions.storageKey);
       }
       initialState.isConnectingTo = isConnectingTo as EvmExtensionKey;
       initialState.isConnecting = !!isConnectingTo;

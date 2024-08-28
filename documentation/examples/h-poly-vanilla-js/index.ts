@@ -1,5 +1,5 @@
-import { weldPoly } from "@/lib/poly";
 import { setupStores } from "@/lib/main";
+import { weldPoly } from "@/lib/poly";
 
 setupStores(weldPoly.wallet, weldPoly.extensions);
 

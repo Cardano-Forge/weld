@@ -204,7 +204,7 @@ export const createSolWalletStore = createStoreFactory<SolWalletState>((setState
       typeof window !== "undefined" &&
       weldSol.config.getState().enablePersistence
     ) {
-      isConnectingTo = weldSol.config.getState().getPersistedValue("connectedWallet");
+      isConnectingTo = weldSol.config.getState().getPersistedValue("weld_connected-sol-wallet");
     }
     initialState.isConnectingTo = isConnectingTo as SolExtensionKey;
     initialState.isConnecting = !!isConnectingTo;

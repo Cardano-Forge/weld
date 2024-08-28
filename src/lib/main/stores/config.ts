@@ -1,5 +1,5 @@
 import { type Store, createStoreFactory } from "@/internal/store";
-import { STORAGE_KEYS } from "@/lib/server";
+import { STORAGE_KEYS, type StorageKeysType } from "@/lib/server";
 import { type WeldStorage, defaultStorage } from "../persistence";
 
 export type UpdateConfig = {
@@ -49,7 +49,7 @@ const initialConfigState: WeldConfig = {
 
 export type ConfigApi = {
   update(values: Partial<WeldConfig>): void;
-  getPersistedValue(key: keyof typeof STORAGE_KEYS): string | undefined;
+  getPersistedValue(key: StorageKeysType): string | undefined;
 };
 
 export type ConfigStoreState = WeldConfig & ConfigApi;
@@ -72,7 +72,7 @@ export const createConfigStore = createStoreFactory<ConfigStoreState>((setState,
   };
 
   const getPersistedValue: ConfigApi["getPersistedValue"] = (key): string | undefined => {
-    return getState().storage.get(STORAGE_KEYS[key]) ?? undefined;
+    return getState().storage.get(key) ?? undefined;
   };
 
   return {
