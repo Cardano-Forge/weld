@@ -1,16 +1,8 @@
 import { weld } from "@/lib/main";
 
-window.addEventListener("load", () => {
-  weld.init();
-});
-
-window.addEventListener("unload", () => {
-  weld.cleanup();
-});
-
 weld.config.getState().update({
   wallet: {
-    updateInterval: 8000,
+    updateInterval: 2000,
   },
   extensions: {
     updateInterval: false,
@@ -97,4 +89,12 @@ if (form instanceof HTMLFormElement) {
 
 document.querySelector("#disconnect")?.addEventListener("click", () => {
   weld.wallet.getState().disconnect();
+});
+
+window.addEventListener("load", () => {
+  weld.init();
+});
+
+window.addEventListener("unload", () => {
+  weld.cleanup();
 });

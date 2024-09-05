@@ -24,7 +24,7 @@ export type Store<TState = any, TPersistData = never> = {
     listener: StoreListener<TSlice>,
     opts?: { fireImmediately?: boolean },
   ) => () => void;
-  persistServerData: (persistData?: TPersistData) => void;
+  persist: (persistData?: TPersistData) => void;
   init: () => void;
   cleanup: () => void;
 };
@@ -101,7 +101,7 @@ export function createStore<TState extends object, TPersistData = never>(
     };
   };
 
-  const persistServerData = (data?: unknown) => {
+  const persist = (data?: unknown) => {
     const state = getState() as StoreSetupFunctions | undefined;
     state?.__persist?.(data);
   };
@@ -124,7 +124,7 @@ export function createStore<TState extends object, TPersistData = never>(
     getInitialState,
     subscribe,
     subscribeWithSelector,
-    persistServerData,
+    persist,
     init,
     cleanup,
   };

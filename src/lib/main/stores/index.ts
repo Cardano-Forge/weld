@@ -29,14 +29,20 @@ export const weld = {
     }
     return extensionsStore;
   },
-  /** Only required to prevent content flashing due to hydration in SSR contexts */
-  persistServerData(config?: Partial<WeldConfig>) {
-    this.config.persistServerData();
-    this.wallet.persistServerData({ tryToReconnectTo: config?.wallet?.tryToReconnectTo });
-    this.extensions.persistServerData();
+  persist(config?: Partial<WeldConfig>) {
+    this.config.persist();
+    this.wallet.persist({ tryToReconnectTo: config?.wallet?.tryToReconnectTo });
+    this.extensions.persist();
   },
-  init() {
+  init({ persist = true }: { persist?: boolean | Partial<WeldConfig> } = {}) {
     initCustomWallets();
+
+    if (typeof persist === "object") {
+      this.persist(persist);
+    } else if (persist) {
+      this.persist();
+    }
+
     this.config.init();
     this.wallet.init();
     this.extensions.init();

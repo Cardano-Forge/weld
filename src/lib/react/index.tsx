@@ -30,11 +30,14 @@ export const WeldProvider = memo(({ children, ...config }: WeldProviderProps) =>
   });
 
   useState(() => {
-    weld.persistServerData(config);
+    weld.persist(config);
   });
 
   useEffect(() => {
-    weld.init();
+    weld.init({
+      // Persistence is performed once and only once during hydration
+      persist: false,
+    });
     return () => {
       weld.cleanup();
     };
