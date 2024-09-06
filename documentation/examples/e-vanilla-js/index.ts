@@ -1,6 +1,10 @@
+import { getFailureReason } from "@/internal/utils/errors";
 import { weld } from "@/lib/main";
 
 weld.config.getState().update({
+  onUpdateError(context, error) {
+    console.log("error", context, getFailureReason(error));
+  },
   wallet: {
     // updateInterval: 2000,
   },

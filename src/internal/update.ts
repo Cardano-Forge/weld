@@ -60,8 +60,10 @@ export function setupAutoUpdate(
         }
         if (updateOnWindowFocus) {
           window.addEventListener("focus", update);
+          window.addEventListener("visibilityChange", update);
           unsubWindowFocus = lifecycle.subscriptions.add(() => {
             window.removeEventListener("focus", update);
+            window.removeEventListener("visibilityChange", update);
           });
         }
       },
