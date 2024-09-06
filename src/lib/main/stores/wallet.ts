@@ -227,8 +227,6 @@ export const createWalletStore = createStoreFactory<WalletStoreState, WalletStor
             });
         };
 
-        let nbOfUpdatesSinceUtxosUpdate = 0;
-
         // utxos are purposefully omitted here since getUtxos can take a long time
         // to resolve and we don't want it to affect connection speed
         const updateState = async () => {
@@ -252,12 +250,9 @@ export const createWalletStore = createStoreFactory<WalletStoreState, WalletStor
             ...handler.info,
           };
 
-          if (hasBalanceChanged || nbOfUpdatesSinceUtxosUpdate > 10) {
+          if (hasBalanceChanged) {
             updateUtxos({ expectChange: hasBalanceChanged });
             newState.isUpdatingUtxos = true;
-            nbOfUpdatesSinceUtxosUpdate = 0;
-          } else {
-            nbOfUpdatesSinceUtxosUpdate++;
           }
 
           if (!handler.isDisconnected) {
