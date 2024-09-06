@@ -18,11 +18,17 @@ function mergeConfigs<TKey extends keyof UpdateConfig>(
 }
 
 export function setupAutoUpdate(
-  update: () => unknown,
+  fn: () => unknown,
   lifecycle: LifeCycleManager,
   store?: keyof StoreConfig,
   ...overrides: (Partial<UpdateConfig> | undefined)[]
 ) {
+  const update = () => {
+    if (!document.hidden) {
+      fn();
+    }
+  };
+
   let unsubInterval: (() => void) | undefined = undefined;
   lifecycle.subscriptions.add(
     weld.config.subscribeWithSelector(
