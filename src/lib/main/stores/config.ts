@@ -6,7 +6,7 @@ export type UpdateConfig = {
   /**
    * How frequently properties should get updated
    *
-   * @default 2000ms
+   * @default 30_000ms
    */
   updateInterval: number | false;
   updateOnWindowFocus: boolean;
@@ -36,7 +36,7 @@ export type WeldConfig = UpdateConfig &
   };
 
 const initialConfigState: WeldConfig = {
-  updateInterval: 2000,
+  updateInterval: 30_000,
   updateOnWindowFocus: true,
   ignoreUnsafeUsageError: false,
   enablePersistence: true,

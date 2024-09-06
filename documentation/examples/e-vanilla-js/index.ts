@@ -2,10 +2,10 @@ import { weld } from "@/lib/main";
 
 weld.config.getState().update({
   wallet: {
-    updateInterval: 2000,
+    // updateInterval: 2000,
   },
   extensions: {
-    updateInterval: false,
+    // updateInterval: false,
   },
 });
 
