@@ -1,28 +1,18 @@
+import { getFailureReason } from "@/internal/utils/errors";
 import { weld } from "@/lib/main";
 
 weld.config.getState().update({
+  debug: true,
+  onUpdateError(context, error) {
+    console.log("error", context, getFailureReason(error));
+  },
   wallet: {
-    updateInterval: 2000,
+    // updateInterval: 2000,
   },
   extensions: {
-    updateInterval: false,
+    // updateInterval: false,
   },
 });
-
-weld.wallet.subscribeWithSelector(
-  (s) => s.utxos,
-  (utxos) => console.log("utxos", utxos),
-);
-
-weld.wallet.subscribeWithSelector(
-  (s) => s.isConnecting,
-  (isConnecting) => console.log("isConnecting", isConnecting),
-);
-
-weld.wallet.subscribeWithSelector(
-  (s) => s.isUpdatingUtxos,
-  (isUpdatingUtxos) => console.log("isUpdatingUtxos", isUpdatingUtxos),
-);
 
 weld.extensions.subscribeWithSelector(
   (s) => s.allArr,
@@ -51,7 +41,6 @@ weld.extensions.subscribeWithSelector(
 weld.wallet.subscribeWithSelector(
   (state) => state.displayName ?? "-",
   (displayName) => {
-    console.log("displayName", displayName);
     // biome-ignore lint/style/noNonNullAssertion: We know the element exists
     document.querySelector("#name")!.textContent = displayName;
   },
@@ -60,7 +49,6 @@ weld.wallet.subscribeWithSelector(
 weld.wallet.subscribeWithSelector(
   (state) => state.balanceAda?.toFixed(2) ?? "-",
   (balance) => {
-    console.log("balance", balance);
     // biome-ignore lint/style/noNonNullAssertion: We know the element exists
     document.querySelector("#balance")!.textContent = balance;
   },
@@ -69,7 +57,6 @@ weld.wallet.subscribeWithSelector(
 weld.wallet.subscribeWithSelector(
   (state) => state.isConnectingTo ?? "-",
   (isConnectingTo) => {
-    console.log("isConnectingTo", isConnectingTo);
     // biome-ignore lint/style/noNonNullAssertion: We know the element exists
     document.querySelector("#connecting")!.textContent = isConnectingTo;
   },
