@@ -3,6 +3,7 @@ import { STORAGE_KEYS } from "@/lib/server";
 import { type WeldStorage, defaultStorage } from "../persistence";
 
 export type UpdateConfig = {
+  debug: boolean;
   /**
    * How frequently properties should get updated
    *
@@ -36,6 +37,7 @@ export type WeldConfig = UpdateConfig &
   };
 
 const initialConfigState: WeldConfig = {
+  debug: false,
   updateInterval: 30_000,
   updateOnWindowFocus: true,
   ignoreUnsafeUsageError: false,

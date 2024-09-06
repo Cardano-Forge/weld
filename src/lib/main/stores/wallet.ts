@@ -261,6 +261,9 @@ export const createWalletStore = createStoreFactory<WalletStoreState, WalletStor
         };
 
         const safeUpdateState = async () => {
+          if (weld.config.getState().debug) {
+            console.log("[WELD] Wallet state update");
+          }
           try {
             return await updateState();
           } catch (error) {

@@ -38,6 +38,9 @@ export const createExtensionsStore = createStoreFactory<ExtensionsStoreState>(
     };
 
     const update: ExtensionsApi["update"] = async (signal?: InFlightSignal) => {
+      if (weld.config.getState().debug) {
+        console.log("[WELD] Extensions state update");
+      }
       try {
         if (getState()?.isFetching || signal?.aborted) {
           return;
