@@ -115,6 +115,7 @@ export const createWalletStore = createStoreFactory<WalletStoreState, WalletStor
 
     const disconnect: WalletApi["disconnect"] = () => {
       lifecycle.subscriptions.clearAll();
+      lifecycle.inFlight.abortAll();
       if (inFlightUtxosUpdate) {
         inFlightUtxosUpdate.signal.aborted = true;
         inFlightUtxosUpdate.resolve([]);
@@ -250,6 +251,10 @@ export const createWalletStore = createStoreFactory<WalletStoreState, WalletStor
             ...handler.info,
           };
 
+          if (signal.aborted) {
+            return;
+          }
+
           if (hasBalanceChanged) {
             updateUtxos({ expectChange: hasBalanceChanged });
             newState.isUpdatingUtxos = true;
@@ -260,9 +265,13 @@ export const createWalletStore = createStoreFactory<WalletStoreState, WalletStor
           }
         };
 
-        const safeUpdateState = async () => {
+        const safeUpdateState = async (stopUpdates?: () => void) => {
+          if (signal.aborted) {
+            stopUpdates?.();
+            return;
+          }
           if (weld.config.getState().debug) {
-            console.log("[WELD] Wallet state update");
+            console.log("[WELD] Wallet state update", key);
           }
           try {
             return await updateState();
