@@ -35,6 +35,8 @@ jobs:
         with:
           bump: ${{ inputs.bump }}
 
+      - run: npm run check
+
       - uses: webfactory/ssh-agent@v0.9.0
         with:
             ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
