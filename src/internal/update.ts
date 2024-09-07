@@ -18,18 +18,31 @@ function mergeConfigs<TKey extends keyof UpdateConfig>(
 }
 
 export function setupAutoUpdate(
-  fn: () => unknown,
+  fn: (stop: () => void) => unknown,
   lifecycle: LifeCycleManager,
   store?: keyof StoreConfig,
   ...overrides: (Partial<UpdateConfig> | undefined)[]
 ) {
-  const update = () => {
-    if (!document.hidden) {
-      fn();
+  let unsubInterval: (() => void) | undefined = undefined;
+  let unsubWindowFocus: (() => void) | undefined = undefined;
+
+  const stop = () => {
+    if (unsubInterval) {
+      unsubInterval();
+      unsubInterval = undefined;
+    }
+    if (unsubWindowFocus) {
+      unsubWindowFocus();
+      unsubWindowFocus = undefined;
     }
   };
 
-  let unsubInterval: (() => void) | undefined = undefined;
+  const update = () => {
+    if (!document.hidden) {
+      fn(stop);
+    }
+  };
+
   lifecycle.subscriptions.add(
     weld.config.subscribeWithSelector(
       (config) => mergeConfigs("updateInterval", config, store && config[store], ...overrides),
@@ -49,7 +62,6 @@ export function setupAutoUpdate(
     ),
   );
 
-  let unsubWindowFocus: (() => void) | undefined = undefined;
   lifecycle.subscriptions.add(
     weld.config.subscribeWithSelector(
       (config) => mergeConfigs("updateOnWindowFocus", config, store && config[store], ...overrides),
