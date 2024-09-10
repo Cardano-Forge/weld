@@ -5,7 +5,7 @@ import { initializeDAppConnectorBridge } from "./initialize-d-app-connector-brid
 export function initializeDAppConnectorBridgeAsync() {
   const { promise, resolve, reject } = deferredPromise<DefaultWalletApi>();
 
-  const timeout = setTimeout(() => reject("Request took too long"), 5000);
+  const timeout = setTimeout(() => reject("Request took too long"), 10_000);
 
   initializeDAppConnectorBridge((api) => {
     clearTimeout(timeout);
