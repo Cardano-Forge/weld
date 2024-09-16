@@ -1,8 +1,5 @@
 import { getFailureReason } from "@/internal/utils/errors";
 import { weld } from "@/lib/main";
-import { setupStores, weld } from "@/lib/main";
-
-setupStores(weld.wallet, weld.extensions);
 
 weld.config.getState().update({
   debug: true,
@@ -16,21 +13,6 @@ weld.config.getState().update({
     // updateInterval: false,
   },
 });
-
-weld.wallet.subscribeWithSelector(
-  (s) => s.utxos,
-  (utxos) => console.log("utxos", utxos),
-);
-
-weld.wallet.subscribeWithSelector(
-  (s) => s.isConnecting,
-  (isConnecting) => console.log("isConnecting", isConnecting),
-);
-
-weld.wallet.subscribeWithSelector(
-  (s) => s.isUpdatingUtxos,
-  (isUpdatingUtxos) => console.log("isUpdatingUtxos", isUpdatingUtxos),
-);
 
 weld.extensions.subscribeWithSelector(
   (s) => s.allArr,

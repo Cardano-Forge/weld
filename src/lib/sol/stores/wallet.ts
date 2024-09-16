@@ -1,5 +1,5 @@
 import { LifeCycleManager } from "@/internal/lifecycle";
-import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/internal/store";
+import { type Store, createStoreFactory, type StoreSetupFunctions } from "@/internal/store";
 
 import { setupAutoUpdate } from "@/internal/update";
 import type { PartialWithDiscriminant } from "@/internal/utils/types";
@@ -18,7 +18,6 @@ import {
   SystemProgram,
   Transaction,
   type TransactionInstruction,
-  clusterApiUrl,
 } from "@solana/web3.js";
 import { weldSol } from ".";
 import type { SolExtensionInfo, SolExtensionKey, SolHandler } from "../types";
@@ -36,9 +35,6 @@ export type SolWalletProps = SolExtensionInfo & {
   connection: Connection;
   address: PublicKey;
 };
-
-export type ConnectedSolWalletState = Extract<SolWalletState, { isConnected: true }>;
-export type DiconnectedSolWalletState = Extract<SolWalletState, { isConnected: false }>;
 
 function newInitialSolState(): PartialWithDiscriminant<SolWalletProps, "isConnected"> {
   return {
@@ -73,17 +69,34 @@ export type SolWalletApi = {
     tokenAddress,
   }: { to: string; amount: string; tokenAddress?: string }): Promise<string>;
   getTokenBalance(tokenAddress: string, options?: { formatted: boolean }): Promise<string>;
-} & StoreLifeCycleMethods;
-
-export type SolWalletState = PartialWithDiscriminant<SolWalletProps, "isConnected"> & SolWalletApi;
-
-export type ExtendedSolWalletState = SolWalletState & {
-  __persist(isConnectingTo?: string): void;
 };
 
-export type SolWalletStore = Store<SolWalletState>;
+export type SolWalletState<TKeys extends keyof SolWalletProps = keyof SolWalletProps> =
+  PartialWithDiscriminant<SolWalletProps, "isConnected", TKeys>;
 
-export const createSolWalletStore = createStoreFactory<SolWalletState>((setState, getState) => {
+export type ConnectedSolWalletState = Extract<SolWalletState, { isConnected: true }>;
+export type DiconnectedSolWalletState = Extract<SolWalletState, { isConnected: false }>;
+
+export type SolWalletStoreState<
+  TKeys extends keyof SolWalletProps | keyof SolWalletApi =
+    | keyof SolWalletProps
+    | keyof SolWalletApi,
+> = SolWalletState<Extract<TKeys, keyof SolWalletProps>> & {
+  [TKey in Extract<TKeys, keyof SolWalletApi>]: SolWalletApi[TKey];
+};
+
+export type SolWalletStorePersistData = {
+  tryToReconnectTo?: string;
+};
+
+export type SolWalletStore = Store<SolWalletState, SolWalletStorePersistData>;
+
+export type ExtendedSolWalletStoreState = SolWalletStoreState & StoreSetupFunctions;
+
+export const createSolWalletStore = createStoreFactory<
+  SolWalletStoreState,
+  SolWalletStorePersistData
+>((setState, getState) => {
   const lifecycle = new LifeCycleManager();
 
   const handleUpdateError = (error: unknown) => {
@@ -93,6 +106,8 @@ export const createSolWalletStore = createStoreFactory<SolWalletState>((setState
 
   const disconnect: SolWalletApi["disconnect"] = () => {
     lifecycle.subscriptions.clearAll();
+    lifecycle.inFlight.abortAll();
+    getState().handler?.disconnect();
     setState(newInitialSolState());
     if (weldSol.config.getState().enablePersistence) {
       weldSol.config.getState().storage.remove(STORAGE_KEYS.connectedSolWallet);
@@ -100,6 +115,8 @@ export const createSolWalletStore = createStoreFactory<SolWalletState>((setState
   };
 
   const connectAsync: SolWalletApi["connectAsync"] = async (key, configOverrides) => {
+    disconnect();
+
     const signal = lifecycle.inFlight.add();
 
     try {
@@ -156,10 +173,21 @@ export const createSolWalletStore = createStoreFactory<SolWalletState>((setState
           address: publicKey,
         };
 
+        if (signal.aborted) {
+          return;
+        }
+
         setState(newState);
       };
 
-      const safeUpdateState = async () => {
+      const safeUpdateState = async (stopUpdates?: () => void) => {
+        if (signal.aborted) {
+          stopUpdates?.();
+          return;
+        }
+        if (weldSol.config.getState().debug) {
+          console.log("[WELD] Wallet state update", key);
+        }
         try {
           return await updateState();
         } catch (error) {
@@ -189,7 +217,7 @@ export const createSolWalletStore = createStoreFactory<SolWalletState>((setState
         clearTimeout(abortTimeout);
       }
 
-      return newState as ConnectedSolWalletState;
+      return newState;
     } catch (error) {
       if (error instanceof WalletDisconnectAccountError) {
         disconnect();
@@ -210,14 +238,14 @@ export const createSolWalletStore = createStoreFactory<SolWalletState>((setState
       });
   };
 
-  const init: SolWalletApi["init"] = () => {
+  const __init = () => {
     if (initialState.isConnectingTo) {
       connect(initialState.isConnectingTo);
     }
   };
 
   const getTokenAccount = async (tokenAddress: string) => {
-    const { connection, address } = await getState();
+    const { connection, address } = getState();
 
     if (!connection) throw new Error("Connection not initialized");
     if (!address) throw new Error("Address not initialized");
@@ -233,7 +261,7 @@ export const createSolWalletStore = createStoreFactory<SolWalletState>((setState
   };
 
   const getTokenBalance = async (tokenAddress: string, options?: { formatted: boolean }) => {
-    const { connection, address } = await getState();
+    const { connection, address } = getState();
 
     if (!connection) throw new Error("Connection not initialized");
     if (!address) throw new Error("Address not initialized");
@@ -255,7 +283,7 @@ export const createSolWalletStore = createStoreFactory<SolWalletState>((setState
   };
 
   const prepareTransaction = async (transaction: Transaction, options: SendOptions = {}) => {
-    const { connection, address } = await getState();
+    const { connection, address } = getState();
 
     if (!connection) throw new Error("Connection not initialized");
 
@@ -278,7 +306,7 @@ export const createSolWalletStore = createStoreFactory<SolWalletState>((setState
     amount,
     tokenAddress,
   }: { to: string; amount: string; tokenAddress?: string }) => {
-    const { connection, handler, address } = await getState();
+    const { connection, handler, address } = getState();
 
     if (!connection) throw new Error("Connection not initialized");
     if (!handler) throw new Error("Handler not initialized");
@@ -349,7 +377,7 @@ export const createSolWalletStore = createStoreFactory<SolWalletState>((setState
         window.Buffer = oldBuffer;
       }
     }
-    const balance = (await getState().balance) ?? 0;
+    const balance = getState().balance ?? 0;
 
     if (Number(amount) > balance) {
       throw new Error("Insufficient balance");
@@ -370,8 +398,8 @@ export const createSolWalletStore = createStoreFactory<SolWalletState>((setState
     return signature;
   };
 
-  const __persist: ExtendedSolWalletState["__persist"] = (serverIsConnectingTo?: string) => {
-    let isConnectingTo = serverIsConnectingTo;
+  const __persist = (data?: SolWalletStorePersistData) => {
+    let isConnectingTo = data?.tryToReconnectTo;
     if (
       !isConnectingTo &&
       typeof window !== "undefined" &&
@@ -383,21 +411,21 @@ export const createSolWalletStore = createStoreFactory<SolWalletState>((setState
     initialState.isConnecting = !!isConnectingTo;
   };
 
-  const cleanup: SolWalletApi["cleanup"] = () => {
+  const __cleanup = () => {
     lifecycle.cleanup();
   };
 
-  const initialState: ExtendedSolWalletState = {
+  const initialState: ExtendedSolWalletStoreState = {
     ...newInitialSolState(),
     connect,
     connectAsync,
     disconnect,
     getTokenBalance,
     send,
-    init,
-    cleanup,
+    __init,
+    __cleanup,
     __persist,
   };
 
-  return initialState as SolWalletState;
+  return initialState as SolWalletStoreState;
 });

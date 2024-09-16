@@ -1,5 +1,5 @@
 import { LifeCycleManager } from "@/internal/lifecycle";
-import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/internal/store";
+import { type Store, createStoreFactory, type StoreSetupFunctions } from "@/internal/store";
 
 import { setupAutoUpdate } from "@/internal/update";
 import { get } from "@/internal/utils/get";
@@ -14,11 +14,13 @@ export type SolExtensionsProps = {
 
 export type SolExtensionsApi = {
   updateExtensions(): void;
-} & StoreLifeCycleMethods;
+};
 
-export type SolExtensionsState = SolExtensionsProps & SolExtensionsApi;
+export type SolExtensionsStoreState = SolExtensionsProps & SolExtensionsApi;
 
-export type SolExtensionsStore = Store<SolExtensionsState>;
+export type SolExtensionsStore = Store<SolExtensionsStoreState>;
+
+type ExtendedSolExtensionsStoreState = SolExtensionsStoreState & StoreSetupFunctions;
 
 function newInitialSolState(): SolExtensionsProps {
   return {
@@ -29,7 +31,7 @@ function newInitialSolState(): SolExtensionsProps {
   };
 }
 
-export const createSolExtensionsStore = createStoreFactory<SolExtensionsState>(
+export const createSolExtensionsStore = createStoreFactory<SolExtensionsStoreState>(
   (setState, getState) => {
     const lifecycle = new LifeCycleManager();
 
@@ -54,20 +56,22 @@ export const createSolExtensionsStore = createStoreFactory<SolExtensionsState>(
       setState(newState);
     };
 
-    const init = () => {
+    const __init = () => {
       updateExtensions();
       setupAutoUpdate(updateExtensions, lifecycle);
     };
 
-    const cleanup = () => {
+    const __cleanup = () => {
       lifecycle.cleanup();
     };
 
-    return {
+    const initialState: ExtendedSolExtensionsStoreState = {
       ...newInitialSolState(),
-      init,
-      cleanup,
       updateExtensions,
+      __init,
+      __cleanup,
     };
+
+    return initialState;
   },
 );

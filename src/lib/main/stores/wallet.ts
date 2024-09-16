@@ -334,7 +334,7 @@ export const createWalletStore = createStoreFactory<WalletStoreState, WalletStor
         typeof window !== "undefined" &&
         weld.config.getState().enablePersistence
       ) {
-        isConnectingTo = weld.config.getState().getPersistedValue("connectedWallet");
+        isConnectingTo = weld.config.getState().getPersistedValue("weld_connected-wallet");
       }
       initialState.isConnectingTo = isConnectingTo;
       initialState.isConnecting = !!isConnectingTo;
