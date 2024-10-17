@@ -2,7 +2,7 @@
 
 import type { ConfigStoreState, WalletConfig } from "@/lib/main/stores/config";
 import type { AnyFunction, MaybePromise, Modify, PartialWithDiscriminant } from "../utils/types";
-import { Store, StoreSetupFunctions, createStoreFactory } from ".";
+import { type Store, createStoreFactory, type StoreSetupFunctions } from ".";
 import { LifeCycleManager } from "../lifecycle";
 import { STORAGE_KEYS } from "@/lib/server";
 import {
@@ -11,222 +11,248 @@ import {
 } from "@/lib/main/utils/errors";
 import { setupAutoUpdate } from "../update";
 
-type WalletProps<TProps extends object = object> = Modify<
-  TProps,
-  {
-    isConnected: boolean;
-    isConnecting: boolean;
-    isConnectingTo: string | undefined;
-  }
->;
-type WalletState<TProps, TKeys extends keyof TProps = keyof TProps> = PartialWithDiscriminant<
-  TProps,
-  "isConnected",
-  TKeys
->;
-type ConnectedWalletState<TWalletState> = Extract<TWalletState, { isConnected: true }>;
-type DisconnectedWalletState<TWalletState> = Extract<TWalletState, { isConnected: false }>;
-type WalletApi<
-  TWalletKey extends string,
-  TProps extends { key: TWalletKey },
-  TApi extends Record<string, AnyFunction>,
-> = Modify<
-  TApi,
-  {
-    connect(
-      key: TWalletKey,
-      config?: Partial<
-        WalletConfig & {
-          onSuccess(wallet: ConnectedWalletState<WalletState<WalletProps<TProps>>>): void;
-          onError(error: unknown): void;
-        }
-      >,
-    ): void;
-    connectAsync: (
-      key: TWalletKey,
-      config?: Partial<WalletConfig>,
-    ) => Promise<ConnectedWalletState<WalletState<WalletProps<TProps>>>>;
-    disconnect(): void;
-  }
->;
-export type WalletStoreState<
-  TProps extends Record<string, unknown>,
-  TApi extends Record<string, AnyFunction>,
-  TKeys extends keyof TProps | keyof TApi = keyof TProps | keyof TApi,
-> = WalletState<Extract<TKeys, keyof TProps>> & {
-  [TKey in Extract<TKeys, keyof TApi>]: TApi[TKey];
+export type DefaultWalletProps = {
+  isConnected: boolean;
+  isConnecting: boolean;
+  isConnectingTo: string | undefined;
 };
+
+// biome-ignore lint/suspicious/noExplicitAny: Allow any for generic types
+export type WalletProps<TProps extends Record<string, unknown> = any> = PartialWithDiscriminant<
+  Modify<TProps, DefaultWalletProps>,
+  "isConnected"
+>;
+
+export type ConnectedWalletState<TProps extends WalletProps> = Extract<
+  TProps,
+  { isConnected: true }
+>;
+
+type ExtractKeyType<T> = "key" extends keyof T
+  ? T["key"] extends string
+    ? T["key"]
+    : string
+  : string;
+
+export type DefaultWalletApi<TProps extends WalletProps> = {
+  connect(
+    key: ExtractKeyType<TProps>,
+    config?: Partial<
+      WalletConfig & {
+        onSuccess(wallet: ConnectedWalletState<TProps>): void;
+        onError(error: unknown): void;
+      }
+    >,
+  ): void;
+  connectAsync: (
+    key: ExtractKeyType<TProps>,
+    config?: Partial<WalletConfig>,
+  ) => Promise<ConnectedWalletState<TProps>>;
+  disconnect(): void;
+};
+
+export type WalletApi<
+  TProps extends WalletProps,
+  // biome-ignore lint/suspicious/noExplicitAny: Allow any for generic types
+  TApi extends Record<string, AnyFunction> = any,
+> = Modify<TApi, DefaultWalletApi<TProps>>;
+
+export type WalletStoreState<TProps extends WalletProps, TApi extends WalletApi<TProps>> = TProps &
+  TApi;
 
 export type WalletStorePersistData = {
   tryToReconnectTo?: string;
 };
 
-export function newWalletStoreCreator<
-  TWalletKey extends string,
-  TProps extends { key: TWalletKey },
-  TApi extends Record<string, AnyFunction>,
->(opts: {
-  newState(): PartialWithDiscriminant<WalletProps<TProps>, "isConnected">;
-  storageKey: keyof typeof STORAGE_KEYS;
-  getConfig?(): ConfigStoreState;
-  onUpdateError?(error: unknown): void;
-  updateState(): MaybePromise<void>;
-}) {
-  type TWalletProps = WalletProps<TProps>;
-  type TWalletApi = WalletApi<TWalletKey, TProps, TApi>;
-  type TWalletStoreState = WalletStoreState<TWalletProps, TWalletApi>;
-  type TWalletState = WalletState<TWalletProps>;
-  type TConnectedWalletState = ConnectedWalletState<TWalletState>;
-  type TWalletStore = Store<TWalletStoreState, WalletStorePersistData>;
-  type TExtendedWalletStoreState = TWalletStoreState & StoreSetupFunctions;
-  return createStoreFactory<TWalletStoreState>((setState, getState) => {
-    const lifecycle = new LifeCycleManager();
+type DefaultWalletStore = Store<
+  WalletStoreState<
+    WalletProps<Record<string, never>>,
+    WalletApi<WalletProps<Record<string, never>>>
+  >
+>;
 
-    const handleUpdateError = (error: unknown) => {
-      opts.getConfig?.().onUpdateError?.("wallet", error);
-      opts.getConfig?.().wallet.onUpdateError?.(error);
-    };
+export type WalletStore<TProps extends WalletProps, TApi extends WalletApi<TProps>> = Store<
+  WalletStoreState<TProps, TApi>,
+  WalletStorePersistData
+>;
 
-    const disconnect = () => {
-      lifecycle.subscriptions.clearAll();
-      lifecycle.inFlight.abortAll();
-      setState(opts.newState() as object);
-      if (opts.getConfig?.().enablePersistence) {
-        opts.getConfig?.().storage.remove(STORAGE_KEYS[opts.storageKey]);
-      }
-    };
+export function newWalletStoreCreator<TProps extends WalletProps, TApi extends WalletApi<TProps>>(
+  createOpts: (ctx: {
+    getState: WalletStore<TProps, TApi>["getState"];
+    setState: WalletStore<TProps, TApi>["setState"];
+    lifecycle: LifeCycleManager;
+  }) => {
+    newState(): TProps;
+    storageKey: keyof typeof STORAGE_KEYS;
+    getConfig?(): ConfigStoreState;
+    onUpdateError?(error: unknown): void;
+    updateState(): MaybePromise<void>;
+    api: Omit<TApi, keyof DefaultWalletApi<TProps>>;
+  },
+) {
+  return createStoreFactory<WalletStoreState<TProps, TApi>, WalletStorePersistData>(
+    (setState, getState) => {
+      const lifecycle = new LifeCycleManager();
 
-    const connectAsync = async (key: TWalletKey, configOverrides?: Partial<WalletConfig>) => {
-      disconnect();
+      const opts = createOpts({
+        getState,
+        setState,
+        lifecycle,
+      });
 
-      const signal = lifecycle.inFlight.add();
+      const setDefaultState: DefaultWalletStore["setState"] = (partial) => {
+        setState(partial as Partial<WalletStoreState<TProps, TApi>>);
+      };
 
-      try {
+      const handleUpdateError = (error: unknown) => {
+        opts.getConfig?.().onUpdateError?.("wallet", error);
+        opts.getConfig?.().wallet.onUpdateError?.(error);
+      };
+
+      const disconnect: DefaultWalletApi<TProps>["disconnect"] = () => {
         lifecycle.subscriptions.clearAll();
-
-        setState({ isConnectingTo: key, isConnecting: true } as any);
-
-        let abortTimeout: NodeJS.Timeout | undefined = undefined;
-
-        const connectTimeout =
-          configOverrides?.connectTimeout ?? opts.getConfig?.().wallet?.connectTimeout;
-
-        if (connectTimeout) {
-          abortTimeout = setTimeout(() => {
-            signal.aborted = true;
-            setState({ isConnectingTo: undefined, isConnecting: false } as any);
-          }, connectTimeout);
+        lifecycle.inFlight.abortAll();
+        setState(opts.newState() as object);
+        if (opts.getConfig?.().enablePersistence) {
+          opts.getConfig?.().storage.remove(STORAGE_KEYS[opts.storageKey]);
         }
+      };
 
-        // TODO: Create handler, on connect, smth like that
+      const connectAsync: DefaultWalletApi<TProps>["connectAsync"] = async (
+        key,
+        configOverrides,
+      ) => {
+        disconnect();
 
-        if (signal.aborted) {
-          throw new WalletConnectionAbortedError();
-        }
+        const signal = lifecycle.inFlight.add();
 
-        const safeUpdateState = async (stopUpdates?: () => void) => {
+        try {
+          lifecycle.subscriptions.clearAll();
+
+          setDefaultState({ isConnectingTo: key, isConnecting: true });
+
+          let abortTimeout: NodeJS.Timeout | undefined = undefined;
+
+          const connectTimeout =
+            configOverrides?.connectTimeout ?? opts.getConfig?.().wallet?.connectTimeout;
+
+          if (connectTimeout) {
+            abortTimeout = setTimeout(() => {
+              signal.aborted = true;
+              setDefaultState({ isConnectingTo: undefined, isConnecting: false });
+            }, connectTimeout);
+          }
+
+          // TODO: Create handler, on connect, smth like that
+
           if (signal.aborted) {
-            stopUpdates?.();
-            return;
+            throw new WalletConnectionAbortedError();
           }
-          if (opts.getConfig?.().debug) {
-            console.log("[WELD] Wallet state update", key);
+
+          const safeUpdateState = async (stopUpdates?: () => void) => {
+            if (signal.aborted) {
+              stopUpdates?.();
+              return;
+            }
+            if (opts.getConfig?.().debug) {
+              console.log("[WELD] Wallet state update", key);
+            }
+            try {
+              return await opts.updateState();
+            } catch (error) {
+              handleUpdateError(error);
+              disconnect();
+            }
+          };
+
+          await opts.updateState();
+
+          const newState = getState();
+          if (!newState.isConnected) {
+            throw new Error("Connection failed");
           }
-          try {
-            return await opts.updateState();
-          } catch (error) {
-            handleUpdateError(error);
+
+          if (signal.aborted) {
+            throw new WalletConnectionAbortedError();
+          }
+
+          setupAutoUpdate(safeUpdateState, lifecycle, "wallet", configOverrides);
+
+          if (opts.getConfig?.().enablePersistence) {
+            opts.getConfig?.().storage.set(STORAGE_KEYS[opts.storageKey], newState.key);
+          }
+
+          if (abortTimeout) {
+            clearTimeout(abortTimeout);
+          }
+
+          return newState as ConnectedWalletState<TProps>;
+        } catch (error) {
+          if (error instanceof WalletDisconnectAccountError) {
             disconnect();
           }
-        };
-
-        await opts.updateState();
-
-        const newState = getState();
-        if (!newState.isConnected) {
-          throw new Error("Connection failed");
+          throw error;
+        } finally {
+          lifecycle.inFlight.remove(signal);
         }
+      };
 
-        if (signal.aborted) {
-          throw new WalletConnectionAbortedError();
+      const connect: DefaultWalletApi<TProps>["connect"] = async (
+        key,
+        { onSuccess, onError, ...config } = {},
+      ) => {
+        connectAsync(key, config)
+          .then((wallet) => {
+            onSuccess?.(wallet);
+          })
+          .catch((error) => {
+            onError?.(error);
+          });
+      };
+
+      const __init = () => {
+        if (initialState.isConnectingTo) {
+          connect(initialState.isConnectingTo);
         }
+      };
 
-        setupAutoUpdate(safeUpdateState, lifecycle, "wallet", configOverrides);
-
-        if (opts.getConfig?.().enablePersistence) {
-          opts.getConfig?.().storage.set(STORAGE_KEYS[opts.storageKey], newState.key);
+      const __persist = (data?: WalletStorePersistData) => {
+        let isConnectingTo = data?.tryToReconnectTo;
+        if (
+          !isConnectingTo &&
+          typeof window !== "undefined" &&
+          opts.getConfig?.().enablePersistence
+        ) {
+          isConnectingTo = opts.getConfig?.().getPersistedValue("weld_connected-wallet");
         }
+        initialState.isConnectingTo = isConnectingTo;
+        initialState.isConnecting = !!isConnectingTo;
+      };
 
-        if (abortTimeout) {
-          clearTimeout(abortTimeout);
-        }
+      const __cleanup = () => {
+        lifecycle.cleanup();
+      };
 
-        return newState;
-      } catch (error) {
-        if (error instanceof WalletDisconnectAccountError) {
-          disconnect();
-        }
-        throw error;
-      } finally {
-        lifecycle.inFlight.remove(signal);
-      }
-    };
+      const storeSetupFunctions: StoreSetupFunctions = {
+        __init,
+        __cleanup,
+        __persist,
+      };
 
-    const connect = async (
-      key: TWalletKey,
-      {
-        onSuccess,
-        onError,
-        ...config
-      }: Partial<
-        WalletConfig & {
-          onSuccess(wallet: TConnectedWalletState): void;
-          onError(error: unknown): void;
-        }
-      > = {},
-    ) => {
-      connectAsync(key, config)
-        .then((wallet) => {
-          onSuccess?.(wallet);
-        })
-        .catch((error) => {
-          onError?.(error);
-        });
-    };
+      const defaultApi: DefaultWalletApi<TProps> = {
+        connect,
+        connectAsync,
+        disconnect,
+      };
 
-    const __init = () => {
-      if (initialState.isConnectingTo) {
-        connect(initialState.isConnectingTo);
-      }
-    };
+      const initialState: WalletStoreState<TProps, TApi> & StoreSetupFunctions = {
+        ...opts.newState(),
+        ...opts.api,
+        ...defaultApi,
+        ...storeSetupFunctions,
+      };
 
-    const __persist = (data?: WalletStorePersistData) => {
-      let isConnectingTo = data?.tryToReconnectTo;
-      if (
-        !isConnectingTo &&
-        typeof window !== "undefined" &&
-        opts.getConfig?.().enablePersistence
-      ) {
-        isConnectingTo = opts.getConfig?.().getPersistedValue("weld_connected-wallet");
-      }
-      initialState.isConnectingTo = isConnectingTo;
-      initialState.isConnecting = !!isConnectingTo;
-    };
-
-    const __cleanup = () => {
-      lifecycle.cleanup();
-    };
-
-    const initialState: TExtendedWalletStoreState = {
-      ...opts.newState(),
-      connect,
-      connectAsync,
-      disconnect,
-      __init,
-      __cleanup,
-      __persist,
-    };
-
-    return initialState as TWalletStoreState;
-  });
+      return initialState as WalletStoreState<TProps, TApi>;
+    },
+  );
 }

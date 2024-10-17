@@ -1,6 +1,6 @@
 import type { WalletExtension } from "./extensions";
 
-type AbstractWalletInfo = {
+export type AbstractWalletInfo = {
   supported: boolean;
   key: string;
   icon: string;
