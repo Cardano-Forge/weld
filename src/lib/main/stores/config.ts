@@ -1,5 +1,5 @@
 import { type Store, createStoreFactory } from "@/internal/store";
-import { STORAGE_KEYS, type StorageKeysType } from "@/lib/server";
+import type { StorageKeysType } from "@/lib/server";
 import { type WeldStorage, defaultStorage } from "../persistence";
 
 export type UpdateConfig = {

@@ -1,7 +1,7 @@
 // adapted from https://github.com/pmndrs/zustand/blob/main/src/vanilla.ts
 
-import { compare } from "./compare";
-import { initCustomWallets } from "./custom/init";
+import { compare } from "@/internal/compare";
+import { initCustomWallets } from "@/internal/custom/init";
 
 export type StoreListener<T> = (state: T, prevState: T | undefined) => void;
 
