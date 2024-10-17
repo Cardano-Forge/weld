@@ -179,8 +179,12 @@ export const createWalletStore = createStoreFactory<WalletStoreState, WalletStor
             retryCount++ < 8 &&
             compare(prevUtxos, nextUtxos)
           ) {
-            await new Promise((resolve) => setTimeout(resolve, 3000));
-            nextUtxos = await handler.getUtxos();
+            await new Promise<void>((resolve) => {
+              setTimeout(async () => {
+                nextUtxos = await handler.getUtxos();
+                resolve();
+              }, 3000);
+            });
           }
           return nextUtxos;
         };
