@@ -1,7 +1,6 @@
 // adapted from https://github.com/pmndrs/zustand/blob/main/src/vanilla.ts
 
-import { compare } from "./compare";
-import { initCustomWallets } from "./custom/init";
+import { compare } from "@/internal/compare";
 
 export type StoreListener<T> = (state: T, prevState: T | undefined) => void;
 
@@ -11,13 +10,17 @@ export type StoreSetupFunctions = {
   __persist?(data?: unknown): void;
 };
 
+export type GetStateFunction<TState> = () => TState;
+
+export type SetStateFunction<TState> = (
+  partial: TState | Partial<TState> | ((state: TState) => TState | Partial<TState>),
+) => void;
+
 // biome-ignore lint/suspicious/noExplicitAny: Allow any store for generics
 export type Store<TState = any, TPersistData = never> = {
-  getState: () => TState;
+  getState: GetStateFunction<TState>;
   getInitialState: () => TState;
-  setState: (
-    partial: TState | Partial<TState> | ((state: TState) => TState | Partial<TState>),
-  ) => void;
+  setState: SetStateFunction<TState>;
   subscribe: (listener: StoreListener<TState>, opts?: { fireImmediately?: boolean }) => () => void;
   subscribeWithSelector: <TSlice>(
     selector: (state: TState) => TSlice,
@@ -107,7 +110,6 @@ export function createStore<TState extends object, TPersistData = never>(
   };
 
   const init = () => {
-    initCustomWallets();
     const state = getState() as StoreSetupFunctions | undefined;
     state?.__init?.();
   };

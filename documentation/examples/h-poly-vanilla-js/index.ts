@@ -1,7 +1,4 @@
-import { setupStores } from "@/lib/main";
 import { weldPoly } from "@/lib/poly";
-
-setupStores(weldPoly.wallet, weldPoly.extensions);
 
 weldPoly.wallet.subscribeWithSelector(
   (state) => state.displayName ?? "-",
@@ -48,4 +45,12 @@ document.querySelector("#send")?.addEventListener("click", () => {
   weldPoly.wallet
     .getState()
     .send({ to: "0xAD68508FCb4D5ee8e764b031a695d12830bCc324", amount: "0.0001" });
+});
+
+window.addEventListener("load", () => {
+  weldPoly.init();
+});
+
+window.addEventListener("unload", () => {
+  weldPoly.cleanup();
 });

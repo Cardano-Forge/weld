@@ -2,6 +2,7 @@ import { copyFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { type LibraryOptions, type PluginOption, defineConfig } from "vite";
 import dts from "vite-plugin-dts";
+import nodePolyfills from "vite-plugin-node-stdlib-browser";
 import * as pkg from "./package.json";
 
 const entryPoints = Object.values(pkg.exports)
@@ -83,5 +84,6 @@ export default defineConfig({
     dts({ outputDir: "dist/types", exclude: ["documentation/**"] }),
     generateDtsEntryPoints(),
     copyPackageJson(),
+    nodePolyfills(),
   ],
 });

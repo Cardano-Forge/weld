@@ -1,3 +1,4 @@
+import { decodeBalance } from "@/internal/utils/decode-balance";
 import { hexToView } from "@/internal/utils/hex-to-view";
 import { viewToString } from "@/internal/utils/view-to-string";
 import {
@@ -20,7 +21,6 @@ import {
   hexToBech32,
 } from "@/lib/main";
 import cbor from "cbor-js";
-import { decodeBalance } from "./utils/decode-balance";
 
 export type WalletHandler = {
   info: WalletInfo;

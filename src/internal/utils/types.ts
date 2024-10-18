@@ -2,9 +2,13 @@
 export type AnyFunction = (...params: any[]) => any;
 
 export type PartialWithDiscriminant<
-  TType extends object,
+  TType,
   TDiscriminantKey extends string,
   TKeys extends keyof TType = keyof TType,
 > =
   | { [TKey in TKeys]: TKey extends TDiscriminantKey ? true : TType[TKey] }
   | { [TKey in TKeys]: TKey extends TDiscriminantKey ? false : TType[TKey] | undefined };
+
+export type Modify<T, U> = Omit<T, keyof U> & U;
+
+export type MaybePromise<T> = T | Promise<T>;

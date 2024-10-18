@@ -32,10 +32,10 @@
       "require": "./eth.cjs",
       "types": "./eth.d.ts"
     },
-    "./matic": {
-      "import": "./matic.js",
-      "require": "./matic.cjs",
-      "types": "./matic.d.ts"
+    "./poly": {
+      "import": "./poly.js",
+      "require": "./poly.cjs",
+      "types": "./poly.d.ts"
     }
   },
   "files": ["**"],
@@ -104,7 +104,8 @@
     "@nufi/dapp-client-core": "^0.3.5",
     "bech32": "^2.0.0",
     "cbor-js": "^0.1.0",
-    "use-sync-external-store": "^1.2.2"
+    "use-sync-external-store": "^1.2.2",
+    "vite-plugin-node-stdlib-browser": "^0.2.1"
   },
   "license": "MIT",
   "publishConfig": {

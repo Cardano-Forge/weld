@@ -4,8 +4,7 @@ export * from "@/internal/evm/wallet";
 import { type EvmExtensionsStore, createEvmExtensionsStore } from "@/internal/evm/extensions";
 import { EvmChainId } from "@/internal/evm/types";
 import { type EvmWalletStore, createEvmWalletStore } from "@/internal/evm/wallet";
-import { type ConfigStore, createConfigStore } from "@/lib/main/stores/config";
-import { STORAGE_KEYS } from "@/lib/server";
+import { type ConfigStore, type WeldConfig, createConfigStore } from "@/lib/main/stores/config";
 import { POLY_EXTENSIONS } from "../types";
 
 let configStore: ConfigStore;
@@ -25,15 +24,36 @@ export const weldPoly = {
         chainId: EvmChainId.POLY,
         extensions: this.extensions,
         config: this.config,
-        storageKey: STORAGE_KEYS.connectedPolyWallet,
-      })();
+        storageKey: "connectedPolyWallet",
+      });
     }
     return walletStore;
   },
   get extensions() {
     if (!extensionsStore) {
-      extensionsStore = createEvmExtensionsStore(POLY_EXTENSIONS)();
+      extensionsStore = createEvmExtensionsStore(POLY_EXTENSIONS);
     }
     return extensionsStore;
+  },
+  persist(config?: Partial<WeldConfig>) {
+    this.config.persist();
+    this.wallet.persist({ tryToReconnectTo: config?.wallet?.tryToReconnectTo });
+    this.extensions.persist();
+  },
+  init({ persist = true }: { persist?: boolean | Partial<WeldConfig> } = {}) {
+    if (typeof persist === "object") {
+      this.persist(persist);
+    } else if (persist) {
+      this.persist();
+    }
+
+    this.config.init();
+    this.wallet.init();
+    this.extensions.init();
+  },
+  cleanup() {
+    this.config.cleanup();
+    this.wallet.cleanup();
+    this.extensions.cleanup();
   },
 };
