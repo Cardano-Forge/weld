@@ -5,7 +5,6 @@ import { type EvmExtensionsStore, createEvmExtensionsStore } from "@/internal/ev
 import { EvmChainId } from "@/internal/evm/types";
 import { type EvmWalletStore, createEvmWalletStore } from "@/internal/evm/wallet";
 import { type ConfigStore, type WeldConfig, createConfigStore } from "@/lib/main/stores/config";
-import { STORAGE_KEYS } from "@/lib/server";
 import { ETH_EXTENSIONS } from "../types";
 
 let configStore: ConfigStore;
@@ -25,14 +24,14 @@ export const weldEth = {
         chainId: EvmChainId.ETH,
         extensions: this.extensions,
         config: this.config,
-        storageKey: STORAGE_KEYS.connectedEthWallet,
-      })();
+        storageKey: "connectedEthWallet",
+      });
     }
     return walletStore;
   },
   get extensions() {
     if (!extensionsStore) {
-      extensionsStore = createEvmExtensionsStore(ETH_EXTENSIONS)();
+      extensionsStore = createEvmExtensionsStore(ETH_EXTENSIONS);
     }
     return extensionsStore;
   },

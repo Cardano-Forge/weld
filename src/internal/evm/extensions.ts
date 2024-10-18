@@ -30,44 +30,47 @@ function newInitialEvmState(): EvmExtensionsProps {
   };
 }
 
-export const createEvmExtensionsStore = (extensions: readonly EvmExtensionPath[]) =>
-  createStoreFactory<EvmExtensionsState>((setState, getState) => {
-    const lifecycle = new LifeCycleManager();
+export const createEvmExtensionsStore = createStoreFactory<
+  EvmExtensionsState,
+  undefined,
+  [readonly EvmExtensionPath[]]
+>((setState, getState, extensions) => {
+  const lifecycle = new LifeCycleManager();
 
-    const updateExtensions = () => {
-      if (typeof window === "undefined") {
-        return;
+  const updateExtensions = () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const newState = newInitialEvmState();
+    for (const info of extensions) {
+      const cached = getState().supportedMap.get(info.key);
+      const handler = get(window, info.handlerPath);
+      const extension = cached ?? { ...info, isInstalled: false };
+      if (isEvmHandler(handler)) {
+        extension.isInstalled = true;
+        extension.handler = handler;
+        newState.installedMap.set(info.key, extension);
+        newState.installedArr.push(extension);
       }
-      const newState = newInitialEvmState();
-      for (const info of extensions) {
-        const cached = getState().supportedMap.get(info.key);
-        const handler = get(window, info.handlerPath);
-        const extension = cached ?? { ...info, isInstalled: false };
-        if (isEvmHandler(handler)) {
-          extension.isInstalled = true;
-          extension.handler = handler;
-          newState.installedMap.set(info.key, extension);
-          newState.installedArr.push(extension);
-        }
-        newState.supportedMap.set(info.key, extension);
-        newState.supportedArr.push(extension);
-      }
-      setState(newState);
-    };
+      newState.supportedMap.set(info.key, extension);
+      newState.supportedArr.push(extension);
+    }
+    setState(newState);
+  };
 
-    const init = () => {
-      updateExtensions();
-      setupAutoUpdate(updateExtensions, lifecycle, weldEth.config);
-    };
+  const init = () => {
+    updateExtensions();
+    setupAutoUpdate(updateExtensions, lifecycle, weldEth.config);
+  };
 
-    const cleanup = () => {
-      lifecycle.cleanup();
-    };
+  const cleanup = () => {
+    lifecycle.cleanup();
+  };
 
-    return {
-      ...newInitialEvmState(),
-      init,
-      cleanup,
-      updateExtensions,
-    };
-  });
+  return {
+    ...newInitialEvmState(),
+    init,
+    cleanup,
+    updateExtensions,
+  };
+});
