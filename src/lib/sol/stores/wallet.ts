@@ -1,5 +1,5 @@
 import { LifeCycleManager } from "@/internal/lifecycle";
-import { type Store, createStoreFactory, type StoreSetupFunctions } from "@/internal/store";
+import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
 
 import { setupAutoUpdate } from "@/internal/update";
 import type { PartialWithDiscriminant } from "@/internal/utils/types";

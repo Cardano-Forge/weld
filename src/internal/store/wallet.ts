@@ -1,15 +1,15 @@
 // Generic wallet store implementation
 
 import type { ConfigStoreState, WalletConfig } from "@/lib/main/stores/config";
-import type { AnyFunction, MaybePromise, Modify, PartialWithDiscriminant } from "../utils/types";
-import { type Store, createStoreFactory, type StoreSetupFunctions } from ".";
-import { LifeCycleManager } from "../lifecycle";
-import { STORAGE_KEYS } from "@/lib/server";
 import {
   WalletConnectionAbortedError,
   WalletDisconnectAccountError,
 } from "@/lib/main/utils/errors";
+import { STORAGE_KEYS } from "@/lib/server";
+import { type Store, type StoreSetupFunctions, createStoreFactory } from ".";
+import { LifeCycleManager } from "../lifecycle";
 import { setupAutoUpdate } from "../update";
+import type { AnyFunction, MaybePromise, Modify, PartialWithDiscriminant } from "../utils/types";
 
 export type DefaultWalletProps = {
   isConnected: boolean;

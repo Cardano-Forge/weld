@@ -107,7 +107,7 @@ export const createWalletStore = createStoreFactory<WalletStoreState, WalletStor
       return inFlightUtxosUpdate?.promise ?? getState().utxos ?? [];
     };
 
-    const walletManager = new WalletStoreManager(
+    const walletManager = new WalletStoreManager<WalletState>(
       setState,
       getState,
       newWalletState,
@@ -252,10 +252,11 @@ export const createWalletStore = createStoreFactory<WalletStoreState, WalletStor
 
     const connectAsync: WalletApi["connectAsync"] = async (key, configOverrides) => {
       const signal = lifecycle.inFlight.add();
-      return walletManager.connect(key, {
+      const newState = await walletManager.connect(key, {
         signal,
         configOverrides,
       });
+      return newState;
     };
 
     const connect: WalletApi["connect"] = async (key, { onSuccess, onError, ...config } = {}) => {

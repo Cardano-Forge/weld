@@ -215,10 +215,7 @@ export const createEvmWalletStore = (storeOptions: StoreOptions) =>
       }
     };
 
-    const connect: EvmWalletApi["connect"] = (
-      key,
-      { onSuccess, onError, ...config } = {},
-    ) => {
+    const connect: EvmWalletApi["connect"] = (key, { onSuccess, onError, ...config } = {}) => {
       connectAsync(key, config)
         .then((wallet) => {
           onSuccess?.(wallet);

@@ -1,12 +1,12 @@
+import { type WalletConfig, createConfigStore } from "@/lib/main/stores/config";
 import {
   WalletConnectionAbortedError,
   WalletDisconnectAccountError,
 } from "@/lib/main/utils/errors";
-import { type InFlightSignal, LifeCycleManager } from "../lifecycle";
-import type { MaybePromise, PartialWithDiscriminant } from "../utils/types";
-import { setupAutoUpdate } from "../update";
-import { type WalletConfig, createConfigStore } from "@/lib/main/stores/config";
 import { STORAGE_KEYS } from "@/lib/server";
+import { type InFlightSignal, LifeCycleManager } from "../lifecycle";
+import { setupAutoUpdate } from "../update";
+import type { MaybePromise, PartialWithDiscriminant } from "../utils/types";
 
 export type WalletStoreProps = PartialWithDiscriminant<
   {
@@ -38,7 +38,7 @@ type EventHandler<TEvent extends keyof Events> = Events[TEvent] extends undefine
   ? () => MaybePromise<void>
   : (params: Events[TEvent]) => MaybePromise<void>;
 
-export class WalletStoreManager {
+export class WalletStoreManager<TProps extends WalletStoreProps = WalletStoreProps> {
   private _subscriptions: { [TEvent in keyof Events]: Set<EventHandler<TEvent>> } = {
     beforeDisconnect: new Set(),
     afterDisconnect: new Set(),
@@ -47,8 +47,8 @@ export class WalletStoreManager {
 
   constructor(
     private _setState: (s: Partial<WalletStoreProps>) => void,
-    private _getState: () => WalletStoreProps,
-    private _newState: () => WalletStoreProps,
+    private _getState: () => TProps,
+    private _newState: () => TProps,
     private _createConnection: (
       key: string,
       opts: ConnectOpts,
@@ -135,7 +135,7 @@ export class WalletStoreManager {
         clearTimeout(abortTimeout);
       }
 
-      return newState;
+      return newState as Extract<TProps, { isConnected: true }>;
     } catch (error) {
       if (error instanceof WalletDisconnectAccountError) {
         await this.disconnect();
@@ -146,7 +146,7 @@ export class WalletStoreManager {
     }
   }
 
-  init(opts: { initialState: WalletStoreProps }) {
+  init(opts: { initialState: TProps }) {
     if (opts.initialState.isConnectingTo) {
       this.connect(opts.initialState.isConnectingTo).catch((error) => {
         if (this._configStore.getState().debug) {
@@ -159,7 +159,7 @@ export class WalletStoreManager {
     }
   }
 
-  persist(opts: { initialState: WalletStoreProps }, data?: { tryToReconnectTo?: string }) {
+  persist(opts: { initialState: TProps }, data?: { tryToReconnectTo?: string }) {
     let isConnectingTo = data?.tryToReconnectTo;
     if (
       !isConnectingTo &&
