@@ -1,7 +1,7 @@
 import { customWallets } from "@/internal/custom";
+import { entries } from "@/internal/utils/entries";
 import { getFailureReason } from "@/internal/utils/errors";
 import type { WeldConfig } from "@/lib/main/stores/config";
-import { entries } from "../utils/entries";
 
 export async function initCustomWallets(config: Partial<WeldConfig>): Promise<void> {
   if (config.customWallets === false) {

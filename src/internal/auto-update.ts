@@ -1,5 +1,5 @@
+import type { LifeCycleManager } from "@/internal/lifecycle";
 import type { ConfigStore, StoreConfig, UpdateConfig } from "@/lib/main/stores/config";
-import type { LifeCycleManager } from "./lifecycle";
 
 function mergeConfigs<TKey extends keyof UpdateConfig>(
   key: TKey,

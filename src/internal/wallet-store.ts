@@ -1,12 +1,12 @@
+import { setupAutoUpdate } from "@/internal/auto-update";
+import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
+import type { MaybePromise, PartialWithDiscriminant } from "@/internal/utils/types";
 import { type WalletConfig, createConfigStore } from "@/lib/main/stores/config";
 import {
   WalletConnectionAbortedError,
   WalletDisconnectAccountError,
 } from "@/lib/main/utils/errors";
 import { STORAGE_KEYS } from "@/lib/server";
-import { type InFlightSignal, LifeCycleManager } from "../lifecycle";
-import { setupAutoUpdate } from "../update";
-import type { MaybePromise, PartialWithDiscriminant } from "../utils/types";
 
 export type DefaultWalletStoreProps = {
   key: string;

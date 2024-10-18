@@ -1,5 +1,5 @@
-import type { InFlightSignal, LifeCycleManager } from "../lifecycle";
-import { deferredPromise } from "../utils/deferred-promise";
+import type { InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
+import { deferredPromise } from "@/internal/utils/deferred-promise";
 
 export type RunningUtxosUpdate = {
   signal: InFlightSignal;

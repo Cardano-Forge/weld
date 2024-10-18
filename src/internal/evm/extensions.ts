@@ -1,7 +1,7 @@
 import { LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
 
-import { setupAutoUpdate } from "@/internal/update";
+import { setupAutoUpdate } from "@/internal/auto-update";
 import { get } from "@/internal/utils/get";
 import { weldEth } from "@/lib/eth";
 import { type EvmExtension, type EvmExtensionPath, isEvmHandler } from "./types";

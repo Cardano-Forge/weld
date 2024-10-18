@@ -18,7 +18,7 @@ import type { SolExtensionInfo, SolExtensionKey, SolHandler } from "../types";
 import { lamportToSol } from "../utils";
 
 import { Buffer } from "buffer";
-import { type DefaultWalletStoreProps, WalletStoreManager } from "@/internal/store/manager";
+import { type DefaultWalletStoreProps, WalletStoreManager } from "@/internal/wallet-store";
 
 export type SolWalletProps = DefaultWalletStoreProps &
   SolExtensionInfo & {

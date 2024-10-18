@@ -1,6 +1,6 @@
+import { setupAutoUpdate } from "@/internal/auto-update";
 import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
-import { setupAutoUpdate } from "@/internal/update";
 import { weld } from "..";
 import {
   type InstalledExtensions,

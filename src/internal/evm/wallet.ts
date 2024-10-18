@@ -8,6 +8,7 @@ import type {
   EvmHandler,
 } from "@/internal/evm/types";
 import type { PartialWithDiscriminant } from "@/internal/utils/types";
+import { type DefaultWalletStoreProps, WalletStoreManager } from "@/internal/wallet-store";
 import type { EvmExtensionsStore } from "@/lib/eth";
 import { WalletConnectionAbortedError, WalletConnectionError } from "@/lib/main";
 import type { ConfigStore, WalletConfig } from "@/lib/main/stores/config";
@@ -16,7 +17,6 @@ import { ethers, formatEther, parseEther, parseUnits } from "ethers";
 import type { AddressLike, BrowserProvider, JsonRpcSigner } from "ethers";
 import type { BigNumberish } from "ethers";
 import type { TransactionResponse } from "ethers";
-import { type DefaultWalletStoreProps, WalletStoreManager } from "../store/manager";
 import abi from "./index";
 
 export type EvmWalletProps = DefaultWalletStoreProps &

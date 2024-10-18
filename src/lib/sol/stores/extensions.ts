@@ -1,7 +1,7 @@
 import { LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
 
-import { setupAutoUpdate } from "@/internal/update";
+import { setupAutoUpdate } from "@/internal/auto-update";
 import { get } from "@/internal/utils/get";
 import { weldSol } from ".";
 import { SOL_EXTENSIONS, type SolExtension, isSolHandler } from "../types";
