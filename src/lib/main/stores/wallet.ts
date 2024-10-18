@@ -161,7 +161,7 @@ export const createWalletStore = createStoreFactory<
                 setState({ isUpdatingUtxos: false, utxos });
               }
 
-              running.success(utxos);
+              running.resolve(utxos);
             })
             .catch((error) => {
               walletManager.handleUpdateError(new WalletUtxosUpdateError(getFailureReason(error)));
@@ -170,9 +170,8 @@ export const createWalletStore = createStoreFactory<
                 setState({ isUpdatingUtxos: false, utxos: [] });
               }
 
-              running.error();
-            })
-            .finally(running.cleanup);
+              running.resolve([]);
+            });
         };
 
         // utxos are purposefully omitted here since getUtxos can take a long time
