@@ -11,13 +11,17 @@ export type StoreSetupFunctions = {
   __persist?(data?: unknown): void;
 };
 
+export type GetStateFunction<TState> = () => TState;
+
+export type SetStateFunction<TState> = (
+  partial: TState | Partial<TState> | ((state: TState) => TState | Partial<TState>),
+) => void;
+
 // biome-ignore lint/suspicious/noExplicitAny: Allow any store for generics
 export type Store<TState = any, TPersistData = never> = {
-  getState: () => TState;
+  getState: GetStateFunction<TState>;
   getInitialState: () => TState;
-  setState: (
-    partial: TState | Partial<TState> | ((state: TState) => TState | Partial<TState>),
-  ) => void;
+  setState: SetStateFunction<TState>;
   subscribe: (listener: StoreListener<TState>, opts?: { fireImmediately?: boolean }) => () => void;
   subscribeWithSelector: <TSlice>(
     selector: (state: TState) => TSlice,
