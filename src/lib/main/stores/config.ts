@@ -1,6 +1,7 @@
 import { type Store, createStoreFactory } from "@/internal/store";
 import type { StorageKeysType } from "@/lib/server";
 import { type WeldStorage, defaultStorage } from "../persistence";
+import type { CustomWalletKey } from "@/internal/custom";
 
 export type UpdateConfig = {
   debug: boolean;
@@ -34,6 +35,7 @@ export type WeldConfig = UpdateConfig &
     enablePersistence: boolean;
     storage: WeldStorage;
     onUpdateError?(context: string, error: unknown): void;
+    customWallets: boolean | { whitelist: CustomWalletKey[] } | { blacklist: CustomWalletKey[] };
   };
 
 const initialConfigState: WeldConfig = {
@@ -43,6 +45,7 @@ const initialConfigState: WeldConfig = {
   ignoreUnsafeUsageError: false,
   enablePersistence: true,
   storage: defaultStorage,
+  customWallets: true,
   wallet: {},
   extensions: {},
 };

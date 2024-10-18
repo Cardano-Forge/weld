@@ -1,7 +1,6 @@
 // adapted from https://github.com/pmndrs/zustand/blob/main/src/vanilla.ts
 
 import { compare } from "@/internal/compare";
-import { initCustomWallets } from "@/internal/custom/init";
 
 export type StoreListener<T> = (state: T, prevState: T | undefined) => void;
 
@@ -111,7 +110,6 @@ export function createStore<TState extends object, TPersistData = never>(
   };
 
   const init = () => {
-    initCustomWallets();
     const state = getState() as StoreSetupFunctions | undefined;
     state?.__init?.();
   };

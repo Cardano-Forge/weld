@@ -12,6 +12,9 @@ weld.config.getState().update({
   extensions: {
     // updateInterval: false,
   },
+  customWallets: {
+    blacklist: ["nufiSnap"],
+  },
 });
 
 weld.extensions.subscribeWithSelector(
