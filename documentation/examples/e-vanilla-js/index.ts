@@ -12,6 +12,9 @@ weld.config.getState().update({
   extensions: {
     // updateInterval: false,
   },
+  customWallets: {
+    blacklist: ["nufiSnap"],
+  },
 });
 
 weld.extensions.subscribeWithSelector(
@@ -41,6 +44,7 @@ weld.extensions.subscribeWithSelector(
 weld.wallet.subscribeWithSelector(
   (state) => state.displayName ?? "-",
   (displayName) => {
+    console.log("displayName", displayName);
     // biome-ignore lint/style/noNonNullAssertion: We know the element exists
     document.querySelector("#name")!.textContent = displayName;
   },

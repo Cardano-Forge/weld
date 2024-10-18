@@ -1,7 +1,4 @@
-import { setupStores } from "@/lib/main";
 import { weldSol } from "@/lib/sol";
-
-setupStores(weldSol.wallet, weldSol.extensions);
 
 weldSol.wallet.subscribeWithSelector(
   (state) => state.displayName ?? "-",
@@ -50,4 +47,12 @@ document.querySelector("#send")?.addEventListener("click", () => {
     amount: "0.1",
     tokenAddress: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263", // Bonk token
   });
+});
+
+window.addEventListener("load", () => {
+  weldSol.init();
+});
+
+window.addEventListener("unload", () => {
+  weldSol.cleanup();
 });

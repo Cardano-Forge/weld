@@ -1,8 +1,9 @@
 import { LifeCycleManager } from "@/internal/lifecycle";
-import { type Store, createStoreFactory, type StoreSetupFunctions } from "@/internal/store";
+import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
 
-import { setupAutoUpdate } from "@/internal/update";
+import { setupAutoUpdate } from "@/internal/auto-update";
 import { get } from "@/internal/utils/get";
+import { weldSol } from ".";
 import { SOL_EXTENSIONS, type SolExtension, isSolHandler } from "../types";
 
 export type SolExtensionsProps = {
@@ -58,7 +59,7 @@ export const createSolExtensionsStore = createStoreFactory<SolExtensionsStoreSta
 
     const __init = () => {
       updateExtensions();
-      setupAutoUpdate(updateExtensions, lifecycle);
+      setupAutoUpdate(updateExtensions, lifecycle, weldSol.config);
     };
 
     const __cleanup = () => {

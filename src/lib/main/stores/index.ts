@@ -35,7 +35,7 @@ export const weld = {
     this.extensions.persist();
   },
   init({ persist = true }: { persist?: boolean | Partial<WeldConfig> } = {}) {
-    initCustomWallets();
+    initCustomWallets(this.config.getState());
 
     if (typeof persist === "object") {
       this.persist(persist);

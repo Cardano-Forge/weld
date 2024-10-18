@@ -1,4 +1,4 @@
-import { type WalletConnector, getDefaultWalletConnector } from "../connector";
+import { type WalletConnector, getDefaultWalletConnector } from "@/internal/connector";
 
 export type CustomWallet = {
   connector: WalletConnector;

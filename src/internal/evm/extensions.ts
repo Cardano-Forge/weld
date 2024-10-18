@@ -1,8 +1,9 @@
 import { LifeCycleManager } from "@/internal/lifecycle";
-import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/internal/store";
+import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
 
-import { setupAutoUpdate } from "@/internal/update";
+import { setupAutoUpdate } from "@/internal/auto-update";
 import { get } from "@/internal/utils/get";
+import { weldEth } from "@/lib/eth";
 import { type EvmExtension, type EvmExtensionPath, isEvmHandler } from "./types";
 
 export type EvmExtensionsProps = {
@@ -14,7 +15,7 @@ export type EvmExtensionsProps = {
 
 export type EvmExtensionsApi = {
   updateExtensions(): void;
-} & StoreLifeCycleMethods;
+} & StoreSetupFunctions;
 
 export type EvmExtensionsState = EvmExtensionsProps & EvmExtensionsApi;
 
@@ -29,44 +30,47 @@ function newInitialEvmState(): EvmExtensionsProps {
   };
 }
 
-export const createEvmExtensionsStore = (extensions: readonly EvmExtensionPath[]) =>
-  createStoreFactory<EvmExtensionsState>((setState, getState) => {
-    const lifecycle = new LifeCycleManager();
+export const createEvmExtensionsStore = createStoreFactory<
+  EvmExtensionsState,
+  undefined,
+  [readonly EvmExtensionPath[]]
+>((setState, getState, extensions) => {
+  const lifecycle = new LifeCycleManager();
 
-    const updateExtensions = () => {
-      if (typeof window === "undefined") {
-        return;
+  const updateExtensions = () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const newState = newInitialEvmState();
+    for (const info of extensions) {
+      const cached = getState().supportedMap.get(info.key);
+      const handler = get(window, info.handlerPath);
+      const extension = cached ?? { ...info, isInstalled: false };
+      if (isEvmHandler(handler)) {
+        extension.isInstalled = true;
+        extension.handler = handler;
+        newState.installedMap.set(info.key, extension);
+        newState.installedArr.push(extension);
       }
-      const newState = newInitialEvmState();
-      for (const info of extensions) {
-        const cached = getState().supportedMap.get(info.key);
-        const handler = get(window, info.handlerPath);
-        const extension = cached ?? { ...info, isInstalled: false };
-        if (isEvmHandler(handler)) {
-          extension.isInstalled = true;
-          extension.handler = handler;
-          newState.installedMap.set(info.key, extension);
-          newState.installedArr.push(extension);
-        }
-        newState.supportedMap.set(info.key, extension);
-        newState.supportedArr.push(extension);
-      }
-      setState(newState);
-    };
+      newState.supportedMap.set(info.key, extension);
+      newState.supportedArr.push(extension);
+    }
+    setState(newState);
+  };
 
-    const init = () => {
-      updateExtensions();
-      setupAutoUpdate(updateExtensions, lifecycle);
-    };
+  const init = () => {
+    updateExtensions();
+    setupAutoUpdate(updateExtensions, lifecycle, weldEth.config);
+  };
 
-    const cleanup = () => {
-      lifecycle.cleanup();
-    };
+  const cleanup = () => {
+    lifecycle.cleanup();
+  };
 
-    return {
-      ...newInitialEvmState(),
-      init,
-      cleanup,
-      updateExtensions,
-    };
-  });
+  return {
+    ...newInitialEvmState(),
+    init,
+    cleanup,
+    updateExtensions,
+  };
+});
