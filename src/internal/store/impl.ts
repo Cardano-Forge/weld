@@ -36,27 +36,29 @@ export type WalletProps = WalletInfo & {
   utxos: string[];
 };
 
-const initialWalletState: WalletState = {
-  isConnected: false,
-  isConnecting: false,
-  isConnectingTo: undefined,
-  handler: undefined,
-  balanceLovelace: undefined,
-  balanceAda: undefined,
-  changeAddressHex: undefined,
-  changeAddressBech32: undefined,
-  stakeAddressHex: undefined,
-  stakeAddressBech32: undefined,
-  networkId: undefined,
-  supported: undefined,
-  key: undefined,
-  icon: undefined,
-  website: undefined,
-  displayName: undefined,
-  supportsTxChaining: undefined,
-  isUpdatingUtxos: false,
-  utxos: undefined,
-};
+function newWalletState(): WalletState {
+  return {
+    isConnected: false,
+    isConnecting: false,
+    isConnectingTo: undefined,
+    handler: undefined,
+    balanceLovelace: undefined,
+    balanceAda: undefined,
+    changeAddressHex: undefined,
+    changeAddressBech32: undefined,
+    stakeAddressHex: undefined,
+    stakeAddressBech32: undefined,
+    networkId: undefined,
+    supported: undefined,
+    key: undefined,
+    icon: undefined,
+    website: undefined,
+    displayName: undefined,
+    supportsTxChaining: undefined,
+    isUpdatingUtxos: false,
+    utxos: undefined,
+  };
+}
 
 export type ConnectWalletCallbacks = {
   onSuccess(wallet: ConnectedWalletState): void;
@@ -119,7 +121,7 @@ export const createWalletStore = createStoreFactory<WalletStoreState, WalletStor
         inFlightUtxosUpdate.resolve([]);
       }
       getState().handler?.disconnect();
-      setState(initialWalletState);
+      setState(newWalletState());
       if (weld.config.getState().enablePersistence) {
         weld.config.getState().storage.remove(STORAGE_KEYS.connectedWallet);
       }
@@ -349,7 +351,7 @@ export const createWalletStore = createStoreFactory<WalletStoreState, WalletStor
     };
 
     const initialState: ExtendedWalletStoreState = {
-      ...initialWalletState,
+      ...newWalletState(),
       connect,
       connectAsync,
       disconnect,
