@@ -48,11 +48,11 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
   };
 
   constructor(
-    private _setState: (s: Partial<DefaultWalletStoreState>) => void,
+    private _setState: (s: Partial<TProps>) => void,
     private _getState: () => TProps,
     private _newState: () => TProps,
     private _createConnection: (
-      key: string,
+      key: NonNullable<TProps["key"]>,
       opts: ConnectOpts,
     ) => MaybePromise<{
       updateState: () => MaybePromise<void>;
@@ -79,13 +79,13 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
   }
 
   async connect(
-    key: string,
+    key: NonNullable<TProps["key"]>,
     { signal = this._lifecycle.inFlight.add(), configOverrides }: Partial<ConnectOpts> = {},
   ) {
     try {
       this._lifecycle.subscriptions.clearAll();
 
-      this._setState({ isConnectingTo: key, isConnecting: true });
+      this._setState({ isConnectingTo: key, isConnecting: true } as Partial<TProps>);
 
       let abortTimeout: NodeJS.Timeout | undefined = undefined;
       const connectTimeout =
@@ -93,7 +93,7 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
       if (connectTimeout) {
         abortTimeout = setTimeout(() => {
           signal.aborted = true;
-          this._setState({ isConnectingTo: undefined, isConnecting: false });
+          this._setState({ isConnectingTo: undefined, isConnecting: false } as Partial<TProps>);
         }, connectTimeout);
       }
 
