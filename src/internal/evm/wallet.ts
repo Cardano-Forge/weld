@@ -1,5 +1,5 @@
 import { LifeCycleManager } from "@/internal/lifecycle";
-import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/internal/store";
+import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
 
 import type {
   EvmChainId,
@@ -72,15 +72,15 @@ export type EvmWalletApi = {
     tokenAddress,
   }: { to: string; amount: string; tokenAddress?: string }): Promise<string>;
   getTokenBalance(tokenAddress: string, options?: { formatted: boolean }): Promise<string>;
-} & StoreLifeCycleMethods;
+};
+
+export type WalletStorePersistData = {
+  tryToReconnectTo?: string;
+};
 
 export type EvmWalletState = PartialWithDiscriminant<EvmWalletProps, "isConnected"> & EvmWalletApi;
 
-export type ExtendedEvmWalletState = EvmWalletState & {
-  __persist(isConnectingTo?: string): void;
-};
-
-export type EvmWalletStore = Store<EvmWalletState>;
+export type EvmWalletStore = Store<EvmWalletState, WalletStorePersistData>;
 
 type StoreOptions = {
   chainId: EvmChainId;
@@ -90,7 +90,7 @@ type StoreOptions = {
 };
 
 export const createEvmWalletStore = (storeOptions: StoreOptions) =>
-  createStoreFactory<EvmWalletState>((setState, getState) => {
+  createStoreFactory<EvmWalletState, WalletStorePersistData>((setState, getState) => {
     const lifecycle = new LifeCycleManager();
 
     const handleUpdateError = (error: unknown) => {
@@ -225,7 +225,7 @@ export const createEvmWalletStore = (storeOptions: StoreOptions) =>
         });
     };
 
-    const init: EvmWalletApi["init"] = () => {
+    const __init = () => {
       if (initialState.isConnectingTo) {
         connect(initialState.isConnectingTo);
       }
@@ -291,7 +291,7 @@ export const createEvmWalletStore = (storeOptions: StoreOptions) =>
       }
 
       // otherwise, it is a simple transfer
-      const balanceSmallestUnit = await getState().balanceSmallestUnit;
+      const balanceSmallestUnit = getState().balanceSmallestUnit;
       const value = parseEther(amount.toString()) as BigNumberish;
 
       if (Number(balanceSmallestUnit) < Number(value)) {
@@ -303,8 +303,8 @@ export const createEvmWalletStore = (storeOptions: StoreOptions) =>
       return tx.hash;
     };
 
-    const __persist: ExtendedEvmWalletState["__persist"] = (serverIsConnectingTo?: string) => {
-      let isConnectingTo = serverIsConnectingTo;
+    const __persist = (data?: WalletStorePersistData) => {
+      let isConnectingTo = data?.tryToReconnectTo;
       if (
         !isConnectingTo &&
         typeof window !== "undefined" &&
@@ -316,19 +316,19 @@ export const createEvmWalletStore = (storeOptions: StoreOptions) =>
       initialState.isConnecting = !!isConnectingTo;
     };
 
-    const cleanup: EvmWalletApi["cleanup"] = () => {
+    const __cleanup = () => {
       lifecycle.cleanup();
     };
 
-    const initialState: ExtendedEvmWalletState = {
+    const initialState: EvmWalletState & StoreSetupFunctions = {
       ...newInitialEvmState(),
       connect,
       connectAsync,
       disconnect,
       send,
       getTokenBalance,
-      init,
-      cleanup,
+      __init,
+      __cleanup,
       __persist,
     };
 

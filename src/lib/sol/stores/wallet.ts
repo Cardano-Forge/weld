@@ -89,7 +89,7 @@ export type SolWalletStorePersistData = {
   tryToReconnectTo?: string;
 };
 
-export type SolWalletStore = Store<SolWalletState, SolWalletStorePersistData>;
+export type SolWalletStore = Store<SolWalletStoreState, SolWalletStorePersistData>;
 
 export type ExtendedSolWalletStoreState = SolWalletStoreState & StoreSetupFunctions;
 

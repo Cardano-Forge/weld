@@ -1,7 +1,4 @@
 import { weldEth } from "@/lib/eth";
-import { setupStores } from "@/lib/main";
-
-setupStores(weldEth.wallet, weldEth.extensions);
 
 weldEth.wallet.subscribeWithSelector(
   (state) => state.displayName ?? "-",
@@ -50,4 +47,12 @@ document.querySelector("#send")?.addEventListener("click", () => {
     amount: "100",
     tokenAddress: "0x6982508145454Ce325dDbE47a25d4ec3d2311933", // PEPE tokens
   });
+});
+
+window.addEventListener("load", () => {
+  weldEth.init();
+});
+
+window.addEventListener("unload", () => {
+  weldEth.cleanup();
 });

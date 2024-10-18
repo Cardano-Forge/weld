@@ -1,5 +1,5 @@
 import { LifeCycleManager } from "@/internal/lifecycle";
-import { type Store, type StoreLifeCycleMethods, createStoreFactory } from "@/internal/store";
+import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
 
 import { setupAutoUpdate } from "@/internal/update";
 import { get } from "@/internal/utils/get";
@@ -14,7 +14,7 @@ export type EvmExtensionsProps = {
 
 export type EvmExtensionsApi = {
   updateExtensions(): void;
-} & StoreLifeCycleMethods;
+} & StoreSetupFunctions;
 
 export type EvmExtensionsState = EvmExtensionsProps & EvmExtensionsApi;
 
