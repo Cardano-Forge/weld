@@ -1,9 +1,8 @@
 import { handleAccountChangeErrors } from "@/internal/account-change";
 import { compare } from "@/internal/compare";
 import type { WalletHandler } from "@/internal/handler";
-import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
+import { LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
-import { deferredPromise } from "@/internal/utils/deferred-promise";
 import { getFailureReason } from "@/internal/utils/errors";
 import type { PartialWithDiscriminant } from "@/internal/utils/types";
 import {
@@ -17,23 +16,22 @@ import {
 } from "@/lib/main";
 import { connect as weldConnect } from "@/lib/main/connect";
 import type { WalletConfig } from "@/lib/main/stores/config";
-import { WalletStoreManager } from "./manager";
+import { type DefaultWalletStoreProps, WalletStoreManager } from "./manager";
+import { UtxosUpdateManager } from "./utxos";
 
-export type WalletProps = WalletInfo & {
-  isConnected: boolean;
-  isConnecting: boolean;
-  isConnectingTo: string | undefined;
-  handler: WalletHandler;
-  balanceLovelace: number;
-  balanceAda: number;
-  changeAddressHex: string;
-  changeAddressBech32: string;
-  stakeAddressHex: string;
-  stakeAddressBech32: string;
-  networkId: NetworkId;
-  isUpdatingUtxos: boolean;
-  utxos: string[];
-};
+export type WalletProps = DefaultWalletStoreProps &
+  WalletInfo & {
+    handler: WalletHandler;
+    balanceLovelace: number;
+    balanceAda: number;
+    changeAddressHex: string;
+    changeAddressBech32: string;
+    stakeAddressHex: string;
+    stakeAddressBech32: string;
+    networkId: NetworkId;
+    isUpdatingUtxos: boolean;
+    utxos: string[];
+  };
 
 function newWalletState(): WalletState {
   return {
@@ -91,20 +89,18 @@ export type WalletStore = Store<WalletStoreState, WalletStorePersistData>;
 
 export type ExtendedWalletStoreState = WalletStoreState & StoreSetupFunctions;
 
-export const createWalletStore = createStoreFactory<WalletStoreState, WalletStorePersistData>(
-  (setState, getState) => {
-    const lifecycle = new LifeCycleManager();
-
-    let inFlightUtxosUpdate:
-      | {
-          signal: InFlightSignal;
-          promise: Promise<string[]>;
-          resolve: (utxos: string[]) => void;
-        }
-      | undefined = undefined;
-
+export const createWalletStore = createStoreFactory<
+  WalletStoreState,
+  WalletStorePersistData,
+  [] | [{ lifecycle?: LifeCycleManager; utxosUpdate?: UtxosUpdateManager }]
+>(
+  (
+    setState,
+    getState,
+    { lifecycle = new LifeCycleManager(), utxosUpdate = new UtxosUpdateManager() } = {},
+  ) => {
     const ensureUtxos: WalletApi["ensureUtxos"] = async () => {
-      return inFlightUtxosUpdate?.promise ?? getState().utxos ?? [];
+      return utxosUpdate.runningUpdate?.promise ?? getState().utxos ?? [];
     };
 
     const walletManager = new WalletStoreManager<WalletState>(
@@ -158,44 +154,27 @@ export const createWalletStore = createStoreFactory<WalletStoreState, WalletStor
         };
 
         const updateUtxos = ({ expectChange = false } = {}) => {
-          const { promise, resolve } = deferredPromise<string[]>();
-          const signal = lifecycle.inFlight.add();
-          if (inFlightUtxosUpdate) {
-            inFlightUtxosUpdate.signal.aborted = true;
-          }
-          inFlightUtxosUpdate = { promise, signal, resolve };
+          const running = utxosUpdate.start({ lifecycle });
           getNextUtxos({ expectChange })
             .then((res) => {
               const utxos = res ?? [];
 
-              if (!signal.aborted && !handler.isDisconnected) {
+              if (!running.update.signal.aborted && !handler.isDisconnected) {
                 setState({ isUpdatingUtxos: false, utxos });
               }
 
-              if (inFlightUtxosUpdate?.promise && inFlightUtxosUpdate.promise !== promise) {
-                inFlightUtxosUpdate.promise.then(resolve);
-              } else {
-                resolve(utxos);
-              }
+              running.success(utxos);
             })
             .catch((error) => {
               walletManager.handleUpdateError(new WalletUtxosUpdateError(getFailureReason(error)));
 
-              if (!signal.aborted && !handler.isDisconnected) {
+              if (!running.update.signal.aborted && !handler.isDisconnected) {
                 setState({ isUpdatingUtxos: false, utxos: [] });
               }
 
-              if (inFlightUtxosUpdate?.promise && inFlightUtxosUpdate.promise !== promise) {
-                promise.then(resolve);
-              } else {
-                resolve([]);
-              }
+              running.error();
             })
-            .finally(() => {
-              if (inFlightUtxosUpdate?.promise && inFlightUtxosUpdate.promise === promise) {
-                inFlightUtxosUpdate = undefined;
-              }
-            });
+            .finally(running.cleanup);
         };
 
         // utxos are purposefully omitted here since getUtxos can take a long time
@@ -243,9 +222,9 @@ export const createWalletStore = createStoreFactory<WalletStoreState, WalletStor
       weld.config,
       lifecycle,
     ).on("beforeDisconnect", () => {
-      if (inFlightUtxosUpdate) {
-        inFlightUtxosUpdate.signal.aborted = true;
-        inFlightUtxosUpdate.resolve([]);
+      if (utxosUpdate.runningUpdate) {
+        utxosUpdate.runningUpdate.signal.aborted = true;
+        utxosUpdate.runningUpdate.resolve([]);
       }
       getState().handler?.disconnect();
     });

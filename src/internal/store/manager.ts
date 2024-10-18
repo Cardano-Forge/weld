@@ -8,13 +8,15 @@ import { type InFlightSignal, LifeCycleManager } from "../lifecycle";
 import { setupAutoUpdate } from "../update";
 import type { MaybePromise, PartialWithDiscriminant } from "../utils/types";
 
-export type WalletStoreProps = PartialWithDiscriminant<
-  {
-    key: string;
-    isConnected: boolean;
-    isConnecting: boolean;
-    isConnectingTo: string | undefined;
-  },
+export type DefaultWalletStoreProps = {
+  key: string;
+  isConnected: boolean;
+  isConnecting: boolean;
+  isConnectingTo: string | undefined;
+};
+
+export type DefaultWalletStoreState = PartialWithDiscriminant<
+  DefaultWalletStoreProps,
   "isConnected"
 >;
 
@@ -38,7 +40,7 @@ type EventHandler<TEvent extends keyof Events> = Events[TEvent] extends undefine
   ? () => MaybePromise<void>
   : (params: Events[TEvent]) => MaybePromise<void>;
 
-export class WalletStoreManager<TProps extends WalletStoreProps = WalletStoreProps> {
+export class WalletStoreManager<TProps extends DefaultWalletStoreState = DefaultWalletStoreState> {
   private _subscriptions: { [TEvent in keyof Events]: Set<EventHandler<TEvent>> } = {
     beforeDisconnect: new Set(),
     afterDisconnect: new Set(),
@@ -46,7 +48,7 @@ export class WalletStoreManager<TProps extends WalletStoreProps = WalletStorePro
   };
 
   constructor(
-    private _setState: (s: Partial<WalletStoreProps>) => void,
+    private _setState: (s: Partial<DefaultWalletStoreState>) => void,
     private _getState: () => TProps,
     private _newState: () => TProps,
     private _createConnection: (
