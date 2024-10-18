@@ -124,9 +124,13 @@ export const createWalletStore = createStoreFactory<
           () => handler.defaultApi.isEnabled(),
         );
 
+        console.log("handler before", handler);
+
         if (opts.signal.aborted) {
           throw new WalletConnectionAbortedError();
         }
+
+        console.log("handler after ", handler);
 
         // When the balance updates, we know the utxos must have changed as well
         // in which case the `getUtxos` function gets called repeatedly until a change is observed
@@ -178,6 +182,7 @@ export const createWalletStore = createStoreFactory<
         // utxos are purposefully omitted here since getUtxos can take a long time
         // to resolve and we don't want it to affect connection speed
         const updateState = async () => {
+          console.log("updateState");
           const balanceLovelace = await handler.getBalanceLovelace();
 
           const prevState = getState();
@@ -228,6 +233,7 @@ export const createWalletStore = createStoreFactory<
     });
 
     const connectAsync: WalletApi["connectAsync"] = async (key, configOverrides) => {
+      await walletManager.disconnect();
       const signal = lifecycle.inFlight.add();
       const newState = await walletManager.connect(key, {
         signal,

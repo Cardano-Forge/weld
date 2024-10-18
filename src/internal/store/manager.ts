@@ -83,8 +83,6 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
     { signal = this._lifecycle.inFlight.add(), configOverrides }: Partial<ConnectOpts> = {},
   ) {
     try {
-      await this.disconnect();
-
       this._lifecycle.subscriptions.clearAll();
 
       this._setState({ isConnectingTo: key, isConnecting: true });
@@ -125,7 +123,13 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
         throw new WalletConnectionAbortedError();
       }
 
-      setupAutoUpdate(safeUpdateState, this._lifecycle, "wallet", configOverrides);
+      setupAutoUpdate(
+        safeUpdateState,
+        this._lifecycle,
+        this._configStore,
+        "wallet",
+        configOverrides,
+      );
 
       if (this._configStore.getState().enablePersistence) {
         this._configStore

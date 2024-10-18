@@ -3,6 +3,7 @@ import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/inte
 
 import { setupAutoUpdate } from "@/internal/update";
 import { get } from "@/internal/utils/get";
+import { weldEth } from "@/lib/eth";
 import { type EvmExtension, type EvmExtensionPath, isEvmHandler } from "./types";
 
 export type EvmExtensionsProps = {
@@ -56,7 +57,7 @@ export const createEvmExtensionsStore = (extensions: readonly EvmExtensionPath[]
 
     const init = () => {
       updateExtensions();
-      setupAutoUpdate(updateExtensions, lifecycle);
+      setupAutoUpdate(updateExtensions, lifecycle, weldEth.config);
     };
 
     const cleanup = () => {

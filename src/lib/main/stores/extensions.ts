@@ -74,7 +74,7 @@ export const createExtensionsStore = createStoreFactory<ExtensionsStoreState>(
             if (signal.aborted) {
               return;
             }
-            setupAutoUpdate(update, lifecycle, "extensions");
+            setupAutoUpdate(update, lifecycle, weld.config, "extensions");
           })
           .finally(() => {
             lifecycle.inFlight.remove(signal);

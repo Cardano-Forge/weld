@@ -9,7 +9,7 @@ import type {
 } from "@/internal/evm/types";
 import { setupAutoUpdate } from "@/internal/update";
 import type { PartialWithDiscriminant } from "@/internal/utils/types";
-import type { EvmExtensionsStore } from "@/lib/eth";
+import { type EvmExtensionsStore, weldEth } from "@/lib/eth";
 import {
   WalletConnectionAbortedError,
   WalletConnectionError,
@@ -194,7 +194,7 @@ export const createEvmWalletStore = (storeOptions: StoreOptions) =>
           throw new WalletConnectionAbortedError();
         }
 
-        setupAutoUpdate(safeUpdateState, lifecycle, "wallet", configOverrides);
+        setupAutoUpdate(safeUpdateState, lifecycle, weldEth.config, "wallet", configOverrides);
 
         if (storeOptions.config.getState().enablePersistence) {
           storeOptions.config.getState().storage.set(storeOptions.storageKey, newState.key);

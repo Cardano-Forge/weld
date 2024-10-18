@@ -207,7 +207,7 @@ export const createSolWalletStore = createStoreFactory<
         throw new WalletConnectionAbortedError();
       }
 
-      setupAutoUpdate(safeUpdateState, lifecycle, "wallet", configOverrides);
+      setupAutoUpdate(safeUpdateState, lifecycle, weldSol.config, "wallet", configOverrides);
 
       if (weldSol.config.getState().enablePersistence) {
         weldSol.config.getState().storage.set(STORAGE_KEYS.connectedSolWallet, newState.key);
