@@ -1,7 +1,7 @@
+import type { CustomWalletKey } from "@/internal/custom";
 import { type Store, createStoreFactory } from "@/internal/store";
 import type { StorageKeysType } from "@/lib/server";
 import { type WeldStorage, defaultStorage } from "../persistence";
-import type { CustomWalletKey } from "@/internal/custom";
 
 export type UpdateConfig = {
   debug: boolean;
