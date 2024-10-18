@@ -87,8 +87,6 @@ export type WalletStorePersistData = {
 
 export type WalletStore = Store<WalletStoreState, WalletStorePersistData>;
 
-export type ExtendedWalletStoreState = WalletStoreState & StoreSetupFunctions;
-
 export const createWalletStore = createStoreFactory<
   WalletStoreState,
   WalletStorePersistData,
@@ -264,7 +262,7 @@ export const createWalletStore = createStoreFactory<
       walletManager.cleanup();
     };
 
-    const initialState: ExtendedWalletStoreState = {
+    const initialState: WalletStoreState & StoreSetupFunctions = {
       ...newWalletState(),
       connect,
       connectAsync,
