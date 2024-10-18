@@ -2,18 +2,25 @@ import {
   WalletConnectionAbortedError,
   WalletDisconnectAccountError,
 } from "@/lib/main/utils/errors";
-import type { GetStateFunction, SetStateFunction } from ".";
 import { type InFlightSignal, LifeCycleManager } from "../lifecycle";
-import type { MaybePromise } from "../utils/types";
+import type { MaybePromise, PartialWithDiscriminant } from "../utils/types";
 import { setupAutoUpdate } from "../update";
 import { type WalletConfig, createConfigStore } from "@/lib/main/stores/config";
 import { STORAGE_KEYS } from "@/lib/server";
 
-export type WalletStoreProps = {
-  key: string;
-  isConnected: boolean;
-  isConnecting: boolean;
-  isConnectingTo: string | undefined;
+export type WalletStoreProps = PartialWithDiscriminant<
+  {
+    key: string;
+    isConnected: boolean;
+    isConnecting: boolean;
+    isConnectingTo: string | undefined;
+  },
+  "isConnected"
+>;
+
+type ConnectOpts = {
+  signal: InFlightSignal;
+  configOverrides?: Partial<WalletConfig>;
 };
 
 type Events = {
@@ -39,10 +46,13 @@ export class WalletStoreManager {
   };
 
   constructor(
-    private _setState: SetStateFunction<WalletStoreProps>,
-    private _getState: GetStateFunction<WalletStoreProps>,
+    private _setState: (s: Partial<WalletStoreProps>) => void,
+    private _getState: () => WalletStoreProps,
     private _newState: () => WalletStoreProps,
-    private _createConnection: () => MaybePromise<{
+    private _createConnection: (
+      key: string,
+      opts: ConnectOpts,
+    ) => MaybePromise<{
       updateState: () => MaybePromise<void>;
     }>,
     private _walletStorageKey: keyof typeof STORAGE_KEYS,
@@ -68,13 +78,7 @@ export class WalletStoreManager {
 
   async connect(
     key: string,
-    {
-      signal = this._lifecycle.inFlight.add(),
-      configOverrides,
-    }: {
-      signal?: InFlightSignal;
-      configOverrides?: Partial<WalletConfig>;
-    } = {},
+    { signal = this._lifecycle.inFlight.add(), configOverrides }: Partial<ConnectOpts> = {},
   ) {
     try {
       await this.disconnect();
@@ -93,7 +97,7 @@ export class WalletStoreManager {
         }, connectTimeout);
       }
 
-      const connection = await this._createConnection();
+      const connection = await this._createConnection(key, { signal, configOverrides });
 
       const safeUpdateState = async (stopUpdates?: () => void) => {
         if (signal.aborted) {
@@ -103,7 +107,7 @@ export class WalletStoreManager {
         try {
           return await connection.updateState();
         } catch (error) {
-          this._handleUpdateError(error);
+          this.handleUpdateError(error);
           await this.disconnect();
         }
       };
@@ -172,7 +176,7 @@ export class WalletStoreManager {
     this._lifecycle.cleanup();
   }
 
-  private _handleUpdateError(error: unknown) {
+  handleUpdateError(error: unknown) {
     this._configStore.getState().onUpdateError?.("wallet", error);
     this._configStore.getState().wallet.onUpdateError?.(error);
     this._runSubscriptions("updateError", error);

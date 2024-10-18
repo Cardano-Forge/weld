@@ -3,7 +3,6 @@ import { compare } from "@/internal/compare";
 import type { WalletHandler } from "@/internal/handler";
 import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
-import { setupAutoUpdate } from "@/internal/update";
 import { deferredPromise } from "@/internal/utils/deferred-promise";
 import { getFailureReason } from "@/internal/utils/errors";
 import type { PartialWithDiscriminant } from "@/internal/utils/types";
@@ -16,9 +15,9 @@ import {
   lovelaceToAda,
   weld,
 } from "@/lib/main";
-import { STORAGE_KEYS } from "@/lib/server";
 import { connect as weldConnect } from "@/lib/main/connect";
 import type { WalletConfig } from "@/lib/main/stores/config";
+import { WalletStoreManager } from "./manager";
 
 export type WalletProps = WalletInfo & {
   isConnected: boolean;
@@ -108,47 +107,11 @@ export const createWalletStore = createStoreFactory<WalletStoreState, WalletStor
       return inFlightUtxosUpdate?.promise ?? getState().utxos ?? [];
     };
 
-    const handleUpdateError = (error: unknown) => {
-      weld.config.getState().onUpdateError?.("wallet", error);
-      weld.config.getState().wallet.onUpdateError?.(error);
-    };
-
-    const disconnect: WalletApi["disconnect"] = () => {
-      lifecycle.subscriptions.clearAll();
-      lifecycle.inFlight.abortAll();
-      if (inFlightUtxosUpdate) {
-        inFlightUtxosUpdate.signal.aborted = true;
-        inFlightUtxosUpdate.resolve([]);
-      }
-      getState().handler?.disconnect();
-      setState(newWalletState());
-      if (weld.config.getState().enablePersistence) {
-        weld.config.getState().storage.remove(STORAGE_KEYS.connectedWallet);
-      }
-    };
-
-    const connectAsync: WalletApi["connectAsync"] = async (key, configOverrides) => {
-      disconnect();
-
-      const signal = lifecycle.inFlight.add();
-
-      try {
-        lifecycle.subscriptions.clearAll();
-
-        setState({ isConnectingTo: key, isConnecting: true });
-
-        let abortTimeout: NodeJS.Timeout | undefined = undefined;
-
-        const connectTimeout =
-          configOverrides?.connectTimeout ?? weld.config.getState().wallet?.connectTimeout;
-
-        if (connectTimeout) {
-          abortTimeout = setTimeout(() => {
-            signal.aborted = true;
-            setState({ isConnectingTo: undefined, isConnecting: false });
-          }, connectTimeout);
-        }
-
+    const walletManager = new WalletStoreManager(
+      setState,
+      getState,
+      newWalletState,
+      async (key, opts) => {
         const handler: WalletHandler = handleAccountChangeErrors(
           await weldConnect(key),
           async () => {
@@ -158,13 +121,16 @@ export const createWalletStore = createStoreFactory<WalletStoreState, WalletStor
                 `Could not reenable ${handler.info.displayName} wallet after account change`,
               );
             }
-            safeUpdateState();
+            updateState().catch(async (error) => {
+              walletManager.handleUpdateError(error);
+              await walletManager.disconnect();
+            });
             return handler;
           },
           () => handler.defaultApi.isEnabled(),
         );
 
-        if (signal.aborted) {
+        if (opts.signal.aborted) {
           throw new WalletConnectionAbortedError();
         }
 
@@ -213,7 +179,7 @@ export const createWalletStore = createStoreFactory<WalletStoreState, WalletStor
               }
             })
             .catch((error) => {
-              handleUpdateError(new WalletUtxosUpdateError(getFailureReason(error)));
+              walletManager.handleUpdateError(new WalletUtxosUpdateError(getFailureReason(error)));
 
               if (!signal.aborted && !handler.isDisconnected) {
                 setState({ isUpdatingUtxos: false, utxos: [] });
@@ -255,7 +221,7 @@ export const createWalletStore = createStoreFactory<WalletStoreState, WalletStor
             ...handler.info,
           };
 
-          if (signal.aborted) {
+          if (opts.signal.aborted) {
             return;
           }
 
@@ -269,52 +235,27 @@ export const createWalletStore = createStoreFactory<WalletStoreState, WalletStor
           }
         };
 
-        const safeUpdateState = async (stopUpdates?: () => void) => {
-          if (signal.aborted) {
-            stopUpdates?.();
-            return;
-          }
-          if (weld.config.getState().debug) {
-            console.log("[WELD] Wallet state update", key);
-          }
-          try {
-            return await updateState();
-          } catch (error) {
-            handleUpdateError(error);
-            disconnect();
-          }
+        return {
+          updateState,
         };
-
-        await updateState();
-
-        const newState = getState();
-        if (!newState.isConnected) {
-          throw new Error("Connection failed");
-        }
-
-        if (signal.aborted) {
-          throw new WalletConnectionAbortedError();
-        }
-
-        setupAutoUpdate(safeUpdateState, lifecycle, "wallet", configOverrides);
-
-        if (weld.config.getState().enablePersistence) {
-          weld.config.getState().storage.set(STORAGE_KEYS.connectedWallet, newState.key);
-        }
-
-        if (abortTimeout) {
-          clearTimeout(abortTimeout);
-        }
-
-        return newState;
-      } catch (error) {
-        if (error instanceof WalletDisconnectAccountError) {
-          disconnect();
-        }
-        throw error;
-      } finally {
-        lifecycle.inFlight.remove(signal);
+      },
+      "connectedWallet",
+      weld.config,
+      lifecycle,
+    ).on("beforeDisconnect", () => {
+      if (inFlightUtxosUpdate) {
+        inFlightUtxosUpdate.signal.aborted = true;
+        inFlightUtxosUpdate.resolve([]);
       }
+      getState().handler?.disconnect();
+    });
+
+    const connectAsync: WalletApi["connectAsync"] = async (key, configOverrides) => {
+      const signal = lifecycle.inFlight.add();
+      return walletManager.connect(key, {
+        signal,
+        configOverrides,
+      });
     };
 
     const connect: WalletApi["connect"] = async (key, { onSuccess, onError, ...config } = {}) => {
@@ -327,27 +268,20 @@ export const createWalletStore = createStoreFactory<WalletStoreState, WalletStor
         });
     };
 
+    const disconnect = () => {
+      return walletManager.disconnect();
+    };
+
     const __init = () => {
-      if (initialState.isConnectingTo) {
-        connect(initialState.isConnectingTo);
-      }
+      walletManager.init({ initialState });
     };
 
     const __persist = (data?: WalletStorePersistData) => {
-      let isConnectingTo = data?.tryToReconnectTo;
-      if (
-        !isConnectingTo &&
-        typeof window !== "undefined" &&
-        weld.config.getState().enablePersistence
-      ) {
-        isConnectingTo = weld.config.getState().getPersistedValue("weld_connected-wallet");
-      }
-      initialState.isConnectingTo = isConnectingTo;
-      initialState.isConnecting = !!isConnectingTo;
+      walletManager.persist({ initialState }, data);
     };
 
     const __cleanup = () => {
-      lifecycle.cleanup();
+      walletManager.cleanup();
     };
 
     const initialState: ExtendedWalletStoreState = {
