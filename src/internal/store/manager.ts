@@ -7,7 +7,7 @@ import { type InFlightSignal, LifeCycleManager } from "../lifecycle";
 import type { MaybePromise } from "../utils/types";
 import { setupAutoUpdate } from "../update";
 import { type WalletConfig, createConfigStore } from "@/lib/main/stores/config";
-import type { STORAGE_KEYS } from "@/lib/server";
+import { STORAGE_KEYS } from "@/lib/server";
 
 export type WalletStoreProps = {
   key: string;
@@ -17,23 +17,31 @@ export type WalletStoreProps = {
 };
 
 type Events = {
-  disconnect: never;
+  beforeDisconnect: undefined;
+  afterDisconnect: undefined;
   updateError: unknown;
 };
 
-type EventHandler<TEvent extends keyof Events> = Events[TEvent] extends never
+type EventsWithParams = {
+  [TEvent in keyof Events as Events[TEvent] extends undefined ? never : TEvent]: Events[TEvent];
+};
+type EventsWithoutParams = Omit<Events, keyof EventsWithParams>;
+
+type EventHandler<TEvent extends keyof Events> = Events[TEvent] extends undefined
   ? () => MaybePromise<void>
   : (params: Events[TEvent]) => MaybePromise<void>;
 
 export class WalletStoreManager {
   private _subscriptions: { [TEvent in keyof Events]: Set<EventHandler<TEvent>> } = {
-    disconnect: new Set(),
+    beforeDisconnect: new Set(),
+    afterDisconnect: new Set(),
     updateError: new Set(),
   };
 
   constructor(
     private _setState: SetStateFunction<WalletStoreProps>,
     private _getState: GetStateFunction<WalletStoreProps>,
+    private _newState: () => WalletStoreProps,
     private _createConnection: () => MaybePromise<{
       updateState: () => MaybePromise<void>;
     }>,
@@ -50,9 +58,12 @@ export class WalletStoreManager {
   async disconnect() {
     this._lifecycle.subscriptions.clearAll();
     this._lifecycle.inFlight.abortAll();
-    for (const handler of this._subscriptions.disconnect) {
-      await handler();
+    this._runSubscriptions("beforeDisconnect");
+    this._setState(this._newState());
+    if (this._configStore.getState().enablePersistence) {
+      this._configStore.getState().storage.remove(STORAGE_KEYS[this._walletStorageKey]);
     }
+    this._runSubscriptions("afterDisconnect");
   }
 
   async connect(
@@ -111,7 +122,9 @@ export class WalletStoreManager {
       setupAutoUpdate(safeUpdateState, this._lifecycle, "wallet", configOverrides);
 
       if (this._configStore.getState().enablePersistence) {
-        this._configStore.getState().storage.set(this._walletStorageKey, newState.key);
+        this._configStore
+          .getState()
+          .storage.set(STORAGE_KEYS[this._walletStorageKey], newState.key);
       }
 
       if (abortTimeout) {
@@ -162,8 +175,22 @@ export class WalletStoreManager {
   private _handleUpdateError(error: unknown) {
     this._configStore.getState().onUpdateError?.("wallet", error);
     this._configStore.getState().wallet.onUpdateError?.(error);
-    for (const handler of this._subscriptions.updateError) {
-      handler(error);
+    this._runSubscriptions("updateError", error);
+  }
+
+  private async _runSubscriptions<TEvent extends keyof EventsWithParams>(
+    event: TEvent,
+    params: EventsWithParams[TEvent],
+  ): Promise<void>;
+  private async _runSubscriptions<TEvent extends keyof EventsWithoutParams>(
+    event: TEvent,
+  ): Promise<void>;
+  private async _runSubscriptions<TEvent extends keyof Events>(
+    event: TEvent,
+    params?: Events[TEvent],
+  ) {
+    for (const handler of this._subscriptions[event]) {
+      await handler(params);
     }
   }
 }
