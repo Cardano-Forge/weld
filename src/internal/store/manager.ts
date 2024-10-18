@@ -172,8 +172,11 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
       typeof window !== "undefined" &&
       this._configStore.getState().enablePersistence
     ) {
-      isConnectingTo = this._configStore.getState().getPersistedValue("weld_connected-wallet");
+      isConnectingTo = this._configStore
+        .getState()
+        .getPersistedValue(STORAGE_KEYS[this._walletStorageKey]);
     }
+    this._setState({ isConnectingTo, isConnecting: !!isConnectingTo } as Partial<TProps>);
     opts.initialState.isConnectingTo = isConnectingTo;
     opts.initialState.isConnecting = !!isConnectingTo;
   }
