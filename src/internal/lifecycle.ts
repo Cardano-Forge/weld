@@ -1,7 +1,7 @@
 export type UnsubscribeFct = () => void;
 
-class SubscriptionManager {
-  private _subscriptions = new Set<UnsubscribeFct>();
+export class SubscriptionManager {
+  constructor(private _subscriptions = new Set<UnsubscribeFct>()) {}
 
   add(unsubscribe: UnsubscribeFct) {
     this._subscriptions.add(unsubscribe);
@@ -23,7 +23,7 @@ export type InFlightSignal = {
   aborted: boolean;
 };
 
-class InFlightManager {
+export class InFlightManager {
   private _inFlight = new Set<InFlightSignal>();
 
   add() {
