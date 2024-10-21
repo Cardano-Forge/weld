@@ -209,4 +209,27 @@ describe("setupAutoUpdate", () => {
     expect(updateFct).toHaveBeenCalledTimes(2);
     vi.useRealTimers();
   });
+
+  it("should stop updates when lifecycle is cleaned up", () => {
+    vi.useFakeTimers();
+    const updateInterval = 5000;
+    const configStore = createConfigStore();
+    const subs = new Set<UnsubscribeFct>();
+    const lifecycle = new LifeCycleManager(new SubscriptionManager(subs));
+    configStore.getState().update({ updateInterval });
+    configStore.getState().update({ updateOnWindowFocus: true });
+    const updateFct = vi.fn(() => 0);
+    setupAutoUpdate(updateFct, lifecycle, configStore);
+    expect(updateFct).toHaveBeenCalledTimes(0);
+    window.dispatchEvent(new Event("focus"));
+    expect(updateFct).toHaveBeenCalledTimes(1);
+    vi.advanceTimersByTime(updateInterval);
+    expect(updateFct).toHaveBeenCalledTimes(2);
+    lifecycle.cleanup();
+    window.dispatchEvent(new Event("focus"));
+    expect(updateFct).toHaveBeenCalledTimes(2);
+    vi.advanceTimersByTime(updateInterval);
+    expect(updateFct).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
+  });
 });
