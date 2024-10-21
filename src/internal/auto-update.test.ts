@@ -1,7 +1,7 @@
+import { createConfigStore } from "@/lib/main/stores/config";
 import { describe, expect, it, vi } from "vitest";
 import { setupAutoUpdate } from "./auto-update";
 import { LifeCycleManager, SubscriptionManager, type UnsubscribeFct } from "./lifecycle";
-import { createConfigStore } from "@/lib/main/stores/config";
 
 describe("setupAutoUpdate", () => {
   it("should run on window focus if enabled in global config", () => {
@@ -103,6 +103,7 @@ describe("setupAutoUpdate", () => {
 
   it("should never run when document is hidden", () => {
     const originalDocument = document;
+    // biome-ignore lint/suspicious/noGlobalAssign: For testing purposes
     document = Object.assign({}, document, { hidden: true });
     const configStore = createConfigStore();
     const subs = new Set<UnsubscribeFct>();
@@ -118,6 +119,7 @@ describe("setupAutoUpdate", () => {
     expect(updateFct).toHaveBeenCalledTimes(0);
     window.dispatchEvent(new Event("focus"));
     expect(updateFct).toHaveBeenCalledTimes(0);
+    // biome-ignore lint/suspicious/noGlobalAssign: For testing purposes
     document = originalDocument;
   });
 

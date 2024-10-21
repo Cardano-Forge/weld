@@ -2,10 +2,10 @@ import { type Mock, describe, expect, it, vi } from "vitest";
 import {
   InFlightManager,
   type InFlightSignal,
+  LifeCycleManager,
   SubscriptionManager,
   type UnsubscribeFct,
   newInFlightSignal,
-  LifeCycleManager,
 } from "./lifecycle";
 
 describe("SubscriptionManager", () => {

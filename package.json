@@ -38,9 +38,7 @@
       "types": "./poly.d.ts"
     }
   },
-  "files": [
-    "**"
-  ],
+  "files": ["**"],
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && vite build --config ./cdn.config.ts",
@@ -48,7 +46,8 @@
     "lint": "biome lint --write .",
     "format": "biome format --write .",
     "check": "biome check --write .",
-    "test": "vitest",
+    "test": "vitest --run",
+    "test:watch": "vitest --watch",
     "pack": "cd dist && npm pack && mv *.tgz .."
   },
   "devDependencies": {
