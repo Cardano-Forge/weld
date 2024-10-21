@@ -149,4 +149,64 @@ describe("setupAutoUpdate", () => {
     expect(updateFct).toHaveBeenCalledTimes(6);
     vi.useRealTimers();
   });
+
+  it("should stop updates when the stop fct is invoked by the update fct", () => {
+    vi.useFakeTimers();
+    const updateInterval = 5000;
+    const configStore = createConfigStore();
+    const subs = new Set<UnsubscribeFct>();
+    const lifecycle = new LifeCycleManager(new SubscriptionManager(subs));
+    configStore.getState().update({ updateInterval });
+    configStore.getState().update({ updateOnWindowFocus: true });
+
+    let invocationCount = 0;
+    let stopped = false;
+    const updateFct = vi.fn((stop: () => void) => {
+      if (++invocationCount === 2) {
+        stop();
+        stopped = true;
+      }
+    });
+
+    const { stop } = setupAutoUpdate(updateFct, lifecycle, configStore);
+    expect(updateFct).toHaveBeenCalledTimes(0);
+    window.dispatchEvent(new Event("focus"));
+    expect(updateFct).toHaveBeenCalledTimes(1);
+    expect(updateFct).toHaveBeenLastCalledWith(stop);
+    expect(stopped).toBe(false);
+    vi.advanceTimersByTime(updateInterval);
+    expect(updateFct).toHaveBeenCalledTimes(2);
+    expect(updateFct).toHaveBeenLastCalledWith(stop);
+    expect(stopped).toBe(true);
+    window.dispatchEvent(new Event("focus"));
+    expect(updateFct).toHaveBeenCalledTimes(2);
+    vi.advanceTimersByTime(updateInterval);
+    expect(updateFct).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
+  });
+
+  it("should stop updates when the stop fct is invoked by the caller", () => {
+    vi.useFakeTimers();
+    const updateInterval = 5000;
+    const configStore = createConfigStore();
+    const subs = new Set<UnsubscribeFct>();
+    const lifecycle = new LifeCycleManager(new SubscriptionManager(subs));
+    configStore.getState().update({ updateInterval });
+    configStore.getState().update({ updateOnWindowFocus: true });
+    const updateFct = vi.fn(() => 0);
+    const { stop } = setupAutoUpdate(updateFct, lifecycle, configStore);
+    expect(updateFct).toHaveBeenCalledTimes(0);
+    window.dispatchEvent(new Event("focus"));
+    expect(updateFct).toHaveBeenCalledTimes(1);
+    expect(updateFct).toHaveBeenLastCalledWith(stop);
+    vi.advanceTimersByTime(updateInterval);
+    expect(updateFct).toHaveBeenCalledTimes(2);
+    expect(updateFct).toHaveBeenLastCalledWith(stop);
+    stop();
+    window.dispatchEvent(new Event("focus"));
+    expect(updateFct).toHaveBeenCalledTimes(2);
+    vi.advanceTimersByTime(updateInterval);
+    expect(updateFct).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
+  });
 });

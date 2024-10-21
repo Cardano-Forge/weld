@@ -22,7 +22,7 @@ export function setupAutoUpdate(
   configStore: ConfigStore,
   store?: keyof StoreConfig,
   ...overrides: (Partial<UpdateConfig> | undefined)[]
-) {
+): { stop: () => void } {
   let unsubInterval: (() => void) | undefined = undefined;
   let unsubWindowFocus: (() => void) | undefined = undefined;
 
@@ -82,4 +82,6 @@ export function setupAutoUpdate(
       { fireImmediately: true },
     ),
   );
+
+  return { stop };
 }
