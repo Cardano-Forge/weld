@@ -20,7 +20,7 @@ export type DefaultWalletStoreState = PartialWithDiscriminant<
   "isConnected"
 >;
 
-type ConnectOpts = {
+export type WalletStoreManagerConnectOpts = {
   signal: InFlightSignal;
   configOverrides?: Partial<WalletConfig>;
 };
@@ -53,7 +53,7 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
     private _newState: () => TProps,
     private _createConnection: (
       key: NonNullable<TProps["key"]>,
-      opts: ConnectOpts,
+      opts: WalletStoreManagerConnectOpts,
     ) => MaybePromise<{
       updateState: () => MaybePromise<void>;
     }>,
@@ -80,7 +80,10 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
 
   async connect(
     key: NonNullable<TProps["key"]>,
-    { signal = this._lifecycle.inFlight.add(), configOverrides }: Partial<ConnectOpts> = {},
+    {
+      signal = this._lifecycle.inFlight.add(),
+      configOverrides,
+    }: Partial<WalletStoreManagerConnectOpts> = {},
   ) {
     try {
       this._lifecycle.subscriptions.clearAll();
