@@ -23,11 +23,14 @@ export type InFlightSignal = {
   aborted: boolean;
 };
 
-export class InFlightManager {
-  private _inFlight = new Set<InFlightSignal>();
+export function newInFlightSignal({ aborted = false } = {}): InFlightSignal {
+  return { aborted };
+}
 
-  add() {
-    const signal: InFlightSignal = { aborted: false };
+export class InFlightManager {
+  constructor(private _inFlight = new Set<InFlightSignal>()) {}
+
+  add(signal: InFlightSignal = newInFlightSignal()): InFlightSignal {
     this._inFlight.add(signal);
     return signal;
   }
@@ -45,8 +48,10 @@ export class InFlightManager {
 }
 
 export class LifeCycleManager {
-  subscriptions = new SubscriptionManager();
-  inFlight = new InFlightManager();
+  constructor(
+    public subscriptions = new SubscriptionManager(),
+    public inFlight = new InFlightManager(),
+  ) {}
 
   cleanup() {
     this.subscriptions.clearAll();
