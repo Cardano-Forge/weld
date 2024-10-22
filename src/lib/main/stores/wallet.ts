@@ -116,7 +116,7 @@ export const createWalletStore = createStoreFactory<
               );
             }
             updateState().catch(async (error) => {
-              walletManager.handleUpdateError(error);
+              await walletManager.handleUpdateError(error);
               await walletManager.disconnect();
             });
             return handler;
@@ -164,13 +164,14 @@ export const createWalletStore = createStoreFactory<
               running.resolve(utxos);
             })
             .catch((error) => {
-              walletManager.handleUpdateError(new WalletUtxosUpdateError(getFailureReason(error)));
-
-              if (!running.update.signal.aborted && !handler.isDisconnected) {
-                setState({ isUpdatingUtxos: false, utxos: [] });
-              }
-
-              running.resolve([]);
+              walletManager
+                .handleUpdateError(new WalletUtxosUpdateError(getFailureReason(error)))
+                .then(() => {
+                  if (!running.update.signal.aborted && !handler.isDisconnected) {
+                    setState({ isUpdatingUtxos: false, utxos: [] });
+                  }
+                  running.resolve([]);
+                });
             });
         };
 
