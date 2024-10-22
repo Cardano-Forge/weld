@@ -10,7 +10,7 @@ weldEth.wallet.subscribeWithSelector(
 );
 
 weldEth.wallet.subscribeWithSelector(
-  (state) => state.balance ?? "-",
+  (state) => state.balanceEth ?? "-",
   (balance) => {
     console.log("balance", balance);
     // biome-ignore lint/style/noNonNullAssertion: We know the element exists

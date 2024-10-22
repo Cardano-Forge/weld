@@ -1,7 +1,12 @@
 import { LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
 
-import type { EvmApi, EvmChainId, EvmExtensionInfo, EvmExtensionKey } from "@/internal/evm/types";
+import {
+  type EvmApi,
+  type EvmExtensionInfo,
+  type EvmExtensionKey,
+  evmChainIds,
+} from "@/internal/evm/types";
 import type { PartialWithDiscriminant } from "@/internal/utils/types";
 import {
   type DefaultWalletStoreProps,
@@ -12,10 +17,17 @@ import type { EvmExtensionsStore } from "@/lib/eth";
 import { WalletConnectionAbortedError, WalletConnectionError } from "@/lib/main";
 import type { ConfigStore, WalletConfig } from "@/lib/main/stores/config";
 import type { STORAGE_KEYS } from "@/lib/server";
-import { ethers, formatEther, parseEther, parseUnits } from "ethers";
-import type { AddressLike, BrowserProvider, JsonRpcSigner } from "ethers";
-import type { BigNumberish } from "ethers";
-import type { TransactionResponse } from "ethers";
+import {
+  type AddressLike,
+  type BigNumberish,
+  BrowserProvider,
+  type JsonRpcSigner,
+  type TransactionResponse,
+  ethers,
+  formatEther,
+  parseEther,
+  parseUnits,
+} from "ethers";
 import abi from "./index";
 
 export type EvmWalletProps = DefaultWalletStoreProps &
@@ -23,8 +35,8 @@ export type EvmWalletProps = DefaultWalletStoreProps &
     isConnected: boolean;
     isConnecting: boolean;
     isConnectingTo: EvmExtensionKey | undefined;
-    balanceSmallestUnit: bigint;
-    balance: string;
+    balanceWei: bigint;
+    balanceEth: string;
     api: EvmApi;
     provider: BrowserProvider;
     signer: JsonRpcSigner;
@@ -39,8 +51,8 @@ function newEvmWalletState(): PartialWithDiscriminant<EvmWalletProps, "isConnect
     isConnected: false,
     isConnecting: false,
     isConnectingTo: undefined,
-    balanceSmallestUnit: undefined,
-    balance: undefined,
+    balanceWei: undefined,
+    balanceEth: undefined,
     api: undefined,
     provider: undefined,
     signer: undefined,
@@ -85,7 +97,7 @@ export type EvmWalletStoreState<
 export type EvmWalletStore = Store<EvmWalletStoreState, WalletStorePersistData>;
 
 export type EvmWalletStoreOptions = {
-  chainId: EvmChainId;
+  chain: keyof typeof evmChainIds;
   extensions: EvmExtensionsStore;
   config: ConfigStore;
   storageKey: keyof typeof STORAGE_KEYS;
@@ -96,6 +108,7 @@ export const createEvmWalletStore = createStoreFactory<
   WalletStorePersistData,
   [EvmWalletStoreOptions] | [EvmWalletStoreOptions, { lifecycle?: LifeCycleManager }]
 >((setState, getState, storeOptions, { lifecycle = new LifeCycleManager() } = {}) => {
+  const chainId = evmChainIds[storeOptions.chain];
   const walletManager = new WalletStoreManager<EvmWalletState>(
     setState,
     getState,
@@ -103,9 +116,9 @@ export const createEvmWalletStore = createStoreFactory<
     async (key, opts) => {
       // Make sure the extensions are loaded
       storeOptions.extensions.getState().updateExtensions();
-      const extension = storeOptions.extensions.getState().installedMap.get(key);
 
-      if (!extension?.api) {
+      const extension = storeOptions.extensions.getState().installedMap.get(key);
+      if (!extension) {
         throw new WalletConnectionError(`The ${key} extension is not installed`);
       }
 
@@ -114,23 +127,18 @@ export const createEvmWalletStore = createStoreFactory<
       }
 
       // Create a provider
-      const provider = new ethers.BrowserProvider(extension?.api, "any");
+      const provider = new BrowserProvider(extension.api, "any");
 
       await provider.send("eth_requestAccounts", []);
 
       // Request account & chain access
-      await provider.send("wallet_switchEthereumChain", [
-        {
-          chainId: storeOptions.chainId,
-        },
-      ]);
+      await provider.send("wallet_switchEthereumChain", [{ chainId }]);
 
       const updateState = async () => {
         // Get the signer (which is the first account connected)
         const signer = await provider.getSigner();
-        const account = await signer.getAddress();
-
-        const balanceSmallestUnit = await provider.getBalance(signer.address);
+        const address = await signer.getAddress();
+        const balanceWei = await provider.getBalance(address);
 
         const newState: Partial<ConnectedEvmWalletState> = {
           ...extension.info,
@@ -138,11 +146,11 @@ export const createEvmWalletStore = createStoreFactory<
           isConnecting: false,
           isConnectingTo: undefined,
           api: extension.api,
-          balanceSmallestUnit: balanceSmallestUnit,
-          balance: formatEther(balanceSmallestUnit),
+          balanceWei,
+          balanceEth: formatEther(balanceWei),
           provider,
           signer,
-          address: account,
+          address,
         };
 
         setState(newState);
@@ -178,11 +186,7 @@ export const createEvmWalletStore = createStoreFactory<
     if (!signer) throw new Error("Signer not initialized");
     if (!provider) throw new Error("Provider not initialized");
 
-    await provider.send("wallet_switchEthereumChain", [
-      {
-        chainId: storeOptions.chainId,
-      },
-    ]);
+    await provider.send("wallet_switchEthereumChain", [{ chainId }]);
 
     const contract = new ethers.Contract(tokenAddress, abi, signer);
 
@@ -206,11 +210,7 @@ export const createEvmWalletStore = createStoreFactory<
     if (!signer) throw new Error("Signer not initialized");
     if (!provider) throw new Error("Provider not initialized");
 
-    await provider.send("wallet_switchEthereumChain", [
-      {
-        chainId: storeOptions.chainId,
-      },
-    ]);
+    await provider.send("wallet_switchEthereumChain", [{ chainId }]);
 
     // if the user is trying to send tokens
     if (tokenAddress) {
@@ -232,7 +232,7 @@ export const createEvmWalletStore = createStoreFactory<
     }
 
     // otherwise, it is a simple transfer
-    const balanceSmallestUnit = getState().balanceSmallestUnit;
+    const balanceSmallestUnit = getState().balanceWei;
     const value = parseEther(amount.toString()) as BigNumberish;
 
     if (Number(balanceSmallestUnit) < Number(value)) {

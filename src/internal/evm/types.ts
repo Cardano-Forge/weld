@@ -2,10 +2,10 @@ import type { EthExtensionKey } from "@/lib/eth";
 import type { PolyExtensionKey } from "@/lib/poly";
 import type { Eip1193Provider } from "ethers";
 
-export enum EvmChainId {
-  ETH = "0x1",
-  POLY = "0x89",
-}
+export const evmChainIds = {
+  eth: "0x1",
+  poly: "0x89",
+} as const;
 
 export type EvmApi = Eip1193Provider;
 
