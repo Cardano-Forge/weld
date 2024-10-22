@@ -6,7 +6,11 @@ import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/inte
 import { getFailureReason } from "@/internal/utils/errors";
 import type { PartialWithDiscriminant } from "@/internal/utils/types";
 import { UtxosUpdateManager } from "@/internal/utxos-update";
-import { type DefaultWalletStoreProps, WalletStoreManager } from "@/internal/wallet-store";
+import {
+  type DefaultWalletStoreProps,
+  WalletStoreManager,
+  type WalletStorePersistData,
+} from "@/internal/wallet-store";
 import {
   type NetworkId,
   WalletConnectionAbortedError,
@@ -81,9 +85,7 @@ export type WalletStoreState<
   [TKey in Extract<TKeys, keyof WalletApi>]: WalletApi[TKey];
 };
 
-export type WalletStorePersistData = {
-  tryToReconnectTo?: string;
-};
+export type { WalletStorePersistData };
 
 export type WalletStore = Store<WalletStoreState, WalletStorePersistData>;
 

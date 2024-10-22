@@ -25,6 +25,10 @@ export type WalletStoreManagerConnectOpts = {
   configOverrides?: Partial<WalletConfig>;
 };
 
+export type WalletStorePersistData = {
+  tryToReconnectTo?: string;
+};
+
 type Events = {
   beforeDisconnect: undefined;
   afterDisconnect: undefined;
@@ -173,7 +177,7 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
     }
   }
 
-  persist(opts: { initialState: TProps }, data?: { tryToReconnectTo?: string }) {
+  persist(opts: { initialState: TProps }, data?: WalletStorePersistData) {
     let isConnectingTo = data?.tryToReconnectTo;
     if (
       !isConnectingTo &&

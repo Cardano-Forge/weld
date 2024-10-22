@@ -8,7 +8,11 @@ import type {
   EvmHandler,
 } from "@/internal/evm/types";
 import type { PartialWithDiscriminant } from "@/internal/utils/types";
-import { type DefaultWalletStoreProps, WalletStoreManager } from "@/internal/wallet-store";
+import {
+  type DefaultWalletStoreProps,
+  WalletStoreManager,
+  type WalletStorePersistData,
+} from "@/internal/wallet-store";
 import type { EvmExtensionsStore } from "@/lib/eth";
 import { WalletConnectionAbortedError, WalletConnectionError } from "@/lib/main";
 import type { ConfigStore, WalletConfig } from "@/lib/main/stores/config";
@@ -82,11 +86,7 @@ export type EvmWalletStoreState<
   [TKey in Extract<TKeys, keyof EvmWalletApi>]: EvmWalletApi[TKey];
 };
 
-export type EvmWalletStorePersistData = {
-  tryToReconnectTo?: string;
-};
-
-export type EvmWalletStore = Store<EvmWalletStoreState, EvmWalletStorePersistData>;
+export type EvmWalletStore = Store<EvmWalletStoreState, WalletStorePersistData>;
 
 export type EvmWalletStoreOptions = {
   chainId: EvmChainId;
@@ -97,7 +97,7 @@ export type EvmWalletStoreOptions = {
 
 export const createEvmWalletStore = createStoreFactory<
   EvmWalletStoreState,
-  EvmWalletStorePersistData,
+  WalletStorePersistData,
   [EvmWalletStoreOptions] | [EvmWalletStoreOptions, { lifecycle?: LifeCycleManager }]
 >((setState, getState, storeOptions, { lifecycle = new LifeCycleManager() } = {}) => {
   const walletManager = new WalletStoreManager<EvmWalletState>(
@@ -257,7 +257,7 @@ export const createEvmWalletStore = createStoreFactory<
     walletManager.init({ initialState });
   };
 
-  const __persist = (data?: EvmWalletStorePersistData) => {
+  const __persist = (data?: WalletStorePersistData) => {
     walletManager.persist({ initialState }, data);
   };
 

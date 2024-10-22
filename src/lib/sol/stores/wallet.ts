@@ -18,7 +18,11 @@ import type { SolExtensionInfo, SolExtensionKey, SolHandler } from "../types";
 import { lamportToSol } from "../utils";
 
 import { Buffer } from "buffer";
-import { type DefaultWalletStoreProps, WalletStoreManager } from "@/internal/wallet-store";
+import {
+  type DefaultWalletStoreProps,
+  WalletStoreManager,
+  type WalletStorePersistData,
+} from "@/internal/wallet-store";
 
 export type SolWalletProps = DefaultWalletStoreProps &
   SolExtensionInfo & {
@@ -81,15 +85,11 @@ export type SolWalletStoreState<
   [TKey in Extract<TKeys, keyof SolWalletApi>]: SolWalletApi[TKey];
 };
 
-export type SolWalletStorePersistData = {
-  tryToReconnectTo?: string;
-};
-
-export type SolWalletStore = Store<SolWalletStoreState, SolWalletStorePersistData>;
+export type SolWalletStore = Store<SolWalletStoreState, WalletStorePersistData>;
 
 export const createSolWalletStore = createStoreFactory<
   SolWalletStoreState,
-  SolWalletStorePersistData,
+  WalletStorePersistData,
   [] | [{ lifecycle?: LifeCycleManager }]
 >((setState, getState, { lifecycle = new LifeCycleManager() } = {}) => {
   const walletManager = new WalletStoreManager<SolWalletState>(
@@ -329,7 +329,7 @@ export const createSolWalletStore = createStoreFactory<
     walletManager.init({ initialState });
   };
 
-  const __persist = (data?: SolWalletStorePersistData) => {
+  const __persist = (data?: WalletStorePersistData) => {
     walletManager.persist({ initialState }, data);
   };
 
