@@ -1,4 +1,4 @@
-import { LifeCycleManager } from "@/internal/lifecycle";
+import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
 
 import {
@@ -165,9 +165,14 @@ export const createEvmWalletStore = createStoreFactory<
     lifecycle,
   );
 
-  const connectAsync: EvmWalletApi["connectAsync"] = async (key, configOverrides) => {
+  const connectAsync: EvmWalletApi["connectAsync"] = async (
+    key,
+    configOverrides,
+    /* For testing purposes */
+    signal?: InFlightSignal,
+  ) => {
     await walletManager.disconnect();
-    return walletManager.connect(key, { configOverrides });
+    return walletManager.connect(key, { configOverrides, signal });
   };
 
   const connect: EvmWalletApi["connect"] = (key, { onSuccess, onError, ...config } = {}) => {
@@ -260,17 +265,19 @@ export const createEvmWalletStore = createStoreFactory<
     walletManager.cleanup();
   };
 
-  const initialState: EvmWalletStoreState & StoreSetupFunctions = {
-    ...newEvmWalletState(),
-    connect,
-    connectAsync,
-    disconnect,
-    send,
-    getTokenBalance,
-    __init,
-    __cleanup,
-    __persist,
-  };
+  const initialState: EvmWalletStoreState & StoreSetupFunctions & { __mngr: typeof walletManager } =
+    {
+      ...newEvmWalletState(),
+      connect,
+      connectAsync,
+      disconnect,
+      send,
+      getTokenBalance,
+      __init,
+      __cleanup,
+      __persist,
+      __mngr: walletManager,
+    };
 
   return initialState as EvmWalletStoreState;
 });
