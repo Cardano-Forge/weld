@@ -1,12 +1,7 @@
 import { LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
 
-import type {
-  EvmChainId,
-  EvmExtensionInfo,
-  EvmExtensionKey,
-  EvmHandler,
-} from "@/internal/evm/types";
+import type { EvmApi, EvmChainId, EvmExtensionInfo, EvmExtensionKey } from "@/internal/evm/types";
 import type { PartialWithDiscriminant } from "@/internal/utils/types";
 import {
   type DefaultWalletStoreProps,
@@ -30,7 +25,7 @@ export type EvmWalletProps = DefaultWalletStoreProps &
     isConnectingTo: EvmExtensionKey | undefined;
     balanceSmallestUnit: bigint;
     balance: string;
-    handler: EvmHandler;
+    api: EvmApi;
     provider: BrowserProvider;
     signer: JsonRpcSigner;
     address: AddressLike;
@@ -40,12 +35,13 @@ function newEvmWalletState(): PartialWithDiscriminant<EvmWalletProps, "isConnect
   return {
     key: undefined,
     displayName: undefined,
+    path: undefined,
     isConnected: false,
     isConnecting: false,
     isConnectingTo: undefined,
     balanceSmallestUnit: undefined,
     balance: undefined,
-    handler: undefined,
+    api: undefined,
     provider: undefined,
     signer: undefined,
     address: undefined,
@@ -109,7 +105,7 @@ export const createEvmWalletStore = createStoreFactory<
       storeOptions.extensions.getState().updateExtensions();
       const extension = storeOptions.extensions.getState().installedMap.get(key);
 
-      if (!extension?.handler) {
+      if (!extension?.api) {
         throw new WalletConnectionError(`The ${key} extension is not installed`);
       }
 
@@ -118,7 +114,7 @@ export const createEvmWalletStore = createStoreFactory<
       }
 
       // Create a provider
-      const provider = new ethers.BrowserProvider(extension?.handler, "any");
+      const provider = new ethers.BrowserProvider(extension?.api, "any");
 
       await provider.send("eth_requestAccounts", []);
 
@@ -137,12 +133,11 @@ export const createEvmWalletStore = createStoreFactory<
         const balanceSmallestUnit = await provider.getBalance(signer.address);
 
         const newState: Partial<ConnectedEvmWalletState> = {
-          key: extension.key,
-          displayName: extension.displayName,
+          ...extension.info,
           isConnected: true,
           isConnecting: false,
           isConnectingTo: undefined,
-          handler: extension.handler,
+          api: extension.api,
           balanceSmallestUnit: balanceSmallestUnit,
           balance: formatEther(balanceSmallestUnit),
           provider,
