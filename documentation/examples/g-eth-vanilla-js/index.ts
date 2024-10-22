@@ -1,3 +1,4 @@
+import { getFailureReason } from "@/internal/utils/errors";
 import { weldEth } from "@/lib/eth";
 
 weldEth.wallet.subscribeWithSelector(
@@ -34,6 +35,30 @@ document.querySelector("#connect")?.addEventListener("click", () => {
       console.log("error", error);
     },
   });
+});
+
+document.querySelector("#getTokenBalance")?.addEventListener("click", async () => {
+  try {
+    const b = await weldEth.wallet
+      .getState()
+      .getTokenBalance("0x86fa049857e0209aa7d9e616f7eb3b3b78ecfdb0");
+    console.log("b", b);
+  } catch (error) {
+    console.log("error", getFailureReason(error));
+  }
+});
+
+document.querySelector("#getTx")?.addEventListener("click", async () => {
+  try {
+    const b = await weldEth.wallet
+      .getState()
+      .provider?.getTransaction(
+        "0x1cdf7f6a4a6597fd30f9cee820c7360797653e1a42ec470461475260581a57ec",
+      );
+    console.log(JSON.stringify(b, null, 2));
+  } catch (error) {
+    console.log("error", getFailureReason(error));
+  }
 });
 
 document.querySelector("#disconnect")?.addEventListener("click", () => {

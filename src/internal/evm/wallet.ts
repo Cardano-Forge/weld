@@ -71,7 +71,7 @@ export type EvmWalletApi = {
     key: EvmExtensionKey,
     config?: Partial<WalletConfig>,
   ) => Promise<ConnectedEvmWalletState>;
-  disconnect(): void;
+  disconnect(): Promise<void>;
   send({
     to,
     amount,
@@ -200,14 +200,17 @@ export const createEvmWalletStore = createStoreFactory<
 
     const contract = new ethers.Contract(tokenAddress, abi, signer);
 
-    if (!contract.decimals || !contract.balanceOf)
+    if (!contract.decimals || !contract.balanceOf) {
       throw new Error("Ethers contract implemantation not found");
+    }
+
+    const unformattedBalance: number = await contract.balanceOf(signer.address);
+    if (!options?.formatted) {
+      return String(unformattedBalance);
+    }
 
     const decimals = await contract.decimals();
-    const unformattedBalance: number = await contract.balanceOf(signer.address);
-
-    if (options?.formatted) return ethers.formatUnits(unformattedBalance, decimals);
-    return String(unformattedBalance);
+    return ethers.formatUnits(unformattedBalance, decimals);
   };
 
   const send = async ({
@@ -222,7 +225,6 @@ export const createEvmWalletStore = createStoreFactory<
 
     await provider.send("wallet_switchEthereumChain", [{ chainId }]);
 
-    // if the user is trying to send tokens
     if (tokenAddress) {
       const balance = await getTokenBalance(tokenAddress, { formatted: true });
       const contract = new ethers.Contract(tokenAddress, abi, signer);
@@ -241,11 +243,9 @@ export const createEvmWalletStore = createStoreFactory<
       return tx.hash;
     }
 
-    // otherwise, it is a simple transfer
-    const balanceSmallestUnit = getState().balanceWei;
+    const balanceWei = getState().balanceWei;
     const value = parseEther(amount.toString()) as BigNumberish;
-
-    if (Number(balanceSmallestUnit) < Number(value)) {
+    if (!balanceWei || balanceWei < BigInt(value)) {
       throw new Error("Insufficient balance");
     }
 
