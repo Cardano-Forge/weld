@@ -1,30 +1,40 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import {
+  WalletConnectionAbortedError,
+  WalletDisconnectAccountError,
+  type WeldStorage,
+} from "@/lib/main";
+import { type WalletConfig, createConfigStore } from "@/lib/main/stores/config";
+import { STORAGE_KEYS } from "@/lib/server";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { setupAutoUpdate } from "./auto-update";
+import {
+  InFlightManager,
+  type InFlightSignal,
+  LifeCycleManager,
+  SubscriptionManager,
+  type UnsubscribeFct,
+} from "./lifecycle";
+import type { MaybePromise, PartialWithDiscriminant } from "./utils/types";
 import {
   type DefaultWalletStoreProps,
   WalletStoreManager,
   type WalletStoreManagerConnectOpts,
 } from "./wallet-store";
-import type { MaybePromise, PartialWithDiscriminant } from "./utils/types";
-import {
-  LifeCycleManager,
-  SubscriptionManager,
-  type UnsubscribeFct,
-  newInFlightSignal,
-  InFlightSignal,
-  InFlightManager,
-} from "./lifecycle";
-import {
-  WalletConnectionAbortedError,
-  WalletDisconnectAccountError,
-  WeldStorage,
-} from "@/lib/main";
-import { setupAutoUpdate } from "./auto-update";
-import { WalletConfig, createConfigStore } from "@/lib/main/stores/config";
-import { STORAGE_KEYS } from "@/lib/server";
+
+const subs = new Set<UnsubscribeFct>();
+const inFlight = new Set<InFlightSignal>();
+const lifecycle = new LifeCycleManager(
+  new SubscriptionManager(subs),
+  new InFlightManager(inFlight),
+);
 
 vi.mock("./auto-update");
 beforeEach(() => {
   vi.resetAllMocks();
+});
+
+afterEach(() => {
+  lifecycle.cleanup();
 });
 
 type Props = DefaultWalletStoreProps;
@@ -74,6 +84,8 @@ describe("WalletStoreManager.connect", () => {
       newState,
       createConnection,
       "connectedWallet",
+      undefined,
+      lifecycle,
     );
     expect(mngr.connect(key)).resolves.toStrictEqual(connectedState);
   });
@@ -96,13 +108,13 @@ describe("WalletStoreManager.connect", () => {
       newState,
       createConnection,
       "connectedWallet",
+      undefined,
+      lifecycle,
     );
     await expect(() => mngr.connect(key)).rejects.toThrow("Connection failed");
   });
 
   it("should clear existing lifecycle subscriptions", async () => {
-    const subs = new Set<UnsubscribeFct>();
-    const lifecycle = new LifeCycleManager(new SubscriptionManager(subs));
     const oldSub = vi.fn(() => {});
     lifecycle.subscriptions.add(oldSub);
     const { set, get } = newMockStore();
@@ -137,6 +149,8 @@ describe("WalletStoreManager.connect", () => {
       newState,
       createConnection,
       "connectedWallet",
+      undefined,
+      lifecycle,
     );
     await mngr.connect(key);
   });
@@ -145,7 +159,6 @@ describe("WalletStoreManager.connect", () => {
     vi.useFakeTimers();
     const connectTimeout = 5000;
     const key = "testkey";
-    const lifecycle = new LifeCycleManager();
     const signal = lifecycle.inFlight.add();
     const { set, get } = newMockStore();
     const createConnection = vi.fn<ConnectionFct>(() => {
@@ -160,6 +173,8 @@ describe("WalletStoreManager.connect", () => {
       newState,
       createConnection,
       "connectedWallet",
+      undefined,
+      lifecycle,
     );
     await expect(() => {
       return mngr.connect(key, {
@@ -190,6 +205,8 @@ describe("WalletStoreManager.connect", () => {
       newState,
       createConnection,
       "connectedWallet",
+      undefined,
+      lifecycle,
     );
     await expect(() => mngr.connect(key)).rejects.toThrow(updateError);
   });
@@ -197,7 +214,7 @@ describe("WalletStoreManager.connect", () => {
   it("should fail if signal is aborted during connection", async () => {
     const key = "testkey";
     const { set, get } = newMockStore();
-    const signal = newInFlightSignal();
+    const signal = lifecycle.inFlight.add();
     const createConnection = vi.fn<ConnectionFct>(() => {
       signal.aborted = true;
       return { updateState: () => set({ isConnected: true }) };
@@ -208,6 +225,8 @@ describe("WalletStoreManager.connect", () => {
       newState,
       createConnection,
       "connectedWallet",
+      undefined,
+      lifecycle,
     );
     await expect(() => mngr.connect(key, { signal })).rejects.toThrow(WalletConnectionAbortedError);
   });
@@ -218,7 +237,6 @@ describe("WalletStoreManager.connect", () => {
     const createConnection = vi.fn<ConnectionFct>(() => {
       return { updateState: () => set({ isConnected: true }) };
     });
-    const lifecycle = new LifeCycleManager();
     const config = createConfigStore();
     const mngr = new WalletStoreManager<State>(
       set,
@@ -263,6 +281,7 @@ describe("WalletStoreManager.connect", () => {
       createConnection,
       storageKey,
       config,
+      lifecycle,
     );
     await mngr.connect(key);
     expect(storage.set).toHaveBeenCalledOnce();
@@ -292,6 +311,7 @@ describe("WalletStoreManager.connect", () => {
       createConnection,
       storageKey,
       config,
+      lifecycle,
     );
     await expect(() => mngr.connect(key)).rejects.toThrow();
     expect(storage.set).not.toHaveBeenCalled();
@@ -320,6 +340,7 @@ describe("WalletStoreManager.connect", () => {
       createConnection,
       storageKey,
       config,
+      lifecycle,
     );
     await mngr.connect(key);
     expect(storage.set).not.toHaveBeenCalled();
@@ -328,8 +349,6 @@ describe("WalletStoreManager.connect", () => {
 
   it("should remove signal after success", async () => {
     const key = "testkey";
-    const inFlight = new Set<InFlightSignal>();
-    const lifecycle = new LifeCycleManager(undefined, new InFlightManager(inFlight));
     const signal = lifecycle.inFlight.add();
     const { set, get } = newMockStore();
     const createConnection = vi.fn<ConnectionFct>(() => {
@@ -351,8 +370,6 @@ describe("WalletStoreManager.connect", () => {
 
   it("should remove signal after error", async () => {
     const key = "testkey";
-    const inFlight = new Set<InFlightSignal>();
-    const lifecycle = new LifeCycleManager(undefined, new InFlightManager(inFlight));
     const signal = lifecycle.inFlight.add();
     const { set, get } = newMockStore();
     const createConnection = vi.fn<ConnectionFct>(() => {
@@ -385,6 +402,8 @@ describe("WalletStoreManager.connect", () => {
       newState,
       createConnection,
       "connectedWallet",
+      undefined,
+      lifecycle,
     );
     vi.spyOn(mngr, "disconnect");
     await expect(() => mngr.connect(key)).rejects.toThrow();
@@ -398,13 +417,15 @@ describe("WalletStoreManager.connect", () => {
     const createConnection = vi.fn<ConnectionFct>(() => {
       return { updateState: () => set({ isConnected: true }) };
     });
-    const signal = newInFlightSignal();
+    const signal = lifecycle.inFlight.add();
     const mngr = new WalletStoreManager<State>(
       set,
       get,
       newState,
       createConnection,
       "connectedWallet",
+      undefined,
+      lifecycle,
     );
     const connectTimeout = 5000;
     expect(signal.aborted).toBe(false);
@@ -412,5 +433,35 @@ describe("WalletStoreManager.connect", () => {
     vi.advanceTimersByTime(connectTimeout);
     expect(signal.aborted).toBe(false);
     vi.useRealTimers();
+  });
+
+  it("should stop updates when signal is aborted after connection", async () => {
+    const key = "testkey";
+    const { set, get } = newMockStore();
+    const updateState = vi.fn(() => set({ isConnected: true }));
+    const createConnection = vi.fn<ConnectionFct>(() => {
+      return { updateState };
+    });
+    const signal = lifecycle.inFlight.add();
+    const mngr = new WalletStoreManager<State>(
+      set,
+      get,
+      newState,
+      createConnection,
+      "connectedWallet",
+      undefined,
+      lifecycle,
+    );
+    expect(signal.aborted).toBe(false);
+    await mngr.connect(key, {
+      signal,
+      configOverrides: {
+        updateOnWindowFocus: true,
+      },
+    });
+    expect(updateState).toHaveBeenCalledOnce();
+    window.dispatchEvent(new Event("focus"));
+    expect(updateState).toHaveBeenCalledTimes(2);
+    // signal.aborted = true;
   });
 });
