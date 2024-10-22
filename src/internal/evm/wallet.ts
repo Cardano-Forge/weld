@@ -165,7 +165,7 @@ export const createEvmWalletStore = createStoreFactory<
     lifecycle,
   );
 
-  const connectAsync: EvmWalletApi["connectAsync"] = async (
+  const connectAsync = (async (
     key,
     configOverrides,
     /* For testing purposes */
@@ -173,10 +173,15 @@ export const createEvmWalletStore = createStoreFactory<
   ) => {
     await walletManager.disconnect();
     return walletManager.connect(key, { configOverrides, signal });
-  };
+  }) satisfies EvmWalletApi["connectAsync"];
 
-  const connect: EvmWalletApi["connect"] = (key, { onSuccess, onError, ...config } = {}) => {
-    connectAsync(key, config)
+  const connect: EvmWalletApi["connect"] = (
+    key,
+    { onSuccess, onError, ...config } = {},
+    /* For testing purposes */
+    signal?: InFlightSignal,
+  ) => {
+    connectAsync(key, config, signal)
       .then((wallet) => {
         onSuccess?.(wallet);
       })

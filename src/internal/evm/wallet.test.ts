@@ -108,7 +108,7 @@ describe("createEvmWalletStore.connectAsync", () => {
     );
   });
 
-  it("should fail connection is aborted", async () => {
+  it("should fail connection when is aborted", async () => {
     const { wallet } = newTestStores();
     const signal = lifecycle.inFlight.add();
     signal.aborted = true;
@@ -125,5 +125,99 @@ describe("createEvmWalletStore.connectAsync", () => {
     await wallet.getState().connectAsync(walletKey);
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
     expect((wallet.getState() as any).__mngr.disconnect).toHaveBeenCalled();
+  });
+});
+
+describe("createEvmWalletStore.connect", () => {
+  it("should connect to valid installed wallets successfully", () =>
+    new Promise<void>((done) => {
+      const { wallet } = newTestStores();
+      wallet.getState().connect(walletKey, {
+        onSuccess(connected) {
+          expect(connected.key).toBe(supportedExtension.key);
+          expect(connected.displayName).toBe(supportedExtension.displayName);
+          expect(connected.path).toBe(supportedExtension.path);
+          expect(connected.api).toBe(api);
+          expect(connected.balanceWei).toBe(balanceWei);
+          expect(connected.balanceEth).toBe(balanceEth);
+          expect(connected.address).toBe(address);
+          expect(connected.provider).toBeInstanceOf(BrowserProvider);
+          expect(connected.signer.getAddress()).resolves.toBe(address);
+          expect(connected.isConnected).toBe(true);
+          expect(connected.isConnecting).toBe(false);
+          expect(connected.isConnectingTo).toBeUndefined();
+          done();
+        },
+      });
+    }));
+
+  it("should request user identification", async () => {
+    return new Promise<void>((done) => {
+      const { wallet } = newTestStores();
+      wallet.getState().connect(walletKey, {
+        onSuccess() {
+          expect(evmRequestSpy).toHaveBeenCalledWith("eth_requestAccounts");
+          done();
+        },
+      });
+    });
+  });
+
+  it("should switch network to provided chain id", async () => {
+    return new Promise<void>((done) => {
+      const { wallet } = newTestStores();
+      wallet.getState().connect(walletKey, {
+        onSuccess() {
+          expect(evmRequestSpy).toHaveBeenCalledWith("wallet_switchEthereumChain", { chainId });
+          done();
+        },
+      });
+    });
+  });
+
+  it("should fail if the extension is not installed", async () => {
+    return new Promise<void>((done) => {
+      const { wallet } = newTestStores();
+      wallet.getState().connect("phantom", {
+        onError(error) {
+          expect(error).toBeInstanceOf(WalletConnectionError);
+        },
+      });
+      done();
+    });
+  });
+
+  it("should fail connection is aborted", async () => {
+    return new Promise<void>((done) => {
+      const { wallet } = newTestStores();
+      const signal = lifecycle.inFlight.add();
+      signal.aborted = true;
+      // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
+      (wallet.getState().connect as any)(
+        walletKey,
+        {
+          onError(error: unknown) {
+            expect(error).toBeInstanceOf(WalletConnectionAbortedError);
+          },
+        },
+        signal,
+      );
+      done();
+    });
+  });
+
+  it("should disconnect the wallet", async () => {
+    return new Promise<void>((done) => {
+      const { wallet } = newTestStores();
+      // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
+      vi.spyOn((wallet.getState() as any).__mngr, "disconnect");
+      wallet.getState().connect(walletKey, {
+        onSuccess() {
+          // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
+          expect((wallet.getState() as any).__mngr.disconnect).toHaveBeenCalled();
+          done();
+        },
+      });
+    });
   });
 });
