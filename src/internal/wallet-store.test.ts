@@ -150,6 +150,35 @@ describe("WalletStoreManager.connect", () => {
     expect(oldSub).toHaveBeenCalledOnce();
   });
 
+  it("should keep the last initiated connection and not the last resolved", async () => {
+    vi.useFakeTimers();
+    const { set, get } = newMockStore();
+    let createCount = 0;
+    const timeout = 500;
+    const createConnection = vi.fn<ConnectionFct>(async (key) => {
+      await new Promise((r) => setTimeout(r, timeout * ++createCount));
+      return { updateState: () => set({ isConnected: true, key }) };
+    });
+    const mngr = new WalletStoreManager<State>(
+      set,
+      get,
+      newState,
+      createConnection,
+      "connectedWallet",
+      undefined,
+      lifecycle,
+    );
+    const promise = Promise.allSettled([
+      mngr.connect("key1"),
+      mngr.connect("key2"),
+      mngr.connect("key3"),
+    ]);
+    vi.advanceTimersByTime(timeout * createCount);
+    await promise;
+    expect(get().key).toBe("key3");
+    vi.useRealTimers();
+  });
+
   it("should set isConnecting and isConnectingTo state", async () => {
     const key = "testkey";
     const { set, get } = newMockStore();
