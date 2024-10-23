@@ -1,4 +1,3 @@
-import { mock } from "@depay/web3-mock";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LifeCycleManager } from "../lifecycle";
 import { createEvmExtensionsStore } from "./extensions";
@@ -21,7 +20,8 @@ vi.mock("@/internal/auto-update", () => ({
 }));
 
 beforeEach(() => {
-  mock("ethereum");
+  // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
+  (window as any).ethereum = { request: () => {} };
   vi.resetAllMocks();
   setupAutoUpdateStopSpy.mockReset();
   setupAutoUpdateSpy.mockReset();
