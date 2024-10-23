@@ -29,70 +29,70 @@ export type ExtensionsStore = Store<ExtensionsStoreState>;
 
 type ExtendedExtensionsStoreState = ExtensionsStoreState & StoreSetupFunctions;
 
-export const createExtensionsStore = createStoreFactory<ExtensionsStoreState>(
-  (setState, getState) => {
-    const lifecycle = new LifeCycleManager();
+export const createExtensionsStore = createStoreFactory<
+  ExtensionsStoreState,
+  undefined,
+  [] | [{ lifecycle?: LifeCycleManager }]
+>((setState, getState, { lifecycle = new LifeCycleManager() } = {}) => {
+  const handleUpdateError = (error: unknown) => {
+    weld.config.getState().onUpdateError?.("extensions", error);
+    weld.config.getState().wallet.onUpdateError?.(error);
+  };
 
-    const handleUpdateError = (error: unknown) => {
-      weld.config.getState().onUpdateError?.("extensions", error);
-      weld.config.getState().wallet.onUpdateError?.(error);
-    };
-
-    const update: ExtensionsApi["update"] = async (signal?: InFlightSignal) => {
-      if (weld.config.getState().debug) {
-        console.log("[WELD] Extensions state update");
+  const update: ExtensionsApi["update"] = async (signal?: InFlightSignal) => {
+    if (weld.config.getState().debug) {
+      console.log("[WELD] Extensions state update");
+    }
+    try {
+      if (getState()?.isFetching || signal?.aborted) {
+        return;
       }
-      try {
-        if (getState()?.isFetching || signal?.aborted) {
-          return;
-        }
-        setState({ isFetching: true });
-        const res = await getInstalledExtensions();
-        if (signal?.aborted) {
-          return;
-        }
-        setState({
-          ...res,
-          isLoading: false,
-          isFetching: false,
+      setState({ isFetching: true });
+      const res = await getInstalledExtensions();
+      if (signal?.aborted) {
+        return;
+      }
+      setState({
+        ...res,
+        isLoading: false,
+        isFetching: false,
+      });
+    } catch (error) {
+      handleUpdateError(error);
+      setState({
+        isLoading: false,
+        isFetching: false,
+      });
+    }
+  };
+
+  const __init = () => {
+    if (typeof window !== "undefined") {
+      lifecycle.subscriptions.clearAll();
+      const signal = lifecycle.inFlight.add();
+      update()
+        .then(() => {
+          if (signal.aborted) {
+            return;
+          }
+          setupAutoUpdate(update, lifecycle, weld.config, "extensions");
+        })
+        .finally(() => {
+          lifecycle.inFlight.remove(signal);
         });
-      } catch (error) {
-        handleUpdateError(error);
-        setState({
-          isLoading: false,
-          isFetching: false,
-        });
-      }
-    };
+    }
+  };
 
-    const __init = () => {
-      if (typeof window !== "undefined") {
-        lifecycle.subscriptions.clearAll();
-        const signal = lifecycle.inFlight.add();
-        update()
-          .then(() => {
-            if (signal.aborted) {
-              return;
-            }
-            setupAutoUpdate(update, lifecycle, weld.config, "extensions");
-          })
-          .finally(() => {
-            lifecycle.inFlight.remove(signal);
-          });
-      }
-    };
+  const __cleanup = () => {
+    lifecycle.cleanup();
+  };
 
-    const __cleanup = () => {
-      lifecycle.cleanup();
-    };
+  const initialState: ExtendedExtensionsStoreState = {
+    ...initialExtensionsState,
+    update,
+    __init,
+    __cleanup,
+  };
 
-    const initialState: ExtendedExtensionsStoreState = {
-      ...initialExtensionsState,
-      update,
-      __init,
-      __cleanup,
-    };
-
-    return initialState as ExtensionsStoreState;
-  },
-);
+  return initialState as ExtensionsStoreState;
+});
