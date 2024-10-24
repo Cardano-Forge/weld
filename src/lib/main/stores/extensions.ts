@@ -13,12 +13,6 @@ export type ExtensionsProps = InstalledExtensions & {
   isFetching: boolean;
 };
 
-const initialExtensionsState: ExtensionsProps = {
-  ...newInstalledExtensions(),
-  isLoading: true,
-  isFetching: false,
-};
-
 export type ExtensionsApi = {
   update(): Promise<void>;
 };
@@ -88,7 +82,9 @@ export const createExtensionsStore = createStoreFactory<
   };
 
   const initialState: ExtendedExtensionsStoreState = {
-    ...initialExtensionsState,
+    ...newInstalledExtensions(),
+    isLoading: true,
+    isFetching: false,
     update,
     __init,
     __cleanup,
