@@ -1,13 +1,14 @@
 // adapted from https://github.com/pmndrs/zustand/blob/main/src/vanilla.ts
 
 import { compare } from "@/internal/compare";
+import type { MaybePromise } from "./utils/types";
 
 export type StoreListener<T> = (state: T, prevState: T | undefined) => void;
 
 export type StoreSetupFunctions = {
-  __init?(): void;
-  __cleanup?(): void;
-  __persist?(data?: unknown): void;
+  __init?(): MaybePromise<void>;
+  __cleanup?(): MaybePromise<void>;
+  __persist?(data?: unknown): MaybePromise<void>;
 };
 
 export type GetStateFunction<TState> = () => TState;
@@ -27,9 +28,9 @@ export type Store<TState = any, TPersistData = never> = {
     listener: StoreListener<TSlice>,
     opts?: { fireImmediately?: boolean },
   ) => () => void;
-  persist: (persistData?: TPersistData) => void;
-  init: () => void;
-  cleanup: () => void;
+  persist: (persistData?: TPersistData) => MaybePromise<void>;
+  init: () => MaybePromise<void>;
+  cleanup: () => MaybePromise<void>;
 };
 
 export type StoreHandler<
@@ -106,18 +107,18 @@ export function createStore<TState extends object, TPersistData = never>(
 
   const persist = (data?: unknown) => {
     const state = getState() as StoreSetupFunctions | undefined;
-    state?.__persist?.(data);
+    return state?.__persist?.(data);
   };
 
   const init = () => {
     const state = getState() as StoreSetupFunctions | undefined;
-    state?.__init?.();
+    return state?.__init?.();
   };
 
   const cleanup = () => {
     const state = getState() as StoreSetupFunctions | undefined;
-    state?.__cleanup?.();
     listeners.clear();
+    return state?.__cleanup?.();
   };
 
   const store = {

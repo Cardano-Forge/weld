@@ -1,6 +1,5 @@
 import { deferredPromise } from "@/internal/utils/deferred-promise";
 
-import { getFailureReason } from "@/internal/utils/errors";
 import { startsWithAny } from "@/internal/utils/starts-with-any";
 import type { WalletKey } from "./wallets";
 
