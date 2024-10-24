@@ -50,19 +50,18 @@ const initialConfigState: WeldConfig = {
   extensions: {},
 };
 
-export type ConfigApi = {
-  update(values: Partial<WeldConfig>): void;
+export type ConfigApi<TConfig extends WeldConfig = WeldConfig> = {
+  update(values: Partial<TConfig>): void;
   getPersistedValue(key: StorageKeysType): string | undefined;
 };
 
-export type ConfigStoreState = WeldConfig & ConfigApi;
-export type ConfigStore<TConfigStoreState extends ConfigStoreState = ConfigStoreState> =
-  Store<TConfigStoreState>;
+export type ConfigStoreState<TConfig extends WeldConfig = WeldConfig> = TConfig &
+  ConfigApi<TConfig>;
 
-export const createConfigStore = <
-  TConfigStoreState extends ConfigStoreState = ConfigStoreState,
->() =>
-  createStoreFactory<TConfigStoreState>((setState, getState) => {
+export type ConfigStore<TConfig extends WeldConfig = WeldConfig> = Store<ConfigStoreState<TConfig>>;
+
+export const createConfigStore = <TConfig extends WeldConfig = WeldConfig>() =>
+  createStoreFactory<ConfigStoreState<TConfig>>((setState, getState) => {
     const update: ConfigApi["update"] = (values) => {
       setState({
         ...getState(),
@@ -86,5 +85,5 @@ export const createConfigStore = <
       ...initialConfigState,
       update,
       getPersistedValue,
-    } as TConfigStoreState;
+    } as ConfigStoreState<TConfig>;
   })();

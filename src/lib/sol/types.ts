@@ -4,6 +4,7 @@ import type {
   TransactionSignature,
   VersionedTransaction,
 } from "@solana/web3.js";
+import type { WeldConfig } from "../main/stores/config";
 
 export type SolApi = {
   isPhantom?: boolean;
@@ -66,3 +67,5 @@ export const SOL_EXTENSIONS = [
 ] as const satisfies readonly SolExtensionInfo[];
 
 export type SolExtensionKey = (typeof SOL_EXTENSIONS)[number]["key"];
+
+export type SolConfig = WeldConfig & { connectionEndpoint?: string };

@@ -1,4 +1,4 @@
-import { InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
+import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
 
 import type { PartialWithDiscriminant } from "@/internal/utils/types";

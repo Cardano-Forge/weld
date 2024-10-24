@@ -1,11 +1,11 @@
+import { LifeCycleManager } from "@/internal/lifecycle";
 import { WalletConnectionAbortedError } from "@/lib/main";
 import { createConfigStore } from "@/lib/main/stores/config";
+import { clusterApiUrl } from "@solana/web3.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { SolConfig, SolExtensionInfo } from "../types";
 import { createSolExtensionsStore } from "./extensions";
 import { createSolWalletStore } from "./wallet";
-import { LifeCycleManager } from "@/internal/lifecycle";
-import type { SolExtensionInfo } from "../types";
-import { getFailureReason } from "@/internal/utils/errors";
 
 const lifecycle = new LifeCycleManager();
 
@@ -16,13 +16,16 @@ const supportedExtension: SolExtensionInfo = {
   path: "phantom.solana",
 };
 
+const weldTestTokenAddress = "HhRSKz8cQruqoC4MfPjwrd57DVudshPhx8RXa5NVVf67";
+
 const publicKeyBytes = Uint8Array.from([
   27, 245, 253, 95, 185, 95, 232, 136, 100, 224, 148, 51, 194, 98, 149, 47, 221, 73, 24, 156, 127,
   46, 65, 230, 189, 44, 146, 206, 218, 188, 212, 169,
 ]);
 
 beforeEach(() => {
-  window.phantom = {
+  // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
+  (window as any).phantom = {
     solana: {
       publicKey: { toBytes: () => publicKeyBytes },
       connect: async () => {},
@@ -40,20 +43,21 @@ function newTestStores() {
     supportedExtensionInfos: [supportedExtension],
     lifecycle,
   });
-  const config = createConfigStore();
-  const wallet = createSolWalletStore({ lifecycle });
+  const config = createConfigStore<SolConfig>();
+  config.getState().update({ connectionEndpoint: clusterApiUrl("devnet") });
+  const wallet = createSolWalletStore({
+    extensions,
+    lifecycle,
+    config,
+  });
   return { extensions, config, wallet };
 }
 
 describe("connectAsync", () => {
   it("should connect to valid installed wallets successfully", async () => {
     const { wallet } = newTestStores();
-    try {
-      const connected = await wallet.getState().connectAsync(walletKey);
-      console.log("connected", connected.key);
-    } catch (error) {
-      console.log("error", getFailureReason(error));
-    }
+    const connected = await wallet.getState().connectAsync(walletKey);
+    expect(connected.balance).toBeGreaterThan(0);
   });
 
   it("should fail connection when is aborted", async () => {
@@ -77,7 +81,14 @@ describe("connectAsync", () => {
 });
 
 describe("getTokenBalance", () => {
-  it("should", () => {});
+  it("should return the token balance", async () => {
+    const { wallet } = newTestStores();
+    await wallet.getState().connectAsync(walletKey);
+    const state = wallet.getState();
+    expect(state.isConnected).toBe(true);
+    const balance = await state.getTokenBalance(weldTestTokenAddress);
+    expect(BigInt(balance)).toBeGreaterThan(0n);
+  });
 });
 
 describe("send", () => {

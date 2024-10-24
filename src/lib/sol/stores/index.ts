@@ -1,24 +1,19 @@
 export * from "./extensions";
 export * from "./wallet";
 
-import {
-  type ConfigStore,
-  type ConfigStoreState,
-  type WeldConfig,
-  createConfigStore,
-} from "@/lib/main/stores/config";
+import { type ConfigStore, type WeldConfig, createConfigStore } from "@/lib/main/stores/config";
+import type { SolConfig } from "../types";
 import { type SolExtensionsStore, createSolExtensionsStore } from "./extensions";
 import { type SolWalletStore, createSolWalletStore } from "./wallet";
 
-type SolConfigStoreState = ConfigStoreState & { connectionEndpoint?: string };
-let configStore: ConfigStore<SolConfigStoreState>;
+let configStore: ConfigStore<SolConfig>;
 let walletStore: SolWalletStore;
 let extensionsStore: SolExtensionsStore;
 
 export const weldSol = {
   get config() {
     if (!configStore) {
-      configStore = createConfigStore<SolConfigStoreState>();
+      configStore = createConfigStore<SolConfig>();
     }
     return configStore;
   },
