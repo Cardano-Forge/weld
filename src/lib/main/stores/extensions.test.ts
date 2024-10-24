@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LifeCycleManager } from "@/internal/lifecycle";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createExtensionsStore } from "./extensions";
 
 const lifecycle = new LifeCycleManager();

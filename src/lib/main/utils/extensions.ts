@@ -1,5 +1,6 @@
 import { deferredPromise } from "@/internal/utils/deferred-promise";
 
+import { getFailureReason } from "@/internal/utils/errors";
 import { startsWithAny } from "@/internal/utils/starts-with-any";
 import type { WalletKey } from "./wallets";
 
@@ -160,12 +161,15 @@ export type WalletExtension = {
   defaultApi: DefaultWalletApi;
 };
 
-export async function getWalletExtensions(): Promise<WalletExtension[]> {
-  const windowCardano = await getWindowCardano();
+export async function getWalletExtensions(
+  opts?: GetWindowCardanoOpts & { blacklist?: string[] },
+): Promise<WalletExtension[]> {
+  const windowCardano = await getWindowCardano(opts);
 
   if (!windowCardano) return [];
 
-  for (const walletKey of walletExtensionBlacklist) {
+  const blacklist = opts?.blacklist ?? walletExtensionBlacklist;
+  for (const walletKey of blacklist) {
     if (walletKey in windowCardano) {
       delete windowCardano[walletKey];
     }
@@ -215,19 +219,10 @@ export async function enableWallet(
       const resp = await defaultApi.enable();
       resolve(resp);
     } catch {
-      let isEnabled = false;
-      try {
-        isEnabled = await defaultApi.isEnabled();
-      } catch {
-        isEnabled = false;
-      } finally {
-        if (!isEnabled || ++retryCount > maxRetryCount) {
-          resolve(undefined);
-        } else {
-          setTimeout(() => {
-            evaluate();
-          }, retryIntervalMs);
-        }
+      if (++retryCount > maxRetryCount) {
+        resolve(undefined);
+      } else {
+        setTimeout(evaluate, retryIntervalMs);
       }
     }
   }

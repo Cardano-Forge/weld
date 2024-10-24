@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { getInstalledExtensions, newExtensionCache } from "./extensions";
 import type { WalletExtension, WalletInfo, getWalletExtensions, getWalletInfo } from "./utils";
 
@@ -58,10 +58,6 @@ function newGetWalletInfoMock(supportedKeys: string[] = []): typeof getWalletInf
     } as WalletInfo;
   };
 }
-
-beforeEach(() => {});
-
-afterEach(() => {});
 
 describe("getInstalledExtensions", () => {
   it("should return extensions", async () => {
