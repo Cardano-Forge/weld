@@ -14,7 +14,7 @@ import {
   type TransactionInstruction,
 } from "@solana/web3.js";
 import { weldSol } from ".";
-import type { SolExtensionInfo, SolExtensionKey, SolHandler } from "../types";
+import type { SolApi, SolExtensionInfo, SolExtensionKey } from "../types";
 import { lamportToSol } from "../utils";
 
 import { Buffer } from "buffer";
@@ -31,7 +31,7 @@ export type SolWalletProps = DefaultWalletStoreProps &
     isConnectingTo: SolExtensionKey | undefined;
     balanceSmallestUnit: number;
     balance: number;
-    handler: SolHandler;
+    api: SolApi;
     connection: Connection;
     address: PublicKey;
   };
@@ -40,12 +40,13 @@ function newSolWalletState(): PartialWithDiscriminant<SolWalletProps, "isConnect
   return {
     key: undefined,
     displayName: undefined,
+    path: undefined,
     isConnected: false,
     isConnecting: false,
     isConnectingTo: undefined,
     balanceSmallestUnit: undefined,
     balance: undefined,
-    handler: undefined,
+    api: undefined,
     connection: undefined,
     address: undefined,
   };
@@ -100,11 +101,11 @@ export const createSolWalletStore = createStoreFactory<
       // Make sure the extensions are loaded
       weldSol.extensions.getState().updateExtensions();
       const extension = weldSol.extensions.getState().installedMap.get(key);
-      const handler = extension?.handler;
+      const api = extension?.api;
 
-      await handler?.connect();
+      await api?.connect();
 
-      if (!extension || !handler?.publicKey) {
+      if (!extension || !api?.publicKey) {
         throw new WalletConnectionError(`The ${key} extension is not installed`);
       }
 
@@ -112,7 +113,7 @@ export const createSolWalletStore = createStoreFactory<
         throw new WalletConnectionAbortedError();
       }
 
-      const publicKey = new PublicKey(handler.publicKey.toBytes());
+      const publicKey = new PublicKey(api.publicKey.toBytes());
 
       const connection = new Connection(
         "https://solana-mainnet.g.alchemy.com/v2/sReIBMwUbvwelgkh1R1ay33uNmAk4Qu-",
@@ -122,12 +123,13 @@ export const createSolWalletStore = createStoreFactory<
         const balanceSmallestUnit = await connection.getBalance(publicKey);
 
         const newState: Partial<ConnectedSolWalletState> = {
-          key: extension.key,
-          displayName: extension.displayName,
+          key: extension.info.key,
+          displayName: extension.info.displayName,
+          path: extension.info.path,
           isConnected: true,
           isConnecting: false,
           isConnectingTo: undefined,
-          handler: extension.handler,
+          api: extension.api,
           balanceSmallestUnit,
           balance: lamportToSol(balanceSmallestUnit),
           connection,
@@ -149,7 +151,7 @@ export const createSolWalletStore = createStoreFactory<
     weldSol.config,
     lifecycle,
   ).on("beforeDisconnect", () => {
-    getState().handler?.disconnect();
+    getState().api?.disconnect();
   });
 
   const connectAsync: SolWalletApi["connectAsync"] = async (key, configOverrides) => {
@@ -229,10 +231,10 @@ export const createSolWalletStore = createStoreFactory<
     amount,
     tokenAddress,
   }: { to: string; amount: string; tokenAddress?: string }) => {
-    const { connection, handler, address } = getState();
+    const { connection, api, address } = getState();
 
     if (!connection) throw new Error("Connection not initialized");
-    if (!handler) throw new Error("Handler not initialized");
+    if (!api) throw new Error("Api not initialized");
     if (!address) throw new Error("Address not initialized");
 
     if (tokenAddress) {
@@ -293,7 +295,7 @@ export const createSolWalletStore = createStoreFactory<
 
         const preparedTransaction = await prepareTransaction(transaction);
 
-        const { signature } = await handler.signAndSendTransaction(preparedTransaction);
+        const { signature } = await api.signAndSendTransaction(preparedTransaction);
 
         return signature;
       } finally {
@@ -316,7 +318,7 @@ export const createSolWalletStore = createStoreFactory<
 
     transaction = await prepareTransaction(transaction as Transaction);
 
-    const { signature } = await handler.signAndSendTransaction(transaction);
+    const { signature } = await api.signAndSendTransaction(transaction);
 
     return signature;
   };

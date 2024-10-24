@@ -5,7 +5,7 @@ import type {
   VersionedTransaction,
 } from "@solana/web3.js";
 
-export type SolHandler = {
+export type SolApi = {
   isPhantom?: boolean;
   publicKey?: { toBytes(): Uint8Array };
   isConnected: boolean;
@@ -22,7 +22,7 @@ export type SolHandler = {
   disconnect(): Promise<void>;
 };
 
-export function isSolHandler(obj: unknown): obj is SolHandler {
+export function isSolApi(obj: unknown): obj is SolApi {
   return (
     typeof obj === "object" && obj !== null && "connect" in obj && typeof obj.connect === "function"
   );
@@ -31,35 +31,35 @@ export function isSolHandler(obj: unknown): obj is SolHandler {
 export type SolExtensionInfo = {
   key: string;
   displayName: string;
+  path: string;
 };
 
-export type SolExtension = SolExtensionInfo & {
-  handlerPath: string;
-  isInstalled: boolean;
-  handler?: SolHandler;
+export type SolExtension = {
+  info: SolExtensionInfo;
+  api?: SolApi;
 };
 
 export const SOL_EXTENSIONS = [
   {
     key: "phantom",
     displayName: "Phantom",
-    handlerPath: "phantom.solana",
+    path: "phantom.solana",
   },
   {
     key: "nufi",
     displayName: "NuFi",
-    handlerPath: "nufiSolana",
+    path: "nufiSolana",
   },
   {
     key: "coinbase",
     displayName: "CoinBase",
-    handlerPath: "coinbaseSolana",
+    path: "coinbaseSolana",
   },
   {
     key: "exodus",
     displayName: "Exodus",
-    handlerPath: "exodus.solana",
+    path: "exodus.solana",
   },
-] as const satisfies readonly Omit<SolExtension, "isInstalled" | "handler">[];
+] as const satisfies readonly SolExtensionInfo[];
 
 export type SolExtensionKey = (typeof SOL_EXTENSIONS)[number]["key"];
