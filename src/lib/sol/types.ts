@@ -28,6 +28,9 @@ export function isSolApi(obj: unknown): obj is SolApi {
   );
 }
 
+export const defaultSolConnectionEndpoint =
+  "https://solana-mainnet.g.alchemy.com/v2/sReIBMwUbvwelgkh1R1ay33uNmAk4Qu-";
+
 export type SolExtensionInfo = {
   key: string;
   displayName: string;

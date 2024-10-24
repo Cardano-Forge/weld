@@ -10,7 +10,7 @@ import {
 import { type SolExtensionsStore, createSolExtensionsStore } from "./extensions";
 import { type SolWalletStore, createSolWalletStore } from "./wallet";
 
-type SolConfigStoreState = ConfigStoreState & { connectionUrl?: string };
+type SolConfigStoreState = ConfigStoreState & { connectionEndpoint?: string };
 let configStore: ConfigStore<SolConfigStoreState>;
 let walletStore: SolWalletStore;
 let extensionsStore: SolExtensionsStore;

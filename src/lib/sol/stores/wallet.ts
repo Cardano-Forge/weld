@@ -14,7 +14,12 @@ import {
   type TransactionInstruction,
 } from "@solana/web3.js";
 import { weldSol } from ".";
-import type { SolApi, SolExtensionInfo, SolExtensionKey } from "../types";
+import {
+  type SolApi,
+  type SolExtensionInfo,
+  type SolExtensionKey,
+  defaultSolConnectionEndpoint,
+} from "../types";
 import { lamportToSol } from "../utils";
 
 import { Buffer } from "buffer";
@@ -130,9 +135,7 @@ export const createSolWalletStore = createStoreFactory<
 
         const publicKey = new PublicKey(api.publicKey.toBytes());
 
-        const endpoint =
-          config.getState().connectionUrl ??
-          "https://solana-mainnet.g.alchemy.com/v2/sReIBMwUbvwelgkh1R1ay33uNmAk4Qu-";
+        const endpoint = config.getState().connectionEndpoint ?? defaultSolConnectionEndpoint;
         const connection = new Connection(endpoint);
 
         const updateState = async () => {
