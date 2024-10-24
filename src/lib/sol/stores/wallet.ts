@@ -1,4 +1,4 @@
-import { LifeCycleManager } from "@/internal/lifecycle";
+import { InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
 
 import type { PartialWithDiscriminant } from "@/internal/utils/types";
@@ -173,10 +173,10 @@ export const createSolWalletStore = createStoreFactory<
       getState().api?.disconnect();
     });
 
-    const connectAsync: SolWalletApi["connectAsync"] = async (key, configOverrides) => {
+    const connectAsync = (async (key, configOverrides, signal?: InFlightSignal) => {
       await walletManager.disconnect();
-      return walletManager.connect(key, { configOverrides });
-    };
+      return walletManager.connect(key, { configOverrides, signal });
+    }) satisfies SolWalletApi["connectAsync"];
 
     const connect: SolWalletApi["connect"] = async (
       key,
@@ -361,7 +361,8 @@ export const createSolWalletStore = createStoreFactory<
       walletManager.cleanup();
     };
 
-    const initialState: SolWalletStoreState & StoreSetupFunctions = {
+    const initialState: SolWalletStoreState &
+      StoreSetupFunctions & { __mngr: typeof walletManager } = {
       ...newSolWalletState(),
       connect,
       connectAsync,
@@ -371,6 +372,7 @@ export const createSolWalletStore = createStoreFactory<
       __init,
       __cleanup,
       __persist,
+      __mngr: walletManager,
     };
 
     return initialState as SolWalletStoreState;
