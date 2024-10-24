@@ -1,18 +1,17 @@
-import { DefaultWalletHandler } from "@/internal/handler";
 import { LifeCycleManager } from "@/internal/lifecycle";
 import { deferredPromise } from "@/internal/utils/deferred-promise";
 import { keys } from "@/internal/utils/keys";
 import { UtxosUpdateManager } from "@/internal/utxos-update";
-import {
-  type ChangeAddressHex,
-  type DefaultWalletApi,
-  type EnabledWalletApi,
-  type NetworkId,
-  type StakeAddressHex,
-  WalletConnectionAbortedError,
-  hexToBech32,
-  supportedWalletsMap,
-} from "@/lib/main";
+import { WalletConnectionAbortedError } from "@/lib/main/utils/errors";
+import type {
+  ChangeAddressHex,
+  DefaultWalletApi,
+  EnabledWalletApi,
+  NetworkId,
+  StakeAddressHex,
+} from "@/lib/main/utils/extensions";
+import { hexToBech32 } from "@/lib/main/utils/hex-to-bech32";
+import { supportedWalletsMap } from "@/lib/main/utils/wallets";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createWalletStore } from "./wallet";
 
@@ -72,6 +71,7 @@ describe("connectAsync", () => {
   it("should connect to valid installed wallets successfully", async () => {
     const enable = async () => enabledApi;
     const defaultApi = { enable, isEnabled: async () => true } as DefaultWalletApi;
+    const { DefaultWalletHandler } = await import("@/internal/handler");
     const handler = new DefaultWalletHandler(namiInfo, defaultApi, enabledApi, enable);
     const wallet = createWalletStore({ lifecycle, connect: async () => handler });
     const connected = await wallet.getState().connectAsync("nami");
@@ -90,6 +90,7 @@ describe("connectAsync", () => {
   it("should update flags", async () => {
     const enable = async () => enabledApi;
     const defaultApi = { enable, isEnabled: async () => true } as DefaultWalletApi;
+    const { DefaultWalletHandler } = await import("@/internal/handler");
     const handler = new DefaultWalletHandler(namiInfo, defaultApi, enabledApi, enable);
     const connectPromise = deferredPromise<void>();
     const wallet = createWalletStore({
@@ -126,6 +127,7 @@ describe("connectAsync", () => {
   it("should fail connection when is aborted", async () => {
     const enable = async () => enabledApi;
     const defaultApi = { enable, isEnabled: async () => true } as DefaultWalletApi;
+    const { DefaultWalletHandler } = await import("@/internal/handler");
     const handler = new DefaultWalletHandler(namiInfo, defaultApi, enabledApi, enable);
     const connectReached = deferredPromise<void>();
     const connectTrigger = deferredPromise<void>();
@@ -149,6 +151,7 @@ describe("connectAsync", () => {
   it("should disconnect the wallet", async () => {
     const enable = async () => enabledApi;
     const defaultApi = { enable, isEnabled: async () => true } as DefaultWalletApi;
+    const { DefaultWalletHandler } = await import("@/internal/handler");
     const handler = new DefaultWalletHandler(namiInfo, defaultApi, enabledApi, enable);
     const wallet = createWalletStore({ lifecycle, connect: async () => handler });
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
@@ -174,6 +177,7 @@ describe("connectAsync", () => {
     let getBalanceCount = 0;
     const enable = async () => updatedEnabledApi;
     const defaultApi = { enable, isEnabled: async () => true } as DefaultWalletApi;
+    const { DefaultWalletHandler } = await import("@/internal/handler");
     const handler = new DefaultWalletHandler(namiInfo, defaultApi, updatedEnabledApi, enable);
     const wallet = createWalletStore({ lifecycle, utxosUpdate, connect: async () => handler });
     await wallet.getState().connectAsync("nami");
@@ -191,6 +195,7 @@ describe("connectAsync", () => {
     vi.useFakeTimers();
     const enable = async () => enabledApi;
     const defaultApi = { enable, isEnabled: async () => true } as DefaultWalletApi;
+    const { DefaultWalletHandler } = await import("@/internal/handler");
     const handler = new DefaultWalletHandler(namiInfo, defaultApi, enabledApi, enable);
     const wallet = createWalletStore({ lifecycle, connect: async () => handler });
     await wallet.getState().connectAsync("nami");
@@ -205,6 +210,7 @@ describe("connectAsync", () => {
   it("should connect over existing connections", async () => {
     const enable = async () => enabledApi;
     const defaultApi = { enable, isEnabled: async () => true } as DefaultWalletApi;
+    const { DefaultWalletHandler } = await import("@/internal/handler");
     const namiHandler = new DefaultWalletHandler(namiInfo, defaultApi, enabledApi, enable);
     const eternlHandler = new DefaultWalletHandler(eternlInfo, defaultApi, enabledApi, enable);
     const wallet = createWalletStore({
@@ -248,6 +254,7 @@ describe("connectAsync", () => {
     };
     const enable = async () => updatedEnabledApi;
     const defaultApi = { enable, isEnabled: async () => true } as DefaultWalletApi;
+    const { DefaultWalletHandler } = await import("@/internal/handler");
     const handler = new DefaultWalletHandler(namiInfo, defaultApi, updatedEnabledApi, enable);
     const wallet = createWalletStore({
       lifecycle,
@@ -296,6 +303,7 @@ describe("connectAsync", () => {
     };
     const enable = async () => updatedEnabledApi;
     const defaultApi = { enable, isEnabled: async () => true } as DefaultWalletApi;
+    const { DefaultWalletHandler } = await import("@/internal/handler");
     const handler = new DefaultWalletHandler(namiInfo, defaultApi, updatedEnabledApi, enable);
     const wallet = createWalletStore({
       lifecycle,
@@ -323,6 +331,7 @@ describe("disconnect", () => {
   it("should disconnect the wallet mngr", async () => {
     const enable = async () => enabledApi;
     const defaultApi = { enable, isEnabled: async () => true } as DefaultWalletApi;
+    const { DefaultWalletHandler } = await import("@/internal/handler");
     const handler = new DefaultWalletHandler(namiInfo, defaultApi, enabledApi, enable);
     const wallet = createWalletStore({ lifecycle, connect: async () => handler });
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
@@ -337,6 +346,7 @@ describe("init", () => {
   it("should init the wallet mngr", async () => {
     const enable = async () => enabledApi;
     const defaultApi = { enable, isEnabled: async () => true } as DefaultWalletApi;
+    const { DefaultWalletHandler } = await import("@/internal/handler");
     const handler = new DefaultWalletHandler(namiInfo, defaultApi, enabledApi, enable);
     const wallet = createWalletStore({ lifecycle, connect: async () => handler });
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
@@ -351,6 +361,7 @@ describe("persist", () => {
   it("should persist the wallet mngr", async () => {
     const enable = async () => enabledApi;
     const defaultApi = { enable, isEnabled: async () => true } as DefaultWalletApi;
+    const { DefaultWalletHandler } = await import("@/internal/handler");
     const handler = new DefaultWalletHandler(namiInfo, defaultApi, enabledApi, enable);
     const wallet = createWalletStore({ lifecycle, connect: async () => handler });
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
@@ -365,6 +376,7 @@ describe("cleanup", () => {
   it("should cleanup the wallet mngr", async () => {
     const enable = async () => enabledApi;
     const defaultApi = { enable, isEnabled: async () => true } as DefaultWalletApi;
+    const { DefaultWalletHandler } = await import("@/internal/handler");
     const handler = new DefaultWalletHandler(namiInfo, defaultApi, enabledApi, enable);
     const wallet = createWalletStore({ lifecycle, connect: async () => handler });
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
