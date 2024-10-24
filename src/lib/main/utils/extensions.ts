@@ -130,7 +130,7 @@ export async function getWindowCardano({
   function evaluate() {
     let result: DefaultWalletApi | WindowCardano | undefined = undefined;
 
-    if (key && key in window.cardano) {
+    if (key && typeof window.cardano === "object" && key in window.cardano) {
       const api = window.cardano[key];
       if (isDefaultWalletApi(api)) {
         result = api;

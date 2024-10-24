@@ -28,22 +28,22 @@ export function newInFlightSignal({ aborted = false } = {}): InFlightSignal {
 }
 
 export class InFlightManager {
-  constructor(private _inFlight = new Set<InFlightSignal>()) {}
+  constructor(public signals = new Set<InFlightSignal>()) {}
 
   add(signal: InFlightSignal = newInFlightSignal()): InFlightSignal {
-    this._inFlight.add(signal);
+    this.signals.add(signal);
     return signal;
   }
 
   remove(signal: InFlightSignal) {
-    this._inFlight.delete(signal);
+    this.signals.delete(signal);
   }
 
   abortAll() {
-    for (const inFlight of this._inFlight) {
+    for (const inFlight of this.signals) {
       inFlight.aborted = true;
     }
-    this._inFlight.clear();
+    this.signals.clear();
   }
 }
 
