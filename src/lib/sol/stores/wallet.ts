@@ -88,268 +88,288 @@ export type SolWalletStoreState<
 
 export type SolWalletStore = Store<SolWalletStoreState, WalletStorePersistData>;
 
+export type CreateSolWalletStoreOpts = {
+  lifecycle?: LifeCycleManager;
+  extensions?: typeof weldSol.extensions;
+  config?: typeof weldSol.config;
+};
+
 export const createSolWalletStore = createStoreFactory<
   SolWalletStoreState,
   WalletStorePersistData,
-  [] | [{ lifecycle?: LifeCycleManager }]
->((setState, getState, { lifecycle = new LifeCycleManager() } = {}) => {
-  const walletManager = new WalletStoreManager<SolWalletState>(
+  [] | [CreateSolWalletStoreOpts]
+>(
+  (
     setState,
     getState,
-    newSolWalletState,
-    async (key, opts) => {
-      // Make sure the extensions are loaded
-      weldSol.extensions.getState().updateExtensions();
-      const extension = weldSol.extensions.getState().installedMap.get(key);
-      const api = extension?.api;
+    {
+      lifecycle = new LifeCycleManager(),
+      extensions = weldSol.extensions,
+      config = weldSol.config,
+    } = {},
+  ) => {
+    const walletManager = new WalletStoreManager<SolWalletState>(
+      setState,
+      getState,
+      newSolWalletState,
+      async (key, opts) => {
+        // Make sure the extensions are loaded
+        extensions.getState().updateExtensions();
+        const extension = extensions.getState().installedMap.get(key);
+        const api = extension?.api;
 
-      await api?.connect();
+        await api?.connect();
 
-      if (!extension || !api?.publicKey) {
-        throw new WalletConnectionError(`The ${key} extension is not installed`);
-      }
-
-      if (opts.signal.aborted) {
-        throw new WalletConnectionAbortedError();
-      }
-
-      const publicKey = new PublicKey(api.publicKey.toBytes());
-
-      const connection = new Connection(
-        "https://solana-mainnet.g.alchemy.com/v2/sReIBMwUbvwelgkh1R1ay33uNmAk4Qu-",
-      ); // todo use config url
-
-      const updateState = async () => {
-        const balanceSmallestUnit = await connection.getBalance(publicKey);
-
-        const newState: Partial<ConnectedSolWalletState> = {
-          key: extension.info.key,
-          displayName: extension.info.displayName,
-          path: extension.info.path,
-          isConnected: true,
-          isConnecting: false,
-          isConnectingTo: undefined,
-          api: extension.api,
-          balanceSmallestUnit,
-          balance: lamportToSol(balanceSmallestUnit),
-          connection,
-          address: publicKey,
-        };
+        if (!extension || !api?.publicKey) {
+          throw new WalletConnectionError(`The ${key} extension is not installed`);
+        }
 
         if (opts.signal.aborted) {
-          return;
+          throw new WalletConnectionAbortedError();
         }
 
-        setState(newState);
-      };
+        const publicKey = new PublicKey(api.publicKey.toBytes());
 
-      return {
-        updateState,
-      };
-    },
-    "connectedWallet",
-    weldSol.config,
-    lifecycle,
-  ).on("beforeDisconnect", () => {
-    getState().api?.disconnect();
-  });
+        const endpoint =
+          config.getState().connectionUrl ??
+          "https://solana-mainnet.g.alchemy.com/v2/sReIBMwUbvwelgkh1R1ay33uNmAk4Qu-";
+        const connection = new Connection(endpoint);
 
-  const connectAsync: SolWalletApi["connectAsync"] = async (key, configOverrides) => {
-    await walletManager.disconnect();
-    return walletManager.connect(key, { configOverrides });
-  };
+        const updateState = async () => {
+          const balanceSmallestUnit = await connection.getBalance(publicKey);
 
-  const connect: SolWalletApi["connect"] = async (key, { onSuccess, onError, ...config } = {}) => {
-    connectAsync(key, config)
-      .then((wallet) => {
-        onSuccess?.(wallet);
-      })
-      .catch((error) => {
-        onError?.(error);
-      });
-  };
+          const newState: Partial<ConnectedSolWalletState> = {
+            key: extension.info.key,
+            displayName: extension.info.displayName,
+            path: extension.info.path,
+            isConnected: true,
+            isConnecting: false,
+            isConnectingTo: undefined,
+            api: extension.api,
+            balanceSmallestUnit,
+            balance: lamportToSol(balanceSmallestUnit),
+            connection,
+            address: publicKey,
+          };
 
-  const getTokenAccount = async (tokenAddress: string) => {
-    const { connection, address } = getState();
+          if (opts.signal.aborted) {
+            return;
+          }
 
-    if (!connection) throw new Error("Connection not initialized");
-    if (!address) throw new Error("Address not initialized");
+          setState(newState);
+        };
 
-    const accounts = await connection.getParsedTokenAccountsByOwner(address, {
-      mint: new PublicKey(tokenAddress),
+        return {
+          updateState,
+        };
+      },
+      "connectedWallet",
+      config,
+      lifecycle,
+    ).on("beforeDisconnect", () => {
+      getState().api?.disconnect();
     });
 
-    return {
-      account: accounts.value[0]?.account,
-      publicKey: accounts.value[0]?.pubkey.toBase58(),
+    const connectAsync: SolWalletApi["connectAsync"] = async (key, configOverrides) => {
+      await walletManager.disconnect();
+      return walletManager.connect(key, { configOverrides });
     };
-  };
 
-  const getTokenBalance = async (tokenAddress: string, options?: { formatted: boolean }) => {
-    const { connection, address } = getState();
+    const connect: SolWalletApi["connect"] = async (
+      key,
+      { onSuccess, onError, ...config } = {},
+    ) => {
+      connectAsync(key, config)
+        .then((wallet) => {
+          onSuccess?.(wallet);
+        })
+        .catch((error) => {
+          onError?.(error);
+        });
+    };
 
-    if (!connection) throw new Error("Connection not initialized");
-    if (!address) throw new Error("Address not initialized");
+    const getTokenAccount = async (tokenAddress: string) => {
+      const { connection, address } = getState();
 
-    if (tokenAddress) {
-      const { account } = await getTokenAccount(tokenAddress);
+      if (!connection) throw new Error("Connection not initialized");
+      if (!address) throw new Error("Address not initialized");
 
-      if (!account) return 0;
-
-      if (options?.formatted) return Number(account.data.parsed.info.tokenAmount.uiAmount);
-
-      return account.data.parsed.info.tokenAmount.amount;
-    }
-
-    const balance = await connection.getBalance(address);
-
-    if (options?.formatted) return balance / LAMPORTS_PER_SOL;
-    return balance;
-  };
-
-  const prepareTransaction = async (transaction: Transaction, options: SendOptions = {}) => {
-    const { connection, address } = getState();
-
-    if (!connection) throw new Error("Connection not initialized");
-
-    transaction.feePayer = transaction.feePayer || address;
-
-    if (!transaction.recentBlockhash) {
-      const { blockhash } = await connection.getLatestBlockhash({
-        commitment: options.preflightCommitment,
-        minContextSlot: options.minContextSlot,
+      const accounts = await connection.getParsedTokenAccountsByOwner(address, {
+        mint: new PublicKey(tokenAddress),
       });
 
-      transaction.recentBlockhash = blockhash;
-    }
+      return {
+        account: accounts.value[0]?.account,
+        publicKey: accounts.value[0]?.pubkey.toBase58(),
+      };
+    };
 
-    return transaction;
-  };
+    const getTokenBalance = async (tokenAddress: string, options?: { formatted: boolean }) => {
+      const { connection, address } = getState();
 
-  const send = async ({
-    to,
-    amount,
-    tokenAddress,
-  }: { to: string; amount: string; tokenAddress?: string }) => {
-    const { connection, api, address } = getState();
+      if (!connection) throw new Error("Connection not initialized");
+      if (!address) throw new Error("Address not initialized");
 
-    if (!connection) throw new Error("Connection not initialized");
-    if (!api) throw new Error("Api not initialized");
-    if (!address) throw new Error("Address not initialized");
+      if (tokenAddress) {
+        const { account } = await getTokenAccount(tokenAddress);
 
-    if (tokenAddress) {
-      const oldBuffer = window.Buffer;
-      try {
-        window.Buffer = Buffer;
+        if (!account) return 0;
 
-        const {
-          getAssociatedTokenAddress,
-          createAssociatedTokenAccountInstruction,
-          createTransferInstruction,
-        } = await import("@solana/spl-token");
+        if (options?.formatted) return Number(account.data.parsed.info.tokenAmount.uiAmount);
 
-        const tokenAccount = await getTokenAccount(tokenAddress);
+        return account.data.parsed.info.tokenAmount.amount;
+      }
 
-        if (!tokenAccount.account || !tokenAccount.publicKey) {
-          throw new Error("Token not found");
-        }
+      const balance = await connection.getBalance(address);
 
-        const balance = Number(tokenAccount.account.data.parsed.info.tokenAmount.uiAmount);
+      if (options?.formatted) return balance / LAMPORTS_PER_SOL;
+      return balance;
+    };
 
-        if (Number(amount) > balance) {
-          throw new Error("Insufficient balance");
-        }
+    const prepareTransaction = async (transaction: Transaction, options: SendOptions = {}) => {
+      const { connection, address } = getState();
 
-        const mintToken = new PublicKey(tokenAccount.account.data.parsed.info.mint);
-        const decimals = tokenAccount.account.data.parsed.info.tokenAmount.decimals ?? 0;
-        const recipientAddress = new PublicKey(to);
+      if (!connection) throw new Error("Connection not initialized");
 
-        const transactionInstructions: TransactionInstruction[] = [];
+      transaction.feePayer = transaction.feePayer || address;
 
-        const associatedTokenTo = await getAssociatedTokenAddress(mintToken, recipientAddress);
+      if (!transaction.recentBlockhash) {
+        const { blockhash } = await connection.getLatestBlockhash({
+          commitment: options.preflightCommitment,
+          minContextSlot: options.minContextSlot,
+        });
 
-        if (!(await connection.getAccountInfo(associatedTokenTo))) {
+        transaction.recentBlockhash = blockhash;
+      }
+
+      return transaction;
+    };
+
+    const send = async ({
+      to,
+      amount,
+      tokenAddress,
+    }: { to: string; amount: string; tokenAddress?: string }) => {
+      const { connection, api, address } = getState();
+
+      if (!connection) throw new Error("Connection not initialized");
+      if (!api) throw new Error("Api not initialized");
+      if (!address) throw new Error("Address not initialized");
+
+      if (tokenAddress) {
+        const oldBuffer = window.Buffer;
+        try {
+          window.Buffer = Buffer;
+
+          const {
+            getAssociatedTokenAddress,
+            createAssociatedTokenAccountInstruction,
+            createTransferInstruction,
+          } = await import("@solana/spl-token");
+
+          const tokenAccount = await getTokenAccount(tokenAddress);
+
+          if (!tokenAccount.account || !tokenAccount.publicKey) {
+            throw new Error("Token not found");
+          }
+
+          const balance = Number(tokenAccount.account.data.parsed.info.tokenAmount.uiAmount);
+
+          if (Number(amount) > balance) {
+            throw new Error("Insufficient balance");
+          }
+
+          const mintToken = new PublicKey(tokenAccount.account.data.parsed.info.mint);
+          const decimals = tokenAccount.account.data.parsed.info.tokenAmount.decimals ?? 0;
+          const recipientAddress = new PublicKey(to);
+
+          const transactionInstructions: TransactionInstruction[] = [];
+
+          const associatedTokenTo = await getAssociatedTokenAddress(mintToken, recipientAddress);
+
+          if (!(await connection.getAccountInfo(associatedTokenTo))) {
+            transactionInstructions.push(
+              createAssociatedTokenAccountInstruction(
+                address,
+                associatedTokenTo,
+                recipientAddress,
+                mintToken,
+              ),
+            );
+          }
+
+          const multi = 10 ** decimals;
+          const realAmount = Number(amount) * multi;
+
           transactionInstructions.push(
-            createAssociatedTokenAccountInstruction(
-              address,
+            createTransferInstruction(
+              new PublicKey(tokenAccount.publicKey),
               associatedTokenTo,
-              recipientAddress,
-              mintToken,
+              address,
+              realAmount,
             ),
           );
+
+          const transaction = new Transaction().add(...transactionInstructions);
+
+          const preparedTransaction = await prepareTransaction(transaction);
+
+          const { signature } = await api.signAndSendTransaction(preparedTransaction);
+
+          return signature;
+        } finally {
+          window.Buffer = oldBuffer;
         }
-
-        const multi = 10 ** decimals;
-        const realAmount = Number(amount) * multi;
-
-        transactionInstructions.push(
-          createTransferInstruction(
-            new PublicKey(tokenAccount.publicKey),
-            associatedTokenTo,
-            address,
-            realAmount,
-          ),
-        );
-
-        const transaction = new Transaction().add(...transactionInstructions);
-
-        const preparedTransaction = await prepareTransaction(transaction);
-
-        const { signature } = await api.signAndSendTransaction(preparedTransaction);
-
-        return signature;
-      } finally {
-        window.Buffer = oldBuffer;
       }
-    }
-    const balance = getState().balance ?? 0;
+      const balance = getState().balance ?? 0;
 
-    if (Number(amount) > balance) {
-      throw new Error("Insufficient balance");
-    }
+      if (Number(amount) > balance) {
+        throw new Error("Insufficient balance");
+      }
 
-    let transaction = new Transaction().add(
-      SystemProgram.transfer({
-        fromPubkey: address,
-        toPubkey: new PublicKey(to),
-        lamports: Number(amount) * LAMPORTS_PER_SOL,
-      }),
-    );
+      let transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: address,
+          toPubkey: new PublicKey(to),
+          lamports: Number(amount) * LAMPORTS_PER_SOL,
+        }),
+      );
 
-    transaction = await prepareTransaction(transaction as Transaction);
+      transaction = await prepareTransaction(transaction as Transaction);
 
-    const { signature } = await api.signAndSendTransaction(transaction);
+      const { signature } = await api.signAndSendTransaction(transaction);
 
-    return signature;
-  };
+      return signature;
+    };
 
-  const disconnect = () => {
-    return walletManager.disconnect();
-  };
+    const disconnect = () => {
+      return walletManager.disconnect();
+    };
 
-  const __init = () => {
-    walletManager.init({ initialState });
-  };
+    const __init = () => {
+      walletManager.init({ initialState });
+    };
 
-  const __persist = (data?: WalletStorePersistData) => {
-    walletManager.persist({ initialState }, data);
-  };
+    const __persist = (data?: WalletStorePersistData) => {
+      walletManager.persist({ initialState }, data);
+    };
 
-  const __cleanup = () => {
-    walletManager.cleanup();
-  };
+    const __cleanup = () => {
+      walletManager.cleanup();
+    };
 
-  const initialState: SolWalletStoreState & StoreSetupFunctions = {
-    ...newSolWalletState(),
-    connect,
-    connectAsync,
-    disconnect,
-    getTokenBalance,
-    send,
-    __init,
-    __cleanup,
-    __persist,
-  };
+    const initialState: SolWalletStoreState & StoreSetupFunctions = {
+      ...newSolWalletState(),
+      connect,
+      connectAsync,
+      disconnect,
+      getTokenBalance,
+      send,
+      __init,
+      __cleanup,
+      __persist,
+    };
 
-  return initialState as SolWalletStoreState;
-});
+    return initialState as SolWalletStoreState;
+  },
+);

@@ -56,31 +56,35 @@ export type ConfigApi = {
 };
 
 export type ConfigStoreState = WeldConfig & ConfigApi;
-export type ConfigStore = Store<ConfigStoreState>;
+export type ConfigStore<TConfigStoreState extends ConfigStoreState = ConfigStoreState> =
+  Store<TConfigStoreState>;
 
-export const createConfigStore = createStoreFactory<ConfigStoreState>((setState, getState) => {
-  const update: ConfigApi["update"] = (values) => {
-    setState({
-      ...getState(),
-      ...values,
-      wallet: {
-        ...getState().wallet,
-        ...values.wallet,
-      },
-      extensions: {
-        ...getState().extensions,
-        ...values.extensions,
-      },
-    });
-  };
+export const createConfigStore = <
+  TConfigStoreState extends ConfigStoreState = ConfigStoreState,
+>() =>
+  createStoreFactory<TConfigStoreState>((setState, getState) => {
+    const update: ConfigApi["update"] = (values) => {
+      setState({
+        ...getState(),
+        ...values,
+        wallet: {
+          ...getState().wallet,
+          ...values.wallet,
+        },
+        extensions: {
+          ...getState().extensions,
+          ...values.extensions,
+        },
+      });
+    };
 
-  const getPersistedValue: ConfigApi["getPersistedValue"] = (key): string | undefined => {
-    return getState().storage.get(key) ?? undefined;
-  };
+    const getPersistedValue: ConfigApi["getPersistedValue"] = (key): string | undefined => {
+      return getState().storage.get(key) ?? undefined;
+    };
 
-  return {
-    ...initialConfigState,
-    update,
-    getPersistedValue,
-  };
-});
+    return {
+      ...initialConfigState,
+      update,
+      getPersistedValue,
+    } as TConfigStoreState;
+  })();
