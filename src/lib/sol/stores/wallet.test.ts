@@ -2,7 +2,7 @@ import { LifeCycleManager } from "@/internal/lifecycle";
 import { WalletConnectionAbortedError } from "@/lib/main";
 import { createConfigStore } from "@/lib/main/stores/config";
 import { LAMPORTS_PER_SOL, clusterApiUrl } from "@solana/web3.js";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SolConfig, SolExtensionInfo } from "../types";
 import { createSolExtensionsStore } from "./extensions";
 import { createSolWalletStore } from "./wallet";
@@ -16,14 +16,18 @@ const supportedExtension: SolExtensionInfo = {
   path: "phantom.solana",
 };
 
+const secondWalletAddress = "DmrsbqsvqhN2nrDsvcC5doXENCvggsxTxw5GvYvvpd7t";
 const weldTestTokenAddress = "HhRSKz8cQruqoC4MfPjwrd57DVudshPhx8RXa5NVVf67";
 const tokenBalanceLamports = 1000000000000000000n;
 const tokenBalanceSol = tokenBalanceLamports / BigInt(LAMPORTS_PER_SOL);
+const signature = "a_signature";
 
 const publicKeyBytes = Uint8Array.from([
   27, 245, 253, 95, 185, 95, 232, 136, 100, 224, 148, 51, 194, 98, 149, 47, 221, 73, 24, 156, 127,
   46, 65, 230, 189, 44, 146, 206, 218, 188, 212, 169,
 ]);
+
+const signAndSendTransactionSpy = vi.fn();
 
 beforeEach(() => {
   // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
@@ -31,13 +35,29 @@ beforeEach(() => {
     solana: {
       publicKey: { toBytes: () => publicKeyBytes },
       connect: async () => {},
+      signAndSendTransaction: async (...params: unknown[]) => {
+        signAndSendTransactionSpy(...params);
+        return { signature };
+      },
     },
   };
+  signAndSendTransactionSpy.mockReset();
   vi.resetAllMocks();
 });
 
 afterEach(() => {
   lifecycle.cleanup();
+});
+
+beforeAll(() => {
+  const originalHasInstance = Uint8Array[Symbol.hasInstance];
+  Object.defineProperty(Uint8Array, Symbol.hasInstance, {
+    value(potentialInstance: unknown) {
+      return (
+        originalHasInstance.call(this, potentialInstance) || Buffer.isBuffer(potentialInstance)
+      );
+    },
+  });
 });
 
 function newTestStores() {
@@ -113,8 +133,34 @@ describe("send", () => {
   it("should send currency with the appropriate units", async () => {
     const { wallet } = newTestStores();
     await wallet.getState().connectAsync(walletKey);
-    console.log("balance sol", wallet.getState().balanceSol);
-    // const res = await wallet.getState().send({ to: "recipient", amount: "2", unit: "sol" });
+    const res = await wallet.getState().send({
+      to: secondWalletAddress,
+      amount: "2",
+      unit: "sol",
+    });
+    expect(signAndSendTransactionSpy).toHaveBeenCalledOnce();
+    expect(signAndSendTransactionSpy).toHaveBeenLastCalledWith(res.transaction);
+    expect(res.signature).toBe(signature);
+    const res2 = await wallet.getState().send({
+      to: secondWalletAddress,
+      amount: "2",
+      unit: "lamport",
+    });
+    expect(signAndSendTransactionSpy).toHaveBeenCalledTimes(2);
+    expect(signAndSendTransactionSpy).toHaveBeenLastCalledWith(res2.transaction);
+    expect(res2.signature).toBe(signature);
+  });
+
+  it("should send tokens", async () => {
+    const { wallet } = newTestStores();
+    await wallet.getState().connectAsync(walletKey);
+    const res = await wallet.getState().send({
+      to: secondWalletAddress,
+      amount: "2",
+      unit: weldTestTokenAddress,
+    });
+    expect(res.signature).toBe(signature);
+    expect(res.transaction.instructions.length).toBe(2);
   });
 });
 

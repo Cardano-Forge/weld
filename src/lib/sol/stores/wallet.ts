@@ -1,6 +1,5 @@
 import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
-
 import type { PartialWithDiscriminant } from "@/internal/utils/types";
 import {
   type DefaultWalletStoreProps,
@@ -80,7 +79,7 @@ export type SolWalletApi = {
     config?: Partial<WalletConfig>,
   ) => Promise<ConnectedSolWalletState>;
   disconnect(): void;
-  send(opts: SolSendOpts): Promise<string>;
+  send(opts: SolSendOpts): Promise<{ transaction: Transaction; signature: string }>;
   getTokenBalance(tokenAddress: string, opts?: { unit?: SolUnit }): Promise<bigint>;
 };
 
@@ -265,19 +264,15 @@ export const createSolWalletStore = createStoreFactory<
         throw new Error("Insufficient funds");
       }
 
-      let transaction = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey: address,
-          toPubkey: new PublicKey(to),
-          lamports,
-        }),
-      );
-
-      transaction = await prepareTransaction(transaction as Transaction);
-
+      const instruction = SystemProgram.transfer({
+        fromPubkey: address,
+        toPubkey: new PublicKey(to),
+        lamports,
+      });
+      const transaction = await prepareTransaction(new Transaction().add(instruction));
       const { signature } = await api.signAndSendTransaction(transaction);
 
-      return signature;
+      return { transaction, signature };
     };
 
     const sendTokens = async (to: string, tokenAddress: string, amount: bigint) => {
@@ -305,8 +300,8 @@ export const createSolWalletStore = createStoreFactory<
       const transactionInstructions: TransactionInstruction[] = [];
 
       const associatedTokenTo = await getAssociatedTokenAddress(mintToken, recipientAddress);
-
-      if (!(await connection.getAccountInfo(associatedTokenTo))) {
+      const info = await connection.getAccountInfo(associatedTokenTo);
+      if (!info) {
         transactionInstructions.push(
           createAssociatedTokenAccountInstruction(
             address,
@@ -335,7 +330,7 @@ export const createSolWalletStore = createStoreFactory<
 
       const { signature } = await api.signAndSendTransaction(preparedTransaction);
 
-      return signature;
+      return { transaction, signature };
     };
 
     const send = async (opts: SolSendOpts) => {
