@@ -41,7 +41,7 @@ export const createExtensionsStore = createStoreFactory<
 >(
   (
     setState,
-    getState,
+    _getState,
     {
       config = weld.config,
       lifecycle = new LifeCycleManager(),
@@ -59,7 +59,8 @@ export const createExtensionsStore = createStoreFactory<
         console.log("[WELD] Extensions state update");
       }
       try {
-        if (getState()?.isFetching || signal?.aborted) {
+        if (signal?.aborted) {
+          stop?.();
           return;
         }
         setState({ isFetching: true });

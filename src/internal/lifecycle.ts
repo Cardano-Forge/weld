@@ -20,11 +20,15 @@ export class SubscriptionManager {
 }
 
 export type InFlightSignal = {
+  id: string;
   aborted: boolean;
 };
 
-export function newInFlightSignal({ aborted = false } = {}): InFlightSignal {
-  return { aborted };
+export function newInFlightSignal({
+  id = crypto.randomUUID(),
+  aborted = false,
+} = {}): InFlightSignal {
+  return { id, aborted };
 }
 
 export class InFlightManager {
