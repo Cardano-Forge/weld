@@ -155,9 +155,7 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
 
       return newState as Extract<TProps, { isConnected: true }>;
     } catch (error) {
-      if (error instanceof WalletDisconnectAccountError) {
-        await this.disconnect();
-      }
+      await this.disconnect();
       throw error;
     } finally {
       this._lifecycle.inFlight.remove(signal);
