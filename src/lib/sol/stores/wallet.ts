@@ -172,7 +172,7 @@ export const createSolWalletStore = createStoreFactory<
           updateState,
         };
       },
-      "connectedWallet",
+      "connectedSolWallet",
       config,
       lifecycle,
     ).on("beforeDisconnect", () => {
