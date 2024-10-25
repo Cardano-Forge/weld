@@ -2,11 +2,20 @@ import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
 
 import type { PartialWithDiscriminant } from "@/internal/utils/types";
+import {
+  type DefaultWalletStoreProps,
+  WalletStoreManager,
+  type WalletStorePersistData,
+} from "@/internal/wallet-store";
 import { WalletConnectionAbortedError, WalletConnectionError } from "@/lib/main";
 import type { WalletConfig } from "@/lib/main/stores/config";
 import {
+  createAssociatedTokenAccountInstruction,
+  createTransferInstruction,
+  getAssociatedTokenAddress,
+} from "@solana/spl-token";
+import {
   Connection,
-  LAMPORTS_PER_SOL,
   PublicKey,
   type SendOptions,
   SystemProgram,
@@ -18,24 +27,20 @@ import {
   type SolApi,
   type SolExtensionInfo,
   type SolExtensionKey,
+  type SolTokenAddress,
+  type SolUnit,
   defaultSolConnectionEndpoint,
+  isSolUnit,
 } from "../types";
-import { lamportToSol } from "../utils";
-
-import { Buffer } from "buffer";
-import {
-  type DefaultWalletStoreProps,
-  WalletStoreManager,
-  type WalletStorePersistData,
-} from "@/internal/wallet-store";
+import { lamportToSol, solToLamport } from "../utils";
 
 export type SolWalletProps = DefaultWalletStoreProps &
   SolExtensionInfo & {
     isConnected: boolean;
     isConnecting: boolean;
     isConnectingTo: SolExtensionKey | undefined;
-    balanceSmallestUnit: number;
-    balance: number;
+    balanceLamports: bigint;
+    balanceSol: bigint;
     api: SolApi;
     connection: Connection;
     address: PublicKey;
@@ -49,8 +54,8 @@ function newSolWalletState(): PartialWithDiscriminant<SolWalletProps, "isConnect
     isConnected: false,
     isConnecting: false,
     isConnectingTo: undefined,
-    balanceSmallestUnit: undefined,
-    balance: undefined,
+    balanceLamports: undefined,
+    balanceSol: undefined,
     api: undefined,
     connection: undefined,
     address: undefined,
@@ -62,6 +67,12 @@ export type ConnectSolWalletCallbacks = {
   onError(error: unknown): void;
 };
 
+export type SolSendOpts = {
+  to: string;
+  amount: number | bigint | string;
+  unit?: SolUnit | SolTokenAddress;
+};
+
 export type SolWalletApi = {
   connect(key: SolExtensionKey, config?: Partial<WalletConfig & ConnectSolWalletCallbacks>): void;
   connectAsync: (
@@ -69,12 +80,8 @@ export type SolWalletApi = {
     config?: Partial<WalletConfig>,
   ) => Promise<ConnectedSolWalletState>;
   disconnect(): void;
-  send({
-    to,
-    amount,
-    tokenAddress,
-  }: { to: string; amount: string; tokenAddress?: string }): Promise<string>;
-  getTokenBalance(tokenAddress: string, options?: { formatted: boolean }): Promise<string>;
+  send(opts: SolSendOpts): Promise<string>;
+  getTokenBalance(tokenAddress: string, opts?: { unit?: SolUnit }): Promise<bigint>;
 };
 
 export type SolWalletState<TKeys extends keyof SolWalletProps = keyof SolWalletProps> =
@@ -139,7 +146,7 @@ export const createSolWalletStore = createStoreFactory<
         const connection = new Connection(endpoint);
 
         const updateState = async () => {
-          const balanceSmallestUnit = await connection.getBalance(publicKey);
+          const balanceSmallestUnit = BigInt(await connection.getBalance(publicKey));
 
           const newState: Partial<ConnectedSolWalletState> = {
             key: extension.info.key,
@@ -149,8 +156,8 @@ export const createSolWalletStore = createStoreFactory<
             isConnecting: false,
             isConnectingTo: undefined,
             api: extension.api,
-            balanceSmallestUnit,
-            balance: lamportToSol(balanceSmallestUnit),
+            balanceLamports: balanceSmallestUnit,
+            balanceSol: lamportToSol(balanceSmallestUnit),
             connection,
             address: publicKey,
           };
@@ -207,29 +214,30 @@ export const createSolWalletStore = createStoreFactory<
       };
     };
 
-    const getTokenBalance = async (tokenAddress: string, options?: { formatted: boolean }) => {
+    const getTokenBalance = async (
+      tokenAddress: string,
+      { unit = "lamport" }: { unit?: SolUnit } = {},
+    ): Promise<bigint> => {
       const { connection, address } = getState();
 
       if (!connection) throw new Error("Connection not initialized");
       if (!address) throw new Error("Address not initialized");
 
-      if (tokenAddress) {
-        const { account } = await getTokenAccount(tokenAddress);
-
-        if (!account) return 0;
-
-        if (options?.formatted) return Number(account.data.parsed.info.tokenAmount.uiAmount);
-
-        return account.data.parsed.info.tokenAmount.amount;
+      const { account } = await getTokenAccount(tokenAddress);
+      if (!account) {
+        return 0n;
       }
 
-      const balance = await connection.getBalance(address);
+      const balanceLamports = account.data.parsed.info.tokenAmount.amount;
 
-      if (options?.formatted) return balance / LAMPORTS_PER_SOL;
-      return balance;
+      if (unit === "lamport") {
+        return BigInt(balanceLamports);
+      }
+
+      return lamportToSol(balanceLamports);
     };
 
-    const prepareTransaction = async (transaction: Transaction, options: SendOptions = {}) => {
+    const prepareTransaction = async (transaction: Transaction, opts: SendOptions = {}) => {
       const { connection, address } = getState();
 
       if (!connection) throw new Error("Connection not initialized");
@@ -238,8 +246,8 @@ export const createSolWalletStore = createStoreFactory<
 
       if (!transaction.recentBlockhash) {
         const { blockhash } = await connection.getLatestBlockhash({
-          commitment: options.preflightCommitment,
-          minContextSlot: options.minContextSlot,
+          commitment: opts.preflightCommitment,
+          minContextSlot: opts.minContextSlot,
         });
 
         transaction.recentBlockhash = blockhash;
@@ -248,93 +256,20 @@ export const createSolWalletStore = createStoreFactory<
       return transaction;
     };
 
-    const send = async ({
-      to,
-      amount,
-      tokenAddress,
-    }: { to: string; amount: string; tokenAddress?: string }) => {
-      const { connection, api, address } = getState();
-
-      if (!connection) throw new Error("Connection not initialized");
-      if (!api) throw new Error("Api not initialized");
-      if (!address) throw new Error("Address not initialized");
-
-      if (tokenAddress) {
-        const oldBuffer = window.Buffer;
-        try {
-          window.Buffer = Buffer;
-
-          const {
-            getAssociatedTokenAddress,
-            createAssociatedTokenAccountInstruction,
-            createTransferInstruction,
-          } = await import("@solana/spl-token");
-
-          const tokenAccount = await getTokenAccount(tokenAddress);
-
-          if (!tokenAccount.account || !tokenAccount.publicKey) {
-            throw new Error("Token not found");
-          }
-
-          const balance = Number(tokenAccount.account.data.parsed.info.tokenAmount.uiAmount);
-
-          if (Number(amount) > balance) {
-            throw new Error("Insufficient balance");
-          }
-
-          const mintToken = new PublicKey(tokenAccount.account.data.parsed.info.mint);
-          const decimals = tokenAccount.account.data.parsed.info.tokenAmount.decimals ?? 0;
-          const recipientAddress = new PublicKey(to);
-
-          const transactionInstructions: TransactionInstruction[] = [];
-
-          const associatedTokenTo = await getAssociatedTokenAddress(mintToken, recipientAddress);
-
-          if (!(await connection.getAccountInfo(associatedTokenTo))) {
-            transactionInstructions.push(
-              createAssociatedTokenAccountInstruction(
-                address,
-                associatedTokenTo,
-                recipientAddress,
-                mintToken,
-              ),
-            );
-          }
-
-          const multi = 10 ** decimals;
-          const realAmount = Number(amount) * multi;
-
-          transactionInstructions.push(
-            createTransferInstruction(
-              new PublicKey(tokenAccount.publicKey),
-              associatedTokenTo,
-              address,
-              realAmount,
-            ),
-          );
-
-          const transaction = new Transaction().add(...transactionInstructions);
-
-          const preparedTransaction = await prepareTransaction(transaction);
-
-          const { signature } = await api.signAndSendTransaction(preparedTransaction);
-
-          return signature;
-        } finally {
-          window.Buffer = oldBuffer;
-        }
+    const sendLamports = async (to: string, lamports: bigint) => {
+      const { address, api, balanceLamports = 0n } = getState();
+      if (!address || !api) {
+        throw new Error("Not connected");
       }
-      const balance = getState().balance ?? 0;
-
-      if (Number(amount) > balance) {
-        throw new Error("Insufficient balance");
+      if (lamports > (balanceLamports ?? 0n)) {
+        throw new Error("Insufficient funds");
       }
 
       let transaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: address,
           toPubkey: new PublicKey(to),
-          lamports: Number(amount) * LAMPORTS_PER_SOL,
+          lamports,
         }),
       );
 
@@ -343,6 +278,76 @@ export const createSolWalletStore = createStoreFactory<
       const { signature } = await api.signAndSendTransaction(transaction);
 
       return signature;
+    };
+
+    const sendTokens = async (to: string, tokenAddress: string, amount: bigint) => {
+      const { connection, api, address } = getState();
+      if (!connection || !api || !address) {
+        throw new Error("Not connected");
+      }
+
+      const tokenAccount = await getTokenAccount(tokenAddress);
+
+      if (!tokenAccount.account || !tokenAccount.publicKey) {
+        throw new Error("Token not found");
+      }
+
+      const balance = Number(tokenAccount.account.data.parsed.info.tokenAmount.uiAmount);
+
+      if (amount > balance) {
+        throw new Error("Insufficient balance");
+      }
+
+      const mintToken = new PublicKey(tokenAccount.account.data.parsed.info.mint);
+      const decimals = tokenAccount.account.data.parsed.info.tokenAmount.decimals ?? 0;
+      const recipientAddress = new PublicKey(to);
+
+      const transactionInstructions: TransactionInstruction[] = [];
+
+      const associatedTokenTo = await getAssociatedTokenAddress(mintToken, recipientAddress);
+
+      if (!(await connection.getAccountInfo(associatedTokenTo))) {
+        transactionInstructions.push(
+          createAssociatedTokenAccountInstruction(
+            address,
+            associatedTokenTo,
+            recipientAddress,
+            mintToken,
+          ),
+        );
+      }
+
+      const factor = BigInt(10 ** decimals);
+      const realAmount = amount * factor;
+
+      transactionInstructions.push(
+        createTransferInstruction(
+          new PublicKey(tokenAccount.publicKey),
+          associatedTokenTo,
+          address,
+          realAmount,
+        ),
+      );
+
+      const transaction = new Transaction().add(...transactionInstructions);
+
+      const preparedTransaction = await prepareTransaction(transaction);
+
+      const { signature } = await api.signAndSendTransaction(preparedTransaction);
+
+      return signature;
+    };
+
+    const send = async (opts: SolSendOpts) => {
+      const amount = BigInt(opts.amount);
+      const unit = opts.unit ?? "lamports";
+
+      if (isSolUnit(unit)) {
+        const amountLamports = unit === "lamport" ? amount : solToLamport(amount);
+        return sendLamports(opts.to, amountLamports);
+      }
+
+      return sendTokens(opts.to, unit, amount);
     };
 
     const disconnect = () => {

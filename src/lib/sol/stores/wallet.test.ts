@@ -1,7 +1,7 @@
 import { LifeCycleManager } from "@/internal/lifecycle";
 import { WalletConnectionAbortedError } from "@/lib/main";
 import { createConfigStore } from "@/lib/main/stores/config";
-import { clusterApiUrl } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, clusterApiUrl } from "@solana/web3.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SolConfig, SolExtensionInfo } from "../types";
 import { createSolExtensionsStore } from "./extensions";
@@ -17,6 +17,8 @@ const supportedExtension: SolExtensionInfo = {
 };
 
 const weldTestTokenAddress = "HhRSKz8cQruqoC4MfPjwrd57DVudshPhx8RXa5NVVf67";
+const tokenBalanceLamports = 1000000000000000000n;
+const tokenBalanceSol = tokenBalanceLamports / BigInt(LAMPORTS_PER_SOL);
 
 const publicKeyBytes = Uint8Array.from([
   27, 245, 253, 95, 185, 95, 232, 136, 100, 224, 148, 51, 194, 98, 149, 47, 221, 73, 24, 156, 127,
@@ -57,7 +59,7 @@ describe("connectAsync", () => {
   it("should connect to valid installed wallets successfully", async () => {
     const { wallet } = newTestStores();
     const connected = await wallet.getState().connectAsync(walletKey);
-    expect(connected.balance).toBeGreaterThan(0);
+    expect(connected.balanceSol).toBeGreaterThan(0);
   });
 
   it("should fail connection when is aborted", async () => {
@@ -81,18 +83,39 @@ describe("connectAsync", () => {
 });
 
 describe("getTokenBalance", () => {
-  it("should return the token balance", async () => {
+  it("should return the token balance in lamports as a bigint", async () => {
     const { wallet } = newTestStores();
     await wallet.getState().connectAsync(walletKey);
     const state = wallet.getState();
     expect(state.isConnected).toBe(true);
     const balance = await state.getTokenBalance(weldTestTokenAddress);
-    expect(BigInt(balance)).toBeGreaterThan(0n);
+    expect(typeof balance).toBe("bigint");
+    expect(balance).toBe(tokenBalanceLamports);
+  });
+
+  it("should return the token balance in sol as a bigint", async () => {
+    const { wallet } = newTestStores();
+    await wallet.getState().connectAsync(walletKey);
+    const state = wallet.getState();
+    expect(state.isConnected).toBe(true);
+    const balance = await state.getTokenBalance(weldTestTokenAddress, { unit: "sol" });
+    expect(typeof balance).toBe("bigint");
+    expect(balance).toBe(tokenBalanceSol);
   });
 });
 
 describe("send", () => {
-  it("should", () => {});
+  it("should fail when wallet isn't connected", async () => {
+    const { wallet } = newTestStores();
+    await expect(() => wallet.getState().send({ to: "to", amount: "1" })).rejects.toThrow();
+  });
+
+  it("should send currency with the appropriate units", async () => {
+    const { wallet } = newTestStores();
+    await wallet.getState().connectAsync(walletKey);
+    console.log("balance sol", wallet.getState().balanceSol);
+    // const res = await wallet.getState().send({ to: "recipient", amount: "2", unit: "sol" });
+  });
 });
 
 describe("disconnect", () => {

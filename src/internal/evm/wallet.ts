@@ -35,8 +35,8 @@ export type EvmWalletProps = DefaultWalletStoreProps &
     isConnected: boolean;
     isConnecting: boolean;
     isConnectingTo: EvmExtensionKey | undefined;
-    balanceWei: bigint;
-    balanceEth: string;
+    balanceSmallestUnit: bigint;
+    balance: string;
     api: EvmApi;
     provider: BrowserProvider;
     signer: JsonRpcSigner;
@@ -51,8 +51,8 @@ function newEvmWalletState(): PartialWithDiscriminant<EvmWalletProps, "isConnect
     isConnected: false,
     isConnecting: false,
     isConnectingTo: undefined,
-    balanceWei: undefined,
-    balanceEth: undefined,
+    balanceSmallestUnit: undefined,
+    balance: undefined,
     api: undefined,
     provider: undefined,
     signer: undefined,
@@ -138,7 +138,7 @@ export const createEvmWalletStore = createStoreFactory<
         // Get the signer (which is the first account connected)
         const signer = await provider.getSigner();
         const address = await signer.getAddress();
-        const balanceWei = await provider.getBalance(address);
+        const balanceSmallestUnit = await provider.getBalance(address);
 
         const newState: Partial<ConnectedEvmWalletState> = {
           ...extension.info,
@@ -146,8 +146,8 @@ export const createEvmWalletStore = createStoreFactory<
           isConnecting: false,
           isConnectingTo: undefined,
           api: extension.api,
-          balanceWei,
-          balanceEth: formatEther(balanceWei),
+          balanceSmallestUnit,
+          balance: formatEther(balanceSmallestUnit),
           provider,
           signer,
           address,
@@ -243,9 +243,9 @@ export const createEvmWalletStore = createStoreFactory<
       return tx.hash;
     }
 
-    const balanceWei = getState().balanceWei;
+    const balanceSmallestUnit = getState().balanceSmallestUnit;
     const value = parseEther(amount.toString()) as BigNumberish;
-    if (!balanceWei || balanceWei < BigInt(value)) {
+    if (!balanceSmallestUnit || balanceSmallestUnit < BigInt(value)) {
       throw new Error("Insufficient balance");
     }
 

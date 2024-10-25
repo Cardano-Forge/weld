@@ -69,3 +69,11 @@ export const SOL_EXTENSIONS = [
 export type SolExtensionKey = (typeof SOL_EXTENSIONS)[number]["key"];
 
 export type SolConfig = WeldConfig & { connectionEndpoint?: string };
+
+export const solUnits = ["lamport", "sol"] as const;
+export type SolUnit = (typeof solUnits)[number];
+export function isSolUnit(obj?: unknown): obj is SolUnit {
+  return typeof obj === "string" && solUnits.includes(obj as SolUnit);
+}
+
+export type SolTokenAddress = string;

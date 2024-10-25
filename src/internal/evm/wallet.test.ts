@@ -157,8 +157,8 @@ describe("connectAsync", () => {
     expect(connected.displayName).toBe(supportedExtension.displayName);
     expect(connected.path).toBe(supportedExtension.path);
     expect(connected.api).toBe(api);
-    expect(connected.balanceWei).toBe(balanceWei);
-    expect(connected.balanceEth).toBe(balanceEth);
+    expect(connected.balanceSmallestUnit).toBe(balanceWei);
+    expect(connected.balance).toBe(balanceEth);
     expect(connected.address).toBe(address);
     expect(connected.provider).toBeInstanceOf(BrowserProvider);
     expect(connected.signer.getAddress()).resolves.toBe(address);
@@ -216,8 +216,8 @@ describe("connect", () => {
           expect(connected.displayName).toBe(supportedExtension.displayName);
           expect(connected.path).toBe(supportedExtension.path);
           expect(connected.api).toBe(api);
-          expect(connected.balanceWei).toBe(balanceWei);
-          expect(connected.balanceEth).toBe(balanceEth);
+          expect(connected.balanceSmallestUnit).toBe(balanceWei);
+          expect(connected.balance).toBe(balanceEth);
           expect(connected.address).toBe(address);
           expect(connected.provider).toBeInstanceOf(BrowserProvider);
           expect(connected.signer.getAddress()).resolves.toBe(address);
