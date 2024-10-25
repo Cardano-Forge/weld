@@ -1,7 +1,12 @@
 import { setupAutoUpdate } from "@/internal/auto-update";
 import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
 import type { MaybePromise, PartialWithDiscriminant } from "@/internal/utils/types";
-import { type WalletConfig, createConfigStore } from "@/lib/main/stores/config";
+import {
+  type ConfigStore,
+  type WalletConfig,
+  type WeldConfig,
+  createConfigStore,
+} from "@/lib/main/stores/config";
 import { WalletConnectionAbortedError } from "@/lib/main/utils/errors";
 import { STORAGE_KEYS } from "@/lib/server";
 
@@ -64,7 +69,9 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
       updateState: () => MaybePromise<void>;
     }>,
     private _walletStorageKey: keyof typeof STORAGE_KEYS,
-    private _configStore = createConfigStore(),
+    private _configStore:
+      | ConfigStore
+      | ConfigStore<Omit<WeldConfig, "customWallets">> = createConfigStore(),
     private _lifecycle = new LifeCycleManager(),
     private _subscriptions = newWalletStoreManagerSubscriptions(),
   ) {}

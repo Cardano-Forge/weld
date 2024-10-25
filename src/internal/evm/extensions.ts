@@ -3,8 +3,14 @@ import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/inte
 
 import { setupAutoUpdate } from "@/internal/auto-update";
 import { get } from "@/internal/utils/get";
-import { weldEth } from "@/lib/eth";
-import { type EvmApi, type EvmExtension, type EvmExtensionInfo, isEvmApi } from "./types";
+import type { ConfigStore } from "@/lib/main/stores/config";
+import {
+  type EvmApi,
+  type EvmConfig,
+  type EvmExtension,
+  type EvmExtensionInfo,
+  isEvmApi,
+} from "./types";
 
 export type EvmExtensionsProps = {
   installedArr: EvmExtension[];
@@ -26,11 +32,16 @@ function newInitialEvmState(): EvmExtensionsProps {
   };
 }
 
+export type EvmExtensionsStoreConfig = {
+  extensions: readonly EvmExtensionInfo[];
+  config: ConfigStore<EvmConfig>;
+};
+
 export const createEvmExtensionsStore = createStoreFactory<
   EvmExtensionsState,
   undefined,
-  [readonly EvmExtensionInfo[]] | [readonly EvmExtensionInfo[], { lifecycle?: LifeCycleManager }]
->((setState, _getState, supportedExtensionInfos, { lifecycle = new LifeCycleManager() } = {}) => {
+  [EvmExtensionsStoreConfig] | [EvmExtensionsStoreConfig, { lifecycle?: LifeCycleManager }]
+>((setState, _getState, { extensions, config }, { lifecycle = new LifeCycleManager() } = {}) => {
   const cache = new Map<EvmApi, EvmExtension>();
 
   const updateExtensions = ({ caching = true } = {}) => {
@@ -38,7 +49,7 @@ export const createEvmExtensionsStore = createStoreFactory<
       return;
     }
     const newState = newInitialEvmState();
-    for (const info of supportedExtensionInfos) {
+    for (const info of extensions) {
       const api = get(window, info.path);
       if (!isEvmApi(api)) {
         continue;
@@ -58,7 +69,7 @@ export const createEvmExtensionsStore = createStoreFactory<
 
   const __init = () => {
     updateExtensions();
-    setupAutoUpdate(() => updateExtensions(), lifecycle, weldEth.config);
+    setupAutoUpdate(() => updateExtensions(), lifecycle, config);
   };
 
   const __cleanup = () => {

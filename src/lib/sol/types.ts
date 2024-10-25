@@ -68,7 +68,7 @@ export const SOL_EXTENSIONS = [
 
 export type SolExtensionKey = (typeof SOL_EXTENSIONS)[number]["key"];
 
-export type SolConfig = WeldConfig & { connectionEndpoint?: string };
+export type SolConfig = Omit<WeldConfig, "customWallets"> & { connectionEndpoint?: string };
 
 export const solUnits = ["lamport", "sol"] as const;
 export type SolUnit = (typeof solUnits)[number];

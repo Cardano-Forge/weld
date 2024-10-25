@@ -1,9 +1,11 @@
+import { createConfigStore } from "@/lib/main/stores/config";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LifeCycleManager } from "../lifecycle";
 import { createEvmExtensionsStore } from "./extensions";
 import type { EvmExtensionInfo } from "./types";
 
 const lifecycle = new LifeCycleManager();
+const config = createConfigStore();
 
 const setupAutoUpdateStopSpy = vi.hoisted(() => vi.fn());
 const setupAutoUpdateSpy = vi.hoisted(() => vi.fn());
@@ -38,7 +40,7 @@ describe("updateExtensions", () => {
       displayName: "Metamask",
       path: "ethereum",
     };
-    const store = createEvmExtensionsStore([supported], { lifecycle });
+    const store = createEvmExtensionsStore({ extensions: [supported], config }, { lifecycle });
     store.getState().updateExtensions();
     expect(store.getState().installedArr.length).toBe(1);
     expect(store.getState().installedArr.find((ext) => ext.info.key === supported.key)?.info).toBe(
@@ -54,7 +56,7 @@ describe("updateExtensions", () => {
       displayName: "Not found",
       path: "nowhere.to.be.found",
     };
-    const store = createEvmExtensionsStore([supported], { lifecycle });
+    const store = createEvmExtensionsStore({ extensions: [supported], config }, { lifecycle });
     store.getState().updateExtensions();
     expect(store.getState().installedArr.length).toBe(0);
     expect(store.getState().installedMap.size).toBe(0);
@@ -67,7 +69,7 @@ describe("updateExtensions", () => {
       path: "invalid",
     };
     (window as unknown as Record<string, unknown>).invalid = { invalid: "api" };
-    const store = createEvmExtensionsStore([supported], { lifecycle });
+    const store = createEvmExtensionsStore({ extensions: [supported], config }, { lifecycle });
     store.getState().updateExtensions();
     expect(store.getState().installedArr.length).toBe(0);
     expect(store.getState().installedMap.size).toBe(0);
@@ -80,7 +82,7 @@ describe("updateExtensions", () => {
       displayName: "Metamask",
       path: "ethereum",
     };
-    const store = createEvmExtensionsStore([supported], { lifecycle });
+    const store = createEvmExtensionsStore({ extensions: [supported], config }, { lifecycle });
     store.getState().updateExtensions();
     const fromArr1 = store.getState().installedArr.find((ext) => ext.info === supported);
     expect(fromArr1).not.toBeUndefined();
@@ -102,7 +104,7 @@ describe("updateExtensions", () => {
       displayName: "Metamask",
       path: "ethereum",
     };
-    const store = createEvmExtensionsStore([supported], { lifecycle });
+    const store = createEvmExtensionsStore({ extensions: [supported], config }, { lifecycle });
     store.getState().updateExtensions();
     const fromArr1 = store.getState().installedArr.find((ext) => ext.info === supported);
     expect(fromArr1).not.toBeUndefined();
@@ -127,13 +129,13 @@ describe("init", () => {
       displayName: "Metamask",
       path: "ethereum",
     };
-    const store = createEvmExtensionsStore([supported], { lifecycle });
+    const store = createEvmExtensionsStore({ extensions: [supported], config }, { lifecycle });
     store.init();
     expect(store.getState().installedArr.length).toBe(1);
   });
 
   it("should setup auto updates", () => {
-    const store = createEvmExtensionsStore([], { lifecycle });
+    const store = createEvmExtensionsStore({ extensions: [], config }, { lifecycle });
     store.init();
     expect(setupAutoUpdateSpy).toHaveBeenCalledOnce();
   });
@@ -142,7 +144,7 @@ describe("init", () => {
 describe("cleanup", () => {
   it("should cleanup the lifecycle", () => {
     vi.spyOn(lifecycle, "cleanup");
-    const store = createEvmExtensionsStore([], { lifecycle });
+    const store = createEvmExtensionsStore({ extensions: [], config }, { lifecycle });
     store.cleanup();
     expect(lifecycle.cleanup).toHaveBeenCalledOnce();
   });

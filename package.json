@@ -27,15 +27,30 @@
       "require": "./sol.cjs",
       "types": "./sol.d.ts"
     },
+    "./sol/react": {
+      "import": "./sol-react.js",
+      "require": "./sol-react.cjs",
+      "types": "./sol-react.d.ts"
+    },
     "./eth": {
       "import": "./eth.js",
       "require": "./eth.cjs",
       "types": "./eth.d.ts"
     },
+    "./eth/react": {
+      "import": "./eth-react.js",
+      "require": "./eth-react.cjs",
+      "types": "./eth-react.d.ts"
+    },
     "./poly": {
       "import": "./poly.js",
       "require": "./poly.cjs",
       "types": "./poly.d.ts"
+    },
+    "./poly/react": {
+      "import": "./poly-react.js",
+      "require": "./poly-react.cjs",
+      "types": "./poly-react.d.ts"
     }
   },
   "files": ["**"],

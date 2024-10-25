@@ -3,7 +3,7 @@ import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/inte
 
 import { setupAutoUpdate } from "@/internal/auto-update";
 import { get } from "@/internal/utils/get";
-import { weldEth } from "@/lib/eth";
+import { weldSol } from ".";
 import {
   SOL_EXTENSIONS,
   type SolApi,
@@ -35,12 +35,23 @@ function newInitialSolState(): SolExtensionsProps {
 export const createSolExtensionsStore = createStoreFactory<
   SolExtensionsState,
   undefined,
-  [] | [{ supportedExtensionInfos?: SolExtensionInfo[]; lifecycle?: LifeCycleManager }]
+  | []
+  | [
+      {
+        supportedExtensionInfos?: SolExtensionInfo[];
+        lifecycle?: LifeCycleManager;
+        config?: typeof weldSol.config;
+      },
+    ]
 >(
   (
     setState,
     _getState,
-    { supportedExtensionInfos = SOL_EXTENSIONS, lifecycle = new LifeCycleManager() } = {},
+    {
+      supportedExtensionInfos = SOL_EXTENSIONS,
+      lifecycle = new LifeCycleManager(),
+      config = weldSol.config,
+    } = {},
   ) => {
     const cache = new Map<SolApi, SolExtension>();
 
@@ -69,7 +80,7 @@ export const createSolExtensionsStore = createStoreFactory<
 
     const __init = () => {
       updateExtensions();
-      setupAutoUpdate(() => updateExtensions(), lifecycle, weldEth.config);
+      setupAutoUpdate(() => updateExtensions(), lifecycle, config);
     };
 
     const __cleanup = () => {

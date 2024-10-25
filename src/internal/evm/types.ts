@@ -1,4 +1,5 @@
 import type { EthExtensionKey } from "@/lib/eth";
+import type { WeldConfig } from "@/lib/main/stores/config";
 import type { PolyExtensionKey } from "@/lib/poly";
 import type { Eip1193Provider } from "ethers";
 
@@ -27,3 +28,5 @@ export type EvmExtension = {
 };
 
 export type EvmExtensionKey = EthExtensionKey | PolyExtensionKey;
+
+export type EvmConfig = Omit<WeldConfig, "customWallets">;

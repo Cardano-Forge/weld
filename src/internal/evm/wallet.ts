@@ -3,6 +3,7 @@ import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/inte
 
 import {
   type EvmApi,
+  type EvmConfig,
   type EvmExtensionInfo,
   type EvmExtensionKey,
   evmChainIds,
@@ -99,7 +100,7 @@ export type EvmWalletStore = Store<EvmWalletStoreState, WalletStorePersistData>;
 export type EvmWalletStoreOptions = {
   chain: keyof typeof evmChainIds;
   extensions: EvmExtensionsStore;
-  config: ConfigStore;
+  config: ConfigStore<EvmConfig>;
   storageKey: keyof typeof STORAGE_KEYS;
 };
 

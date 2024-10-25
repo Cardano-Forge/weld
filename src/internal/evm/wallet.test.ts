@@ -135,8 +135,11 @@ afterEach(() => {
 });
 
 function newTestStores() {
-  const extensions = createEvmExtensionsStore([supportedExtension], { lifecycle });
   const config = createConfigStore();
+  const extensions = createEvmExtensionsStore(
+    { extensions: [supportedExtension], config },
+    { lifecycle },
+  );
   const wallet = createEvmWalletStore(
     {
       chain,
