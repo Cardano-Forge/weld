@@ -72,7 +72,27 @@ You can pass callbacks to handle success and error cases:
 
 ```tsx
 const connect = useWallet("connect");
-const handle;
+
+connect("nami", {
+  onSuccess: wallet => {
+    console.log("Connected to", wallet.displayName);
+  },
+  onError: error => {
+    console.error("Failed to connect wallet", error);
+  },
+});
+```
+
+`connectAsync` returns a promise that resolves with the connected wallet or rejects in case of an error:
+
+```tsx
+const connectAsync = useWallet("connectAsync");
+
+try {
+  const wallet = await connectAsync("nami"):
+} catch (error) {
+  console.error("Failed to connect wallet", error);
+}
 ```
 
 #### Retrieve Connected Wallet Info
@@ -95,6 +115,29 @@ if (wallet.isConected) {
 const displayedBalance = useWallet(s => s.balanceAda?.toFixed(2) ?? "-");
 ```
 
+#### Interacting with the Wallet
+
+You can interact with the currently connected wallet through the `handler` instance:
+
+```tsx
+const wallet = useWallet("isConnected", "handler");
+
+const interact = async () => {
+  if (!wallet.isConnected) {
+    return;
+  }
+  const utxos = await wallet.handler.getUtxos();
+  const res = await wallet.handler.signTx("[TX_HASH]");
+};
+```
+
+#### Disconnecting the Wallet
+
+```tsx
+const disconnect = useWallet("disconnect");
+const onDisconnect = () => disconnect();
+```
+
 #### Retrieving Wallet Extensions
 
 You can retrieve the user's installed wallet extensions by using the `useExtensions` hook.
@@ -112,9 +155,9 @@ const state = useExtensions("isLoading", "allArr");
 if (state.isLoading) return "Loading...";
 return (
   <ul>
-    {state.allArr.map(ext => {
-      return <li key={ext.info.key}>{ext.info.displayName}</li>;
-    })}
+    {state.allArr.map(ext => (
+      <li key={ext.info.key}>{ext.info.displayName}</li>
+    ))}
   </ul>
 );
 ```
@@ -125,7 +168,7 @@ Extensions are automatically updated following Weld's configuration options.
 
 These options can be changed through the Weld provider:
 
-````tsx
+```tsx
 return (
   <WeldProvider
     extensions={{
@@ -136,76 +179,181 @@ return (
     {children}
   </WeldProvider>
 );
+```
 
 You can also trigger an update manually through the store's API:
+
 ```tsx
 const updateExtensions = useExtensions("update");
 const onWalletPickerOpen = () => updateExtensions();
-````
-
-````
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-```tsx
-export function App() {
-    // A single property can be passed to `useWallet` to be returned directly
-    const isConnected = useWallet("isConnected");
-
-    // Multiple properties can be passed to `useWallet` to be returned in an object
-    const wallet = useWallet("isConnected", "balanceAda");
-
-    // The wallet store has smart type definitions that provide a nice DX
-    wallet.balanceAda; // inferred as `number | undefined`
-    if (wallet.isConnected) {
-        wallet.balanceAda; // inferred as `number`
-    }
-
-    // A predicate function can be passed to `useWallet` to derive values from the store state.
-    // Note: Predicate functions are executed on every store state change but the result
-    //       is memoized and re-renders occur only when this result changes
-    const displayedBalance = useWallet(s => s.balanceAda?.toFixed(2) ?? "-");
-
-    // `useWallet` can be called without any arguments in which case the entire
-    // store state gets returned.
-    // However, this means that any change to the store will cause a re-render,
-    // which is why it's preferred to select only the data you need
-    // using one of the previously mentioned strategies.
-    const wallet = useWallet();
-
-    // `useExtensions` works the exact same way as `useWallet` does
-    const installedExtensions = useExtensions("installedArr");
-    const extensions = useExtensions("isLoading", "installedArr");
-    const installedExtensions = useExtensions(s => s.installedArr);
-    const extensions = useExtensions();
-
-    return null;
-}
-````
+```
 
 ## Concepts
 
 ### Universal Reactive Stores
 
-todo
+Weld's reactive system is built to prevent useless work by allowing you to subscribe to specific parts of a store's state.
+
+When using React.js bindings, this is done by passing predicate functions or attribute selectors to the different hooks:
+
+```tsx
+// A single property can be passed to `useWallet` to be returned directly
+const isConnected = useWallet("isConnected");
+
+// Multiple properties can be passed to `useWallet` to be returned in an object
+const wallet = useWallet("isConnected", "balanceAda");
+
+// The wallet store has smart type definitions that provide a nice DX
+wallet.balanceAda; // inferred as `number | undefined`
+if (wallet.isConnected) {
+  wallet.balanceAda; // inferred as `number`
+}
+
+// A predicate function can be passed to `useWallet` to derive values from the store state.
+// Note: Predicate functions are executed on every store state change but the result
+//       is memoized and re-renders occur only when this result changes
+const displayedBalance = useWallet(s => s.balanceAda?.toFixed(2) ?? "-");
+
+// `useWallet` can be called without any arguments in which case the entire
+// store state gets returned.
+// However, this means that any change to the store will cause a re-render,
+// which is why it's preferred to select only the data you need
+// using one of the previously mentioned strategies.
+const wallet = useWallet();
+```
+
+When using stores directly, listeners can be registered by calling the `subscribeWithSelector` and `subscribe` functions.
+
+### Error handling
+
+When using Weld, two types of errors can occur: **synchronous** errors and **asynchronous** ones.
+
+#### Synchronous errors
+
+Synchronous errors occur when you call wallet handler functions or `connectAsync`.
+
+It's up to you to handle them using try/catch blocks.
+
+#### Asynchronous errors
+
+Asynchronous errors are the ones that occur during side effects like polling updates.
+Since they can occur anywhere and at any point, these errors cannot be caught by a try catch so we don't throw them as errors to prevent uncaught failure rejections.
+
+The provider wraps the asynchronous error events that are related to the current wallet and allows you to pass callbacks to handle them when they occur:
+
+```tsx
+<WeldProvider
+  onUpdateError={(context, error) => handleError(context, error)}
+  extensions={{ onUpdateError: error => handleError(error) }}
+  wallet={{ onUpdateError: error => handleError(error) }}
+>
+  {children}
+</WeldProvider>
+```
 
 ### Wallet Connection Persistence
 
-todo
+Weld offers a flexible interface for managing wallet connection persistence.
+In most cases, you shouldn't need to use this feature as it's automatically handled by the wallet store.
 
-### Error handling
+```typescript
+weld.wallet.subscribeWithSelector(
+  state => state.key,
+  key => {
+    if (key) {
+      defaults.storage.set("connectedWallet", key);
+    } else {
+      defaults.storage.remove("connectedWallet");
+    }
+  }
+);
+```
+
+#### Automatic reconnection
+
+When using the library, an attempt will be made to reconnect the persisted wallet on first mount.
+
+If you disable the persistence feature, you can still use the `getPersistedValue` helper function to retrieve the persisted wallet and connect it during the initialization of your app.
+
+```typescript
+function initFunction() {
+  const lastConnectedWallet = getPersistedValue("weld_connected-wallet");
+  if (lastConnectedWallet) {
+    weld.wallet.getState().connect(lastConnectedWallet);
+  }
+}
+```
+
+_Note: `getPersistedValue` always returns `undefined` when persistence is disabled._
+
+#### Configuration
+
+By default, the user's wallet connection is persisted in a cookie to allow support for SSR.
+This behavior can be customized by updating the configuration store to provide a different [Storage](https://developer.mozilla.org/en-US/docs/Web/API/Storage) interface.
+
+Here’s how to customize the persistence using the WeldProvider:
+
+```tsx
+import { WeldProvider } from "@ada-anvil/weld/react";
+
+export default function RootLayout({ children }) {
+  return (
+    <WeldProvider
+      storage={{
+        get(key) {
+          return window.localStorage.getItem(key) ?? undefined;
+        },
+        set(key, value) {
+          if (typeof window !== "undefined") {
+            window.localStorage.setItem(key, value);
+          }
+        },
+        remove(key) {
+          if (typeof window !== "undefined") {
+            window.localStorage.removeItem(key);
+          }
+        },
+      }}
+    >
+      {children}
+    </WeldProvider>
+  );
+}
+```
+
+Here’s an example using the default configuration.
+
+```typescript
+weld.config.getState().update({
+  storage: {
+    get(key) {
+      if (typeof window !== "undefined") {
+        return window.localStorage.getItem(key) ?? undefined;
+      }
+    },
+    set(key, value) {
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(key, value);
+      }
+    },
+    remove(key) {
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem(key);
+      }
+    },
+  },
+});
+```
+
+The persistence features can be disabled through the configuration store:
+
+```typescript
+weld.config.getState().update({
+  enablePersistence: false,
+});
+```
+
+_Note: When using a SSR framework, make sure to set configuration options inside a client side file_
 
 ## Cross-Chain Support
 
