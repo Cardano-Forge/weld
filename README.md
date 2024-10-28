@@ -6,7 +6,9 @@
   <h3 align="center">Universal Wallet Connector</h3>
 
   <p align="center">
-    The last wallet connector you will need!
+    Manage wallet connections across multiple 
+    <br />
+    blockchains using a single intuitive interface 
     <br />
     <a href="https://github.com/Cardano-Forge/weld/issues/new?labels=bug&template=bug-report.md">Report Bug</a>
     ·
@@ -17,393 +19,362 @@
 ## Table of Contents
 
 - [Table of Contents](#table-of-contents)
-- [Introduction](#introduction)
-  - [Why Another Wallet Connector?](#why-another-wallet-connector)
-  - [What's New?](#whats-new)
-  - [What's not new](#whats-not-new)
-- [Get started](#get-started)
-  - [Weld provider](#weld-provider)
-- [Usage](#usage)
-  - [Wallet connection](#wallet-connection)
-  - [Error handling](#error-handling)
-    - [Synchronous errors](#synchronous-errors)
-    - [Asynchronous errors](#asynchronous-errors)
-  - [Reactive variable](#reactive-variable)
-  - [Other methods](#other-methods)
-- [Selectors](#selectors)
-- [Persistence](#persistence)
-  - [Automatic reconnection](#automatic-reconnection)
-  - [Configuration](#configuration)
-- [Usage with Next.js](#usage-with-nextjs)
-- [Examples](#examples)
-- [Wallet hook exports](#wallet-hook-exports)
-  - [Variables](#variables)
-  - [Methods](#methods)
-- [Other JS Frameworks](#other-js-frameworks)
-  - [Vue.js](#vuejs)
-  - [Svelte](#svelte)
 
-## Introduction
+## About
 
-### Why Another Wallet Connector?
+## Getting Started
 
-As developers, we aim to concentrate on our applications and objectives. However, while working with Cardano's dApps, we encountered several issues, such as:
+### Installation
 
-- Account changes causing crashes
-- Network changes occurring without the front-end's awareness
-- Most wallets not handling disconnections properly
-- The hassle of tracking the wallet address, stake address, and network in real-time
-- Ultimately, we want a solution that simply works
+```bash
+npm install @ada-anvil/weld
+```
 
-### What's New?
+### Usage
 
-We aim to bridge the gap between our ideal dApp functionalities and the current market offerings by:
+Since [React.js](https://react.dev/) is the most widely used frontend framework in the Web3 sphere, Weld provides bindings that make its integration straightforward.
 
-- Standardizing usage across different wallets
-- Implementing reactive variables for addresses, stake address, network, utxos and balance
-- Make a reactive system that can be used with or without any frontend frameworks
+_If you're looking to integrate Weld with another framework, please refer to the [section](#cross-framework-support) below._
 
-### What's not new
+First, make sure all required dependencies are installed:
+```bash
+npm install @ada-anvil/weld react
+```
 
-Basic functions remain accessible through the library. Our goal is not to complicate the process, but to streamline the implementation of the default wallet API.
-By making wallets reactive throught subscribable stores, we aim to enhance clarity and transparency regarding the activities on the dApp side.
-
-## Get started
-
-### React provider
-
-After installing the library, wrap your React app within the `WeldProvider`.
-
-```typescript
-import React from "react";
-import ReactDOM from "react-dom/client";
+Then, wrap your entire application within the `WeldProvider`:
+```tsx
 import { WeldProvider } from "@ada-anvil/weld/react";
 import { App } from "./app";
 
-const root = document.querySelector("#root");
-
-if (root) {
-  ReactDOM.createRoot(root).render(
-    <React.StrictMode>
+      export function Index() {
+      return (
       <WeldProvider>
         <App />
-      </WeldProvider>
-    </React.StrictMode>
-  );
-}
+      </WeldProvider> 
+      );
+          }
+``` 
+
+Now, you can interact with the library through custom hooks from anywhere in your application.
+```tsx
+import { useWallet, useExtensions } from "@ada-anvil/weld/react";
 ```
 
-## Usage
+#### Connecting a Wallet
+`useWallet` exposes two wallet connection functions: `connect` and `connectAsync`. 
 
-Here are common use cases for this library.
+`connect` doesn't return anything and is guaranteed to never throw.
+You can pass callbacks to handle success and error cases:
+```tsx
+const connect = useWallet("connect");
+const handle
+```
 
-### Wallet connection
+#### Retrieve Connected Wallet Info 
+Info about the connection state and the currently connected wallet can be obtained from the `useWallet` hook: 
+```tsx
+const wallet = useWallet("isConnected", "displayName", "balanceAda");
 
-Use the exported `SUPPORTED_WALLETS` constant to display known wallets that are supported by the library, whether they are installed on the user's system or not
-Additionally, you can use the `useExtensions` hook to retrive only the extensions that are installed on the user's system.
+
+    wallet.displayName; // string | undefined
+    wallet.balanceAda; // number | undefined
+
+// Because of Weld's powerful type inference, `isConnected` can be used 
+// as a type guard to narrow down the other properies' type!
+if (wallet.isConected) {
+    wallet.displayName; // string
+    wallet.balanceAda; // number
+    }
+
+    const displayedBalance = useWallet(s => s.balanceAda?.toFixed(2) ?? "-");
+```
+
+#### Retrieving Wallet Extensions
+You can retrieve the user's installed wallet extensions by using the `useExtensions` hook.
 
 ```tsx
-// Extensions are exported as Maps to facilitate single access:
-const supportedExtensions = useExtensions((s) => s.supportedMap);
-const unsupportedExtensions = useExtensions((s) => s.unsupportedMap);
-const allExtensions = useExtensions((s) => s.allMap);
+const supportedArr = useExtensions("supportedArr");
+const names = supportedArr.map(ext => ext.info.displayName);
 
-const nami = allExtensions.get("nami");
+const supportedMap = useExtensions("supportedArr");
+const name = supportedMap.get("nami")?.info.displayName; 
 
-// ...and as Arrays to facilitate looping
+const hasInstalledExtensions = useExtensions(s => s.allArr.length > 0);
 
-const supportedExtensions = useExtensions((s) => s.supportedArr);
-const unsupportedExtensions = useExtensions((s) => s.unsupportedArr);
-const allExtensions = useExtensions((s) => s.allArr);
-
-for (const extension of allExtensions) {
-  console.log("extension", extension);
-}
+const state = useExtensions("isLoading", "allArr");
+if (state.isLoading) return "Loading..."; 
+return (
+<ul>
+{state.allArr.map(ext => { 
+    return <li key={ext.info.key}>{ext.info.displayName}</li> 
+    }
+    )}
+    </ul> 
+    );
 ```
 
-You will be able to connect the wallet using one of the two connect functions exported from the `useWallet` hook.
+#### Updating Wallet Extensions
+Extensions are automatically updated following Weld's configuration options.
+
+These options can be changed through the Weld provider:
 
 ```tsx
-const walletHook = useWallet();
+return (
+  <WeldProvider
+    extensions={{
+      updateOnWindowFocus: false,
+      updateInterval: 30_000,
+    }}
+  >
+    {children}
+  </WeldProvider>
+);
 
-walletHook.connect(key);
+You can also trigger an update manually through the store's API:
+```tsx
+const updateExtensions = useExtensions("update");
+const onWalletPickerOpen = () => updateExtensions();
+```
+```
 
-// or
 
-try {
-  const wallet = await walletHook.connectAsync(key);
-} catch (error) {
-  // Handle connection error
+
+
+
+
+
+
+
+
+
+
+
+
+
+```tsx
+export function App() {
+    // A single property can be passed to `useWallet` to be returned directly
+    const isConnected = useWallet("isConnected");
+
+    // Multiple properties can be passed to `useWallet` to be returned in an object 
+    const wallet = useWallet("isConnected", "balanceAda");
+
+    // The wallet store has smart type definitions that provide a nice DX
+    wallet.balanceAda; // inferred as `number | undefined`
+    if (wallet.isConnected) {
+        wallet.balanceAda; // inferred as `number`
+    }
+
+    // A predicate function can be passed to `useWallet` to derive values from the store state.
+    // Note: Predicate functions are executed on every store state change but the result
+    //       is memoized and re-renders occur only when this result changes
+    const displayedBalance = useWallet(s => s.balanceAda?.toFixed(2) ?? "-");
+
+    // `useWallet` can be called without any arguments in which case the entire
+    // store state gets returned.
+    // However, this means that any change to the store will cause a re-render,
+    // which is why it's preferred to select only the data you need
+    // using one of the previously mentioned strategies. 
+    const wallet = useWallet();
+
+    // `useExtensions` works the exact same way as `useWallet` does
+    const installedExtensions = useExtensions("installedArr");
+    const extensions = useExtensions("isLoading", "installedArr");
+    const installedExtensions = useExtensions(s => s.installedArr);
+    const extensions = useExtensions();
+
+    return null;
 }
 ```
 
-See [this implementation](documentationkcommons/wallet-dialog/index.tsx) for a use case example.
+## Concepts
+
+### Universal Reactive Stores
+todo
+
+### Wallet Connection Persistence
+todo
 
 ### Error handling
 
-When using Weld, two types of errors can occur: **synchronous** errors and **asynchronous** ones.
+## Cross-Chain Support
 
-#### Synchronous errors
+Weld supports managing wallets and extensions across multiple blockchains.
+Currently, Weld integrates with the following chains: 
+- [Cardano](#getting-started)
+- [Ethereum](#usage-with-ethereum)
+- [Polygon](#usage-with-polygon)
+- [Solana](#usage-with-solana)
 
-You can use one of two functions to connect a wallet using the `useWallet` React hook.
-If you just want to trigger the connection flow and don't care about the result, use the `connect` function, which is guaranteed to never throw:
+###  Usage with Ethereum
+[Ethereum](https://ethereum.org/en/)
 
+###  Usage with Polygon
+[Polygon](https://polygon.technology/)
+
+### Usage with Solana
+[Solana](https://solana.com/)
+
+## Cross-Framework Support
+Weld is built with flexibility in mind and as such can be used with any frontend framework or even pure JavaScript. 
+
+Here are some examples of how Weld can be integrated with popular modern frameworks.
+
+_If you're looking to integrate Weld with React.js, please refer to our in depth [tutorial](#usage) above._
+
+#### Usage with Svelte 
+You can easily integrate Weld with Svelte by leveraging the [context](https://svelte.dev/docs/svelte/context) API and by delegating fine-grained reactivity to the [\$state](https://svelte.dev/docs/svelte/$state) rune. 
+
+First, create a `.svelte.ts` file containing the context: 
 ```typescript
-const walletHook = useWallet();
-// Doesn't return the wallet and never throws
-walletHook.connect(key);
-```
+import { weld, type WeldConfig } from "@ada-anvil/weld";
+import { getContext, setContext } from "svelte";
 
-You can pass callbacks to the `connect` function to handle success and error cases:
+export class Weld {
+  // Use the $state rune to create a reactive object for each Weld store 
+  config = $state(weld.config.getState());
+  wallet = $state(weld.wallet.getState());
+  extensions = $state(weld.extensions.getState());
 
-```typescript
-const walletHook = useWallet();
+  constructor(persist?: Partial<WeldConfig>) {
+    weld.config.getState().update({ updateInterval: 2000 });
+    if (persist) weld.persist(persist);
+    $effect(() => {
+      weld.init();
+      // Subscribe to Weld stores and update reactive objects when changse occur
+      // Note: No need to use subscribeWithSelector as $state objects are deeply reactive
+      weld.config.subscribe((s) => (this.config = s));
+      weld.wallet.subscribe((s) => (this.wallet = s));
+      weld.extensions.subscribe((s) => (this.extensions = s));
+      return () => weld.cleanup();
+    });
+  }
+}
 
-walletHook.connect(key, {
-  onSuccess(wallet) {
-    console.log("wallet", wallet);
-  },
-  onError(error) {
-    console.log("error", error);
-  },
-});
-```
+// Use the context API to scope weld stores and prevent unwanted sharing
+// of data between clients when rendering on the server
 
-See [this implementation](documentation/commons/wallet-dialog/index.tsx) for a use case example.
+const weldKey = Symbol("weld");
 
-Alternatively, you can use the `connectAsync` function, which returns a promise containing the wallet handler and throws errors when they occur.
+export function setWeldContext(persist?: Partial<WeldConfig>) {
+  const value = new Weld(persist);
+  setContext(weldKey, value);
+  return value;
+}
 
-```typescript
-const walletHook = useWallet();
-
-try {
-  const wallet = await walletHook.connectAsync(key);
-  console.log("wallet", wallet);
-} catch (error) {
-  console.log("error", error);
+export function getWeldContext() {
+  return getContext<ReturnType<typeof setWeldContext>>(weldKey);
 }
 ```
 
-#### Asynchronous errors
-
-Asynchronous errors are the ones that occur during side effects like polling updates.
-Since they can occur anywhere and at any point, these errors cannot be caught by a try catch so we don't throw them as errors to prevent uncaught failure rejections.
-
-The provider wraps the asynchronous error events that are related to the current wallet and allows you to pass callbacks to handle them without having to manage the event subscriptions manually:
-
-```tsx
-<WeldProvider
-  onUpdateError={(context, error) => handleError(context, error)}
-  extensions={{ onUpdateError: (error) => handleError(error) }}
-  wallet={{ onUpdateError: (error) => handleError(error) }}
->
-  {children}
-</WeldProvider>
+Then, initialize the context **once** at the root of your app:
+```html
+<script>
+  import { setWeldContext } from "./weld.svelte.ts";
+  setWeldContext();
+</script>
 ```
 
-### Reactive variable
+Finally, use the context anywhere in your application:
+```html
+<script>
+  import { getWeldContext } from "./weld.svelte.ts";
+  const weld = getWeldContext();
+  const displayedBalance = $derived(weld.wallet.balanceAda?.toFixed(2) ?? "-");
+</script>
 
-This very simple example would not be a real use case. But it shows that those values would be automatically updated if they are changing.
-This might seems trivial, but right now the default wallets API does not allow to achieve this easily.
-A valid use case for reactive variables are the connect button on a website header where the wallet icon is usally displayed as well as the balance.
-
-This simple example may not reflect a practical use case, yet it demonstrates how these values are automatically updated upon change.
-While this may seem trivial, achieving this is not straightforward with the current default wallets API.
-
-A pertinent application for reactive variables would be the connect button on a website's header, where the wallet icon and balance are typically displayed.
-
-```tsx
-export const App = () => {
-  const wallet = useWallet();
-
-  if (!wallet.isConnected) return <></>;
-
-  return (
-    <>
-      <div>Connected to {wallet.displayName}</div>
-      <div>Stake address: {wallet.stakeAddressBech32}</div>
-      <div>Change address: {wallet.changeAddressBech32}</div>
-      <div>Network: {wallet.networkId}</div>
-      <div>Lovelace: {wallet.balanceLovelace}</div>
-    </>
-  );
-};
+<div>Balance: {displayedBalance}</div>
 ```
 
-### Other methods
+#### Usage with Vanilla JavaScript
+Weld can be used without any framework. Here's an example of how you can leverage Weld's reactivity system in pure html and JavaScript:
+```html
+<!DOCTYPE html>
+<html lang="en">
 
-All default API functions are accessible and can be utilized via the `wallet.handler` class. If a function is unavailable, you can retrieve the default API by invoking the `wallet.handler.getDefaultApi` method.
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weld x Vanilla JavaScript</title>
+</head>
 
-```tsx
-const wallet = useWallet();
+<body>
+  <main>
+    <section>
+      <h2>Wallets</h2>
+      <ul id="wallets"></ul>
+    </section>
+    <section>
+      <h2>Connection</h2>
+      Connecting to <span id="connecting-to">-</span><br />
+      Connected to <span id="connected-to">-</span><br />
+      Balance <span id="balance">-</span><br />
+      <button onclick="window.Weld.wallet.getState().connect('nami')">Connect nami</button>
+    </section>
+  </main>
+  
+  <script>
+    function init() {
+      window.Weld.config.getState().update({ debug: true });
 
-await wallet.handler.signTx("YOUR_TX", true);
-```
+      window.Weld.extensions.subscribeWithSelector(s => s.allArr, exts => {
+        const list = document.querySelector("#wallets");
+        for (const ext of exts) {
+          const item = document.createElement("li");
+          item.textContent = ext.info.displayName;
+          list?.appendChild(item);
+        }
+      });
 
-See [this implementation](documentation/examples/d-other-methods/app.tsx) for a use case example.
+      window.Weld.wallet.subscribeWithSelector(s => s.isConnectingTo, isConnectingTo => {
+        document.querySelector("#connecting-to").textContent = isConnectingTo ?? "-";
+      });
 
-## Selectors
+      window.Weld.wallet.subscribeWithSelector(s => s.displayName, displayName => {
+        document.querySelector("#connected-to").textContent = displayName ?? "-";
+      });
 
-Ract state selectors are functions or hooks that help manage and access specific parts of a component's state.
-They allow you to efficiently retrieve and update only the necessary pieces of state within a component,
-**reducing the need for re-rendering the entire component tree** when changes occur.
-By using state selectors, you can **optimize performance** by ensuring that only the relevant parts of the UI are updated, improving responsiveness and efficiency.
-This targeted state management makes your application more maintainable and scalable, as it prevents unnecessary computations and enhances overall performance.
+      window.Weld.wallet.subscribeWithSelector(s => s.balanceAda, balance => {
+        document.querySelector("#balance").textContent = balance?.toFixed(2) ?? "-";
+      });
 
-> It is crucial to keep the state minimal and derive additional values from it whenever possible.
+      window.addEventListener("load", () => {
+        window.Weld.init();
+      });
 
-### Basic selector concepts
-
-Getting a single value
-
-```typescript
-const displayName = useWallet("displayName");
-
-// or
-
-const displayName = useWallet((state) => state.displayName);
-```
-
-Getting multiple values
-
-```typescript
-const { displayName, icon } = useWallet("displayName", "icon");
-
-// or
-
-const { displayName, icon } = useWallet((state) => ({
-  displayName: state.displayName,
-  icon: state.icon,
-}));
-```
-
-### Deriving data with selectors
-
-Deriving data can be helpful for simple tasks such as formatting the ADA balance, as shown in this [example](documentation/examples/b-simple-wallet-connect/app.tsx)
-
-```typescript
-const balance = useWallet((state) => state.balanceAda?.toFixed(2) ?? "-");
-```
-
-It can also be used to create custom states, as demonstrated in our [example](documentation/commons/wallet-dialog/wallet-btn.tsx).
-
-```typescript
-const wallet = useWallet((s) => ({
-  isConnectingTo: s.isConnectingTo,
-  isConnectingToNami: s.isConnectingTo === "nami",
-}));
-```
-
-## Persistence
-
-Weld offers a flexible interface for managing wallet connection persistence.
-In most cases, you shouldn't need to use this feature as it's automatically handled by the wallet store.
-
-```typescript
-weld.wallet.subscribeWithSelector(
-  (state) => state.key,
-  (key) => {
-    if (key) {
-      defaults.storage.set("connectedWallet", key);
-    } else {
-      defaults.storage.remove("connectedWallet");
+      window.addEventListener("unload", () => {
+        window.Weld.cleanup();
+      });
     }
-  }
-);
+  </script>
+  
+  <script onload="init()" src="https://unpkg.com/@ada-anvil/weld/weld.iife.js" defer></script>
+</body>
+
+</html>
 ```
 
-### Automatic reconnection
+Note: When using a build tool like [Vite](https://vite.dev/), we recommend using a package manager instead of the CDN version to install and manage Weld:
 
-When using the library, an attempt will be made to reconnect the persisted wallet on first mount.
+```bash
+npm install @ada-anvil/weld
+```
 
-If you disable the persistence feature, you can still use the `getPersistedValue` helper function to retrieve the persisted wallet and connect it during the initialization of your app.
-
+And then:
 ```typescript
-function initFunction() {
-  const lastConnectedWallet = getPersistedValue("weld_connected-wallet");
-  if (lastConnectedWallet) {
-    weld.wallet.getState().connect(lastConnectedWallet);
-  }
-}
-```
+import { weld } from "@ada-anvil/weld"
 
-_Note: `getPersistedValue` always returns `undefined` when persistence is disabled._
-
-### Configuration
-
-By default, the user's wallet connection is persisted in a cookie to allow support for SSR.
-This behavior can be customized by updating the configuration store to provide a different [Storage](https://developer.mozilla.org/en-US/docs/Web/API/Storage) interface.
-
-Here’s how to customize the persistence using the WeldProvider:
-
-```typescriptreact
-import { WeldProvider } from "@ada-anvil/weld/react";
-
-export default function RootLayout({ children }) {
-  return (
-    <WeldProvider
-      storage={{
-        get(key) {
-            return window.localStorage.getItem(key) ?? undefined;
-          },
-        set(key, value) {
-          if (typeof window !== "undefined") {
-            window.localStorage.setItem(key, value);
-          }
-        },
-        remove(key) {
-          if (typeof window !== "undefined") {
-            window.localStorage.removeItem(key);
-          }
-        },
-        }}
-    >
-      {children}
-    </WeldProvider>
-  );
-}
-```
-
-Here’s an example using the default configuration.
-
-```typescript
-weld.config.getState().update({
-  storage: {
-    get(key) {
-      if (typeof window !== "undefined") {
-        return window.localStorage.getItem(key) ?? undefined;
-      }
-    },
-    set(key, value) {
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem(key, value);
-      }
-    },
-    remove(key) {
-      if (typeof window !== "undefined") {
-        window.localStorage.removeItem(key);
-      }
-    },
-  },
+weld.wallet.subscribeWithSelector(s => s.isConnected, isConnected =>{
+    // update your UI 
 });
 ```
 
-The persistence features can be disabled through the configuration store:
+## Server-Side Rendering
+When pre-rendering your application on the server, you can inform Weld about the last connected wallet so the store state initializes with the correct values.
 
-```typescript
-weld.config.getState().update({
-  enablePersistence: false,
-});
-```
-
-_Note: When using a SSR framework, make sure to set configuration options inside a client side file_
-
-## Usage with Next.js
-
-When using Next.js, you can prevent hydration errors by retrieving the connected wallet cookie in a server component
-and passing it as initial value to the provicer.
-
-```typescriptreact
+For example, when using Next.js, you can avoid hydration errors by retrieving the connected wallet cookie in a server component.
+You can then pass this value as an initial parameter to the Weld provider:
+```tsx
 import { cookies } from "next/headers";
 import { STORAGE_KEYS } from "@ada-anvil/weld/server";
 import { WeldProvider } from "@ada-anvil/weld/react";
@@ -411,174 +382,17 @@ import { WeldProvider } from "@ada-anvil/weld/react";
 export default function RootLayout({ children }) {
   const lastConnectedWallet = cookies().get(STORAGE_KEYS.connectedWallet)?.value;
   return (
-    <WeldProvider
-      wallet={{
-        tryToReconnectTo: isConnectingTo,
-      }}
-  >
+    <WeldProvider wallet={{ tryToReconnectTo: lastConnectedWallet }}>
       {children}
     </WeldProvider>
   );
 }
 ```
+This setup ensures that the correct wallet connection state is available when the application first renders.
 
-## Examples
+<small>_Note: This approach works only if you use cookies to store persisted data, as they are accessible on both the client and server— unlike window.localStorage, for example, which is only available in the browser._</small>
 
-> A recent version of Node.js is required to run the demo server and view the examples.
-
-To run the examples, navigate to the project's root directory and execute `npm install`, then `npm run dev`.
-
-Alternatively, you can directly explore the code by browsing the <a href="/documentation/examples/">examples</a> folder.
-
-## Wallet hook exports
-
-### Variables
-
-`balanceAda`, `balanceLovelace`, `changeAddressHex`,`changeAddressBech32`, `utxos`, `displayName`, `handler`, `icon`, `isConnected`, `isConnectingTo`, `key`, `networkId`, `stakeAddressHex`, `stakeAddressBech32`, `supported`, `supportsTxChaining`, `website`
-
-### Methods
-
-`connect`, `connectAsync`, `disconnect`
-
-## Other JS Frameworks
-
-Here are some basic examples of how to use Weld with Vanilla JS, which can also be adapted for frameworks like Vue.js, Svelte or any other javascript framework. While these examples may not represent the most optimal way to manage values, it's up to you to set up proper data handling within a store. However, they demonstrate how you can access data and leverage the power of Weld.
-
-### Vue.js
-
-```typescript
-<script setup lang="ts">
-import { ref, onUnmounted, onBeforeMount } from "vue";
-import { InstalledExtension } from "@ada-anvil/weld";
-import { weld } from "@ada-anvil/weld";
-
-// Define reactive references
-const wallets = ref<InstalledExtension[]>([]);
-const walletName = ref("-");
-const walletBalance = ref("-");
-const connectingTo = ref("-");
-
-onBeforeMount(() => {
-  // Initialize Weld - you only need to do this once
-  // Ideally, do it as soon as you can in your app
-  weld.init();
-
-  // Subscribe to extensions and update wallets
-  weld.extensions.subscribeWithSelector(
-    (state) => state.supportedArr,
-    (extensions) => {
-      wallets.value = extensions;
-    }
-  );
-
-  weld.wallet.subscribeWithSelector(
-    (state) => ({
-      displayName: state.displayName ?? "-",
-      balance: state.balanceAda?.toFixed(2) ?? "-",
-      isConnectingTo: state.isConnectingTo ?? "-",
-    }),
-    ({ displayName, balance, isConnectingTo }) => {
-      walletName.value = displayName;
-      walletBalance.value = balance;
-      connectingTo.value = isConnectingTo;
-    }
-  );
-
-  onUnmounted(() => {
-    // Cleanup subscriptions when the component is unmounted - you only need to do this once
-    // Ideally, do it as soon as you can in your app
-    weld.cleanup();
-  });
-});
-
-// Function to connect to a selected wallet
-const connect = (walletKey: InstalledExtension["info"]["key"]) => {
-  weld.wallet.getState().connect(walletKey);
-};
-</script>
-
-<template>
-  <div>
-    <div>IsConnectingTo: {{ connectingTo }}</div>
-    <div>Balance: {{ walletBalance }}</div>
-    <div>Wallet name: {{ walletName }}</div>
-    <div v-for="wallet in wallets" :key="wallet.info.key">
-      <button type="button" @click="connect(wallet.info.key)">
-        {{ wallet.info.displayName }}
-      </button>
-    </div>
-  </div>
-</template>
-```
-
-### Svelte
-
-```typescript
-<script lang="ts">
-  import { onMount, onDestroy } from "svelte";
-  import type { InstalledExtension } from "@ada-anvil/weld";
-  import { weld } from "@ada-anvil/weld";
-  import { writable } from "svelte/store";
-
-  // Define reactive stores
-  const wallets = writable<InstalledExtension[]>([]);
-  const walletName = writable("-");
-  const walletBalance = writable("-");
-  const connectingTo = writable("-");
-
-  onMount(() => {
-    // Initialize Weld - you only need to do this once
-    // Ideally, do it as soon as you can in your app
-    weld.init();
-
-    // Subscribe to extensions and update wallets
-    weld.extensions.subscribeWithSelector(
-      (state) => state.supportedArr,
-      (extensions) => {
-        wallets.set(extensions);
-      }
-    );
-
-    weld.wallet.subscribeWithSelector(
-      (state) => ({
-        displayName: state.displayName ?? "-",
-        balance: state.balanceAda?.toFixed(2) ?? "-",
-        isConnectingTo: state.isConnectingTo ?? "-",
-      }),
-      ({ displayName, balance, isConnectingTo }) => {
-        walletName.set(displayName);
-        walletBalance.set(balance);
-        connectingTo.set(isConnectingTo);
-      }
-    );
-
-    onDestroy(() => {
-      // Cleanup subscriptions when the component is unmounted - you only need to do this once
-      // Ideally, do it as soon as you can in your app
-      weld.cleanup();
-    });
-  });
-
-  // Function to connect to a selected wallet
-  function connect(walletKey: InstalledExtension["info"]["key"]) {
-    weld.wallet.getState().connect(walletKey);
-  }
-</script>
-
-<!-- Template -->
-<div>
-  <div>IsConnectingTo: {$connectingTo}</div>
-  <div>Balance: {$walletBalance}</div>
-  <div>Wallet name: {$walletName}</div>
-  {#each $wallets as wallet (wallet.info.key)}
-    <button type="button" on:click={() => connect(wallet.info.key)}>
-      {wallet.info.displayName}
-    </button>
-  {/each}
-</div>
-```
-
----
+--- 
 
 <p align="center">
   |
@@ -586,7 +400,7 @@ const connect = (walletKey: InstalledExtension["info"]["key"]) => {
   |
   <a href="CONTRIBUTING.md">Contributing</a>
   |
-  <a href="https://discord.gg/RN4D7wzc"><img src=".github/discord.svg" alt="Discord">Discord</a>
+  <a href="https://discord.gg/RN4D7wzc"><img style="height: 0.8rem; margin-right: 4px" src=".github/discord.svg" alt="Discord">Discord</a>
   |
-  <a href="https://x.com/ada_anvil"><img src=".github/x.svg" alt="X"> X (@ada_anvil)</a>
+  <a href="https://x.com/ada_anvil"><img style="height: 0.70rem; margin-bottom: -1px; margin-right: 4px" src=".github/x.svg" alt="X">@ada_anvil</a>
 </p>
