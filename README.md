@@ -54,7 +54,7 @@
 - **Universal Reactivity System**  
   Weld's reactivity system is framework-agnostic, making it possible to integrate seamlessly with any frontend framework or pure JavaScript. Weld's reactive stores enable developers to subscribe to specific state properties, minimizing unnecessary re-renders and improving performance, especially in complex applications.
 
-- **Unified Multi-Blockchain Support**  
+- **Unified Cross-Chain Support**  
   Weld provides a single, unified API to interact with wallet extensions across multiple blockchain ecosystems, including Cardano, Ethereum, Polygon, and Solana. This means developers can manage wallet connections and user interactions consistently, regardless of the underlying blockchain.
 
 - **Extensive TypeScript Support**  
