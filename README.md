@@ -325,7 +325,7 @@ If you disable the persistence feature, you can still use the `getPersistedValue
 function initFunction() {
   const lastConnectedWallet = getPersistedValue("weld_connected-wallet");
   if (lastConnectedWallet) {
-    weld.wallet.getState().connect(lastConnectedWallet);
+    weld.wallet.connect(lastConnectedWallet);
   }
 }
 ```
@@ -370,7 +370,7 @@ export default function RootLayout({ children }) {
 Here's an example using the default configuration.
 
 ```typescript
-weld.config.getState().update({
+weld.config.update({
   storage: {
     get(key) {
       if (typeof window !== "undefined") {
@@ -394,7 +394,7 @@ weld.config.getState().update({
 The persistence features can be disabled through the configuration store:
 
 ```typescript
-weld.config.getState().update({
+weld.config.update({
   enablePersistence: false,
 });
 ```
@@ -566,12 +566,12 @@ import { getContext, setContext } from "svelte";
 
 export class Weld {
   // Use the $state rune to create a reactive object for each Weld store
-  config = $state(weld.config.getState());
-  wallet = $state(weld.wallet.getState());
-  extensions = $state(weld.extensions.getState());
+  config = $state(weld.config);
+  wallet = $state(weld.wallet);
+  extensions = $state(weld.extensions);
 
   constructor(persist?: Partial<WeldConfig>) {
-    weld.config.getState().update({ updateInterval: 2000 });
+    weld.config.update({ updateInterval: 2000 });
     if (persist) weld.persist(persist);
     $effect(() => {
       weld.init();
@@ -646,13 +646,13 @@ Weld can be used without any framework. Here's an example of how you can leverag
         Connecting to <span id="connecting-to">-</span><br />
         Connected to <span id="connected-to">-</span><br />
         Balance <span id="balance">-</span><br />
-        <button onclick="window.Weld.wallet.getState().connect('nami')">Connect nami</button>
+        <button onclick="window.Weld.wallet.connect('nami')">Connect nami</button>
       </section>
     </main>
 
     <script>
       function init() {
-        window.Weld.config.getState().update({ debug: true });
+        window.Weld.config.update({ debug: true });
 
         window.Weld.extensions.subscribeWithSelector(
           s => s.allArr,

@@ -73,13 +73,13 @@ if (form instanceof HTMLFormElement) {
     const data = new FormData(form);
     const walletKey = data.get("wallet-key")?.toString();
     if (walletKey) {
-      weld.wallet.getState().connect(walletKey);
+      weld.wallet.connect(walletKey);
     }
   });
 }
 
 document.querySelector("#disconnect")?.addEventListener("click", () => {
-  weld.wallet.getState().disconnect();
+  weld.wallet.disconnect();
 });
 
 window.addEventListener("load", () => {

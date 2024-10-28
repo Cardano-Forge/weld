@@ -316,7 +316,7 @@ describe("WalletStoreManager.connect", () => {
       set: vi.fn((k, v) => cookies.set(k, v)),
       remove: vi.fn((k) => cookies.delete(k)),
     };
-    config.getState().update({ storage, enablePersistence: true });
+    config.update({ storage, enablePersistence: true });
     const storageKey: keyof typeof STORAGE_KEYS = "connectedWallet";
     const mngr = new WalletStoreManager<State>(
       set,
@@ -346,7 +346,7 @@ describe("WalletStoreManager.connect", () => {
       set: vi.fn((k, v) => cookies.set(k, v)),
       remove: vi.fn((k) => cookies.delete(k)),
     };
-    config.getState().update({ storage, enablePersistence: true });
+    config.update({ storage, enablePersistence: true });
     const storageKey: keyof typeof STORAGE_KEYS = "connectedWallet";
     const mngr = new WalletStoreManager<State>(
       set,
@@ -375,7 +375,7 @@ describe("WalletStoreManager.connect", () => {
       set: vi.fn((k, v) => cookies.set(k, v)),
       remove: vi.fn((k) => cookies.delete(k)),
     };
-    config.getState().update({ storage, enablePersistence: false });
+    config.update({ storage, enablePersistence: false });
     const storageKey: keyof typeof STORAGE_KEYS = "connectedWallet";
     const mngr = new WalletStoreManager<State>(
       set,
@@ -625,7 +625,7 @@ describe("WalletStoreManager.handleUpdateError", () => {
     const config = createConfigStore();
     const onUpdateError = vi.fn();
     const onWalletUpdateError = vi.fn();
-    config.getState().update({
+    config.update({
       onUpdateError,
       wallet: { onUpdateError: onWalletUpdateError },
     });
@@ -710,7 +710,7 @@ describe("WalletStoreManager.persist", () => {
       set: vi.fn((k, v) => cookies.set(k, v)),
       remove: vi.fn((k) => cookies.delete(k)),
     };
-    config.getState().update({ storage, enablePersistence: true });
+    config.update({ storage, enablePersistence: true });
     const storageKey: keyof typeof STORAGE_KEYS = "connectedWallet";
     const mngr = new WalletStoreManager<State>(
       set,
@@ -743,7 +743,7 @@ describe("WalletStoreManager.persist", () => {
       set: vi.fn((k, v) => cookies.set(k, v)),
       remove: vi.fn((k) => cookies.delete(k)),
     };
-    config.getState().update({ storage, enablePersistence: true });
+    config.update({ storage, enablePersistence: true });
     const storageKey: keyof typeof STORAGE_KEYS = "connectedWallet";
     const mngr = new WalletStoreManager<State>(
       set,
@@ -778,7 +778,7 @@ describe("WalletStoreManager.persist", () => {
       set: vi.fn((k, v) => cookies.set(k, v)),
       remove: vi.fn((k) => cookies.delete(k)),
     };
-    config.getState().update({ storage, enablePersistence: true });
+    config.update({ storage, enablePersistence: true });
     const mngr = new WalletStoreManager<State>(
       set,
       get,
@@ -797,11 +797,11 @@ describe("WalletStoreManager.persist", () => {
     expect(get().isConnecting).toBe(false);
     // biome-ignore lint/suspicious/noGlobalAssign: For testing purposes
     window = windowObj;
-    config.getState().update({ enablePersistence: false });
+    config.update({ enablePersistence: false });
     mngr.persist({ initialState }, { tryToReconnectTo: undefined });
     expect(get().isConnectingTo).toBeUndefined();
     expect(get().isConnecting).toBe(false);
-    config.getState().update({ enablePersistence: true });
+    config.update({ enablePersistence: true });
     const tryToReconnectTo = "serverwallet";
     mngr.persist({ initialState }, { tryToReconnectTo });
     expect(get().isConnectingTo).toBe(tryToReconnectTo);
@@ -965,7 +965,7 @@ describe("WalletStoreManager.disconnect", () => {
       set: vi.fn((k, v) => cookies.set(k, v)),
       remove: vi.fn((k) => cookies.delete(k)),
     };
-    config.getState().update({ storage, enablePersistence: true });
+    config.update({ storage, enablePersistence: true });
     const mngr = new WalletStoreManager<State>(
       set,
       get,

@@ -10,7 +10,7 @@ import { weld } from "@/lib/main";
 const disconnect = document.querySelector("#disconnect");
 if (disconnect instanceof HTMLButtonElement) {
   disconnect.addEventListener("click", () => {
-    weld.wallet.getState().disconnect();
+    weld.wallet.disconnect();
   });
 }
 

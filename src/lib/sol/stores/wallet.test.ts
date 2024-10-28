@@ -66,7 +66,7 @@ function newTestStores() {
     lifecycle,
   });
   const config = createConfigStore<SolConfig>();
-  config.getState().update({ connectionEndpoint: clusterApiUrl("devnet") });
+  config.update({ connectionEndpoint: clusterApiUrl("devnet") });
   const wallet = createSolWalletStore({
     extensions,
     lifecycle,
@@ -78,7 +78,7 @@ function newTestStores() {
 describe("connectAsync", () => {
   it("should connect to valid installed wallets successfully", async () => {
     const { wallet } = newTestStores();
-    const connected = await wallet.getState().connectAsync(walletKey);
+    const connected = await wallet.connectAsync(walletKey);
     expect(connected.balanceSol).toBeGreaterThan(0);
   });
 
@@ -88,25 +88,25 @@ describe("connectAsync", () => {
     signal.aborted = true;
     await expect(() => {
       // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-      return (wallet.getState().connectAsync as any)(walletKey, undefined, signal);
+      return (wallet.connectAsync as any)(walletKey, undefined, signal);
     }).rejects.toThrow(WalletConnectionAbortedError);
   });
 
   it("should disconnect the wallet", async () => {
     const { wallet } = newTestStores();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    vi.spyOn((wallet.getState() as any).__mngr, "disconnect");
-    await wallet.getState().connectAsync(walletKey);
+    vi.spyOn((wallet as any).__mngr, "disconnect");
+    await wallet.connectAsync(walletKey);
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    expect((wallet.getState() as any).__mngr.disconnect).toHaveBeenCalled();
+    expect((wallet as any).__mngr.disconnect).toHaveBeenCalled();
   });
 });
 
 describe("getTokenBalance", () => {
   it("should return the token balance in lamports as a bigint", async () => {
     const { wallet } = newTestStores();
-    await wallet.getState().connectAsync(walletKey);
-    const state = wallet.getState();
+    await wallet.connectAsync(walletKey);
+    const state = wallet;
     expect(state.isConnected).toBe(true);
     const balance = await state.getTokenBalance(weldTestTokenAddress);
     expect(typeof balance).toBe("bigint");
@@ -115,8 +115,8 @@ describe("getTokenBalance", () => {
 
   it("should return the token balance in sol as a bigint", async () => {
     const { wallet } = newTestStores();
-    await wallet.getState().connectAsync(walletKey);
-    const state = wallet.getState();
+    await wallet.connectAsync(walletKey);
+    const state = wallet;
     expect(state.isConnected).toBe(true);
     const balance = await state.getTokenBalance(weldTestTokenAddress, { unit: "sol" });
     expect(typeof balance).toBe("bigint");
@@ -127,13 +127,13 @@ describe("getTokenBalance", () => {
 describe("send", () => {
   it("should fail when wallet isn't connected", async () => {
     const { wallet } = newTestStores();
-    await expect(() => wallet.getState().send({ to: "to", amount: "1" })).rejects.toThrow();
+    await expect(() => wallet.send({ to: "to", amount: "1" })).rejects.toThrow();
   });
 
   it("should send currency with the appropriate units", async () => {
     const { wallet } = newTestStores();
-    await wallet.getState().connectAsync(walletKey);
-    const res = await wallet.getState().send({
+    await wallet.connectAsync(walletKey);
+    const res = await wallet.send({
       to: secondWalletAddress,
       amount: "2",
       unit: "sol",
@@ -141,7 +141,7 @@ describe("send", () => {
     expect(signAndSendTransactionSpy).toHaveBeenCalledOnce();
     expect(signAndSendTransactionSpy).toHaveBeenLastCalledWith(res.transaction);
     expect(res.signature).toBe(signature);
-    const res2 = await wallet.getState().send({
+    const res2 = await wallet.send({
       to: secondWalletAddress,
       amount: "2",
       unit: "lamport",
@@ -153,8 +153,8 @@ describe("send", () => {
 
   it("should send tokens", async () => {
     const { wallet } = newTestStores();
-    await wallet.getState().connectAsync(walletKey);
-    const res = await wallet.getState().send({
+    await wallet.connectAsync(walletKey);
+    const res = await wallet.send({
       to: secondWalletAddress,
       amount: "2",
       unit: weldTestTokenAddress,
@@ -168,10 +168,10 @@ describe("disconnect", () => {
   it("should disconnect the wallet mngr", async () => {
     const { wallet } = newTestStores();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    vi.spyOn((wallet.getState() as any).__mngr, "disconnect");
-    wallet.getState().disconnect();
+    vi.spyOn((wallet as any).__mngr, "disconnect");
+    wallet.disconnect();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    expect((wallet.getState() as any).__mngr.disconnect).toHaveBeenCalled();
+    expect((wallet as any).__mngr.disconnect).toHaveBeenCalled();
   });
 });
 
@@ -179,10 +179,10 @@ describe("init", () => {
   it("should init the wallet mngr", async () => {
     const { wallet } = newTestStores();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    vi.spyOn((wallet.getState() as any).__mngr, "init");
+    vi.spyOn((wallet as any).__mngr, "init");
     wallet.init();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    expect((wallet.getState() as any).__mngr.init).toHaveBeenCalled();
+    expect((wallet as any).__mngr.init).toHaveBeenCalled();
   });
 });
 
@@ -190,10 +190,10 @@ describe("persist", () => {
   it("should persist the wallet mngr", async () => {
     const { wallet } = newTestStores();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    vi.spyOn((wallet.getState() as any).__mngr, "persist");
+    vi.spyOn((wallet as any).__mngr, "persist");
     wallet.persist();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    expect((wallet.getState() as any).__mngr.persist).toHaveBeenCalled();
+    expect((wallet as any).__mngr.persist).toHaveBeenCalled();
   });
 });
 
@@ -201,9 +201,9 @@ describe("cleanup", () => {
   it("should cleanup the wallet mngr", async () => {
     const { wallet } = newTestStores();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    vi.spyOn((wallet.getState() as any).__mngr, "cleanup");
+    vi.spyOn((wallet as any).__mngr, "cleanup");
     wallet.cleanup();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    expect((wallet.getState() as any).__mngr.cleanup).toHaveBeenCalled();
+    expect((wallet as any).__mngr.cleanup).toHaveBeenCalled();
   });
 });

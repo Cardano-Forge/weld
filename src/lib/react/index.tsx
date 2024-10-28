@@ -26,7 +26,7 @@ export type WeldProviderProps = React.PropsWithChildren<Partial<WeldConfig>>;
 export const WeldProvider = memo(({ children, ...config }: WeldProviderProps) => {
   // Keep config store in sync with provider props
   useEffect(() => {
-    weld.config.getState().update(config);
+    weld.config.update(config);
   });
 
   useState(() => {

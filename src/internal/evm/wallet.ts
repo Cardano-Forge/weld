@@ -117,9 +117,9 @@ export const createEvmWalletStore = createStoreFactory<
     newEvmWalletState,
     async (key, opts) => {
       // Make sure the extensions are loaded
-      storeOptions.extensions.getState().updateExtensions();
+      storeOptions.extensions.updateExtensions();
 
-      const extension = storeOptions.extensions.getState().installedMap.get(key);
+      const extension = storeOptions.extensions.installedMap.get(key);
       if (!extension) {
         throw new WalletConnectionError(`The ${key} extension is not installed`);
       }

@@ -155,7 +155,7 @@ function newTestStores() {
 describe("connectAsync", () => {
   it("should connect to valid installed wallets successfully", async () => {
     const { wallet } = newTestStores();
-    const connected = await wallet.getState().connectAsync(walletKey);
+    const connected = await wallet.connectAsync(walletKey);
     expect(connected.key).toBe(supportedExtension.key);
     expect(connected.displayName).toBe(supportedExtension.displayName);
     expect(connected.path).toBe(supportedExtension.path);
@@ -172,21 +172,19 @@ describe("connectAsync", () => {
 
   it("should request user identification", async () => {
     const { wallet } = newTestStores();
-    await wallet.getState().connectAsync(walletKey);
+    await wallet.connectAsync(walletKey);
     expect(evmRequestSpy).toHaveBeenCalledWith("eth_requestAccounts");
   });
 
   it("should switch network to provided chain id", async () => {
     const { wallet } = newTestStores();
-    await wallet.getState().connectAsync(walletKey);
+    await wallet.connectAsync(walletKey);
     expect(evmRequestSpy).toHaveBeenCalledWith("wallet_switchEthereumChain", { chainId });
   });
 
   it("should fail if the extension is not installed", async () => {
     const { wallet } = newTestStores();
-    await expect(() => wallet.getState().connectAsync("phantom")).rejects.toThrow(
-      WalletConnectionError,
-    );
+    await expect(() => wallet.connectAsync("phantom")).rejects.toThrow(WalletConnectionError);
   });
 
   it("should fail connection when is aborted", async () => {
@@ -195,17 +193,17 @@ describe("connectAsync", () => {
     signal.aborted = true;
     await expect(() => {
       // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-      return (wallet.getState().connectAsync as any)(walletKey, undefined, signal);
+      return (wallet.connectAsync as any)(walletKey, undefined, signal);
     }).rejects.toThrow(WalletConnectionAbortedError);
   });
 
   it("should disconnect the wallet", async () => {
     const { wallet } = newTestStores();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    vi.spyOn((wallet.getState() as any).__mngr, "disconnect");
-    await wallet.getState().connectAsync(walletKey);
+    vi.spyOn((wallet as any).__mngr, "disconnect");
+    await wallet.connectAsync(walletKey);
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    expect((wallet.getState() as any).__mngr.disconnect).toHaveBeenCalled();
+    expect((wallet as any).__mngr.disconnect).toHaveBeenCalled();
   });
 });
 
@@ -213,7 +211,7 @@ describe("connect", () => {
   it("should connect to valid installed wallets successfully", () =>
     new Promise<void>((done) => {
       const { wallet } = newTestStores();
-      wallet.getState().connect(walletKey, {
+      wallet.connect(walletKey, {
         onSuccess(connected) {
           expect(connected.key).toBe(supportedExtension.key);
           expect(connected.displayName).toBe(supportedExtension.displayName);
@@ -235,7 +233,7 @@ describe("connect", () => {
   it("should request user identification", async () => {
     return new Promise<void>((done) => {
       const { wallet } = newTestStores();
-      wallet.getState().connect(walletKey, {
+      wallet.connect(walletKey, {
         onSuccess() {
           expect(evmRequestSpy).toHaveBeenCalledWith("eth_requestAccounts");
           done();
@@ -247,7 +245,7 @@ describe("connect", () => {
   it("should switch network to provided chain id", async () => {
     return new Promise<void>((done) => {
       const { wallet } = newTestStores();
-      wallet.getState().connect(walletKey, {
+      wallet.connect(walletKey, {
         onSuccess() {
           expect(evmRequestSpy).toHaveBeenCalledWith("wallet_switchEthereumChain", { chainId });
           done();
@@ -259,7 +257,7 @@ describe("connect", () => {
   it("should fail if the extension is not installed", async () => {
     return new Promise<void>((done) => {
       const { wallet } = newTestStores();
-      wallet.getState().connect("phantom", {
+      wallet.connect("phantom", {
         onError(error) {
           expect(error).toBeInstanceOf(WalletConnectionError);
         },
@@ -274,7 +272,7 @@ describe("connect", () => {
       const signal = lifecycle.inFlight.add();
       signal.aborted = true;
       // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-      (wallet.getState().connect as any)(
+      (wallet.connect as any)(
         walletKey,
         {
           onError(error: unknown) {
@@ -291,11 +289,11 @@ describe("connect", () => {
     return new Promise<void>((done) => {
       const { wallet } = newTestStores();
       // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-      vi.spyOn((wallet.getState() as any).__mngr, "disconnect");
-      wallet.getState().connect(walletKey, {
+      vi.spyOn((wallet as any).__mngr, "disconnect");
+      wallet.connect(walletKey, {
         onSuccess() {
           // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-          expect((wallet.getState() as any).__mngr.disconnect).toHaveBeenCalled();
+          expect((wallet as any).__mngr.disconnect).toHaveBeenCalled();
           done();
         },
       });
@@ -306,37 +304,37 @@ describe("connect", () => {
 describe("getTokenBalance", () => {
   it("should fail when signer is not initialized", async () => {
     const { wallet } = newTestStores();
-    await wallet.getState().connectAsync(walletKey);
+    await wallet.connectAsync(walletKey);
     wallet.setState({ signer: undefined });
-    expect(() => wallet.getState().getTokenBalance(ethTokenAddress)).rejects.toThrow("Signer");
+    expect(() => wallet.getTokenBalance(ethTokenAddress)).rejects.toThrow("Signer");
   });
 
   it("should fail when provider is not initialized", async () => {
     const { wallet } = newTestStores();
-    await wallet.getState().connectAsync(walletKey);
+    await wallet.connectAsync(walletKey);
     wallet.setState({ provider: undefined });
-    expect(() => wallet.getState().getTokenBalance(ethTokenAddress)).rejects.toThrow("Provider");
+    expect(() => wallet.getTokenBalance(ethTokenAddress)).rejects.toThrow("Provider");
   });
 
   it("should switch network to provided chain id", async () => {
     const { wallet } = newTestStores();
-    await wallet.getState().connectAsync(walletKey);
+    await wallet.connectAsync(walletKey);
     evmRequestSpy.mockReset();
-    await wallet.getState().getTokenBalance(ethTokenAddress);
+    await wallet.getTokenBalance(ethTokenAddress);
     expect(evmRequestSpy).toHaveBeenCalledWith("wallet_switchEthereumChain", { chainId });
   });
 
   it("should return the unformatted balance", async () => {
     const { wallet } = newTestStores();
-    await wallet.getState().connectAsync(walletKey);
-    const res = await wallet.getState().getTokenBalance(ethTokenAddress);
+    await wallet.connectAsync(walletKey);
+    const res = await wallet.getTokenBalance(ethTokenAddress);
     expect(res).toBe(balanceOf.toString());
   });
 
   it("should return the formatted balance", async () => {
     const { wallet } = newTestStores();
-    await wallet.getState().connectAsync(walletKey);
-    const res = await wallet.getState().getTokenBalance(ethTokenAddress, { formatted: true });
+    await wallet.connectAsync(walletKey);
+    const res = await wallet.getTokenBalance(ethTokenAddress, { formatted: true });
     const expected = (balanceOf / 10 ** decimals).toFixed(2);
     expect(res).toBe(expected);
   });
@@ -345,42 +343,38 @@ describe("getTokenBalance", () => {
 describe("send", () => {
   it("should fail when signer is not initialized", async () => {
     const { wallet } = newTestStores();
-    await wallet.getState().connectAsync(walletKey);
+    await wallet.connectAsync(walletKey);
     wallet.setState({ signer: undefined });
-    expect(() => wallet.getState().send({ to: ethTokenAddress, amount: "2" })).rejects.toThrow(
-      "Signer",
-    );
+    expect(() => wallet.send({ to: ethTokenAddress, amount: "2" })).rejects.toThrow("Signer");
   });
 
   it("should fail when provider is not initialized", async () => {
     const { wallet } = newTestStores();
-    await wallet.getState().connectAsync(walletKey);
+    await wallet.connectAsync(walletKey);
     wallet.setState({ provider: undefined });
-    expect(() => wallet.getState().send({ to: ethTokenAddress, amount: "2" })).rejects.toThrow(
-      "Provider",
-    );
+    expect(() => wallet.send({ to: ethTokenAddress, amount: "2" })).rejects.toThrow("Provider");
   });
 
   it("should switch network to provided chain id", async () => {
     const { wallet } = newTestStores();
-    await wallet.getState().connectAsync(walletKey);
+    await wallet.connectAsync(walletKey);
     evmRequestSpy.mockReset();
-    await wallet.getState().send({ to: ethTokenAddress, amount: "2" });
+    await wallet.send({ to: ethTokenAddress, amount: "2" });
     expect(evmRequestSpy).toHaveBeenCalledWith("wallet_switchEthereumChain", { chainId });
   });
 
   it("should send funds", async () => {
     const { wallet } = newTestStores();
-    await wallet.getState().connectAsync(walletKey);
-    const res = await wallet.getState().send({ to: ethTokenAddress, amount: "2" });
+    await wallet.connectAsync(walletKey);
+    const res = await wallet.send({ to: ethTokenAddress, amount: "2" });
     expect(res).toBe(txHash);
   });
 
   it("should send tokens", async () => {
     const { wallet } = newTestStores();
-    await wallet.getState().connectAsync(walletKey);
+    await wallet.connectAsync(walletKey);
     const to = "0x167E7644a25377544d83FF60672C89831bf2Ac0a";
-    const res = await wallet.getState().send({ to, amount: "2", tokenAddress: ethTokenAddress });
+    const res = await wallet.send({ to, amount: "2", tokenAddress: ethTokenAddress });
     expect(res).toBe(txHash);
   });
 });
@@ -389,10 +383,10 @@ describe("disconnect", () => {
   it("should disconnect the wallet mngr", async () => {
     const { wallet } = newTestStores();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    vi.spyOn((wallet.getState() as any).__mngr, "disconnect");
-    await wallet.getState().disconnect();
+    vi.spyOn((wallet as any).__mngr, "disconnect");
+    await wallet.disconnect();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    expect((wallet.getState() as any).__mngr.disconnect).toHaveBeenCalled();
+    expect((wallet as any).__mngr.disconnect).toHaveBeenCalled();
   });
 });
 
@@ -400,10 +394,10 @@ describe("init", () => {
   it("should init the wallet mngr", async () => {
     const { wallet } = newTestStores();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    vi.spyOn((wallet.getState() as any).__mngr, "init");
+    vi.spyOn((wallet as any).__mngr, "init");
     wallet.init();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    expect((wallet.getState() as any).__mngr.init).toHaveBeenCalled();
+    expect((wallet as any).__mngr.init).toHaveBeenCalled();
   });
 });
 
@@ -411,10 +405,10 @@ describe("persist", () => {
   it("should persist the wallet mngr", async () => {
     const { wallet } = newTestStores();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    vi.spyOn((wallet.getState() as any).__mngr, "persist");
+    vi.spyOn((wallet as any).__mngr, "persist");
     wallet.persist();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    expect((wallet.getState() as any).__mngr.persist).toHaveBeenCalled();
+    expect((wallet as any).__mngr.persist).toHaveBeenCalled();
   });
 });
 
@@ -422,9 +416,9 @@ describe("cleanup", () => {
   it("should cleanup the wallet mngr", async () => {
     const { wallet } = newTestStores();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    vi.spyOn((wallet.getState() as any).__mngr, "cleanup");
+    vi.spyOn((wallet as any).__mngr, "cleanup");
     wallet.cleanup();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    expect((wallet.getState() as any).__mngr.cleanup).toHaveBeenCalled();
+    expect((wallet as any).__mngr.cleanup).toHaveBeenCalled();
   });
 });

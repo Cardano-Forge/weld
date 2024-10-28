@@ -39,9 +39,7 @@ document.querySelector("#connect")?.addEventListener("click", () => {
 
 document.querySelector("#getTokenBalance")?.addEventListener("click", async () => {
   try {
-    const b = await weldEth.wallet
-      .getState()
-      .getTokenBalance("0x86fa049857e0209aa7d9e616f7eb3b3b78ecfdb0");
+    const b = await weldEth.wallet.getTokenBalance("0x86fa049857e0209aa7d9e616f7eb3b3b78ecfdb0");
     console.log("b", b);
   } catch (error) {
     console.log("error", getFailureReason(error));
@@ -50,11 +48,9 @@ document.querySelector("#getTokenBalance")?.addEventListener("click", async () =
 
 document.querySelector("#getTx")?.addEventListener("click", async () => {
   try {
-    const b = await weldEth.wallet
-      .getState()
-      .provider?.getTransaction(
-        "0x1cdf7f6a4a6597fd30f9cee820c7360797653e1a42ec470461475260581a57ec",
-      );
+    const b = await weldEth.wallet.provider?.getTransaction(
+      "0x1cdf7f6a4a6597fd30f9cee820c7360797653e1a42ec470461475260581a57ec",
+    );
     console.log(JSON.stringify(b, null, 2));
   } catch (error) {
     console.log("error", getFailureReason(error));
@@ -62,12 +58,12 @@ document.querySelector("#getTx")?.addEventListener("click", async () => {
 });
 
 document.querySelector("#disconnect")?.addEventListener("click", () => {
-  weldEth.wallet.getState().disconnect();
+  weldEth.wallet.disconnect();
 });
 
 document.querySelector("#send")?.addEventListener("click", () => {
   console.log("send");
-  weldEth.wallet.getState().send({
+  weldEth.wallet.send({
     to: "0xAD68508FCb4D5ee8e764b031a695d12830bCc324",
     amount: "100",
     tokenAddress: "0x6982508145454Ce325dDbE47a25d4ec3d2311933", // PEPE tokens

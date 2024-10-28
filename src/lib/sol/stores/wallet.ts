@@ -126,8 +126,8 @@ export const createSolWalletStore = createStoreFactory<
       newSolWalletState,
       async (key, opts) => {
         // Make sure the extensions are loaded
-        extensions.getState().updateExtensions();
-        const extension = extensions.getState().installedMap.get(key);
+        extensions.updateExtensions();
+        const extension = extensions.installedMap.get(key);
         const api = extension?.api;
 
         await api?.connect();
@@ -142,7 +142,7 @@ export const createSolWalletStore = createStoreFactory<
 
         const publicKey = new PublicKey(api.publicKey.toBytes());
 
-        const endpoint = config.getState().connectionEndpoint ?? defaultSolConnectionEndpoint;
+        const endpoint = config.connectionEndpoint ?? defaultSolConnectionEndpoint;
         const connection = new Connection(endpoint);
 
         const updateState = async () => {

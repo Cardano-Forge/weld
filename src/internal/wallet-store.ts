@@ -85,8 +85,8 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
     this._lifecycle.cleanup();
     this._runSubscriptions("beforeDisconnect");
     this._setState(this._newState());
-    if (this._configStore.getState().enablePersistence) {
-      this._configStore.getState().storage.remove(STORAGE_KEYS[this._walletStorageKey]);
+    if (this._configStore.enablePersistence) {
+      this._configStore.storage.remove(STORAGE_KEYS[this._walletStorageKey]);
     }
     this._runSubscriptions("afterDisconnect");
   }
@@ -105,7 +105,7 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
 
       let abortTimeout: NodeJS.Timeout | undefined = undefined;
       const connectTimeout =
-        configOverrides?.connectTimeout ?? this._configStore.getState().wallet?.connectTimeout;
+        configOverrides?.connectTimeout ?? this._configStore.wallet?.connectTimeout;
       if (connectTimeout) {
         abortTimeout = setTimeout(() => {
           signal.aborted = true;
@@ -147,10 +147,8 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
         configOverrides,
       );
 
-      if (this._configStore.getState().enablePersistence) {
-        this._configStore
-          .getState()
-          .storage.set(STORAGE_KEYS[this._walletStorageKey], newState.key);
+      if (this._configStore.enablePersistence) {
+        this._configStore.storage.set(STORAGE_KEYS[this._walletStorageKey], newState.key);
       }
 
       if (abortTimeout) {
@@ -171,7 +169,7 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
   async init(opts: { initialState: TProps }) {
     if (opts.initialState.isConnectingTo) {
       await this.connect(opts.initialState.isConnectingTo).catch((error) => {
-        if (this._configStore.getState().debug) {
+        if (this._configStore.debug) {
           console.log("[WELD] Wallet auto connect failed", {
             key: opts.initialState.isConnectingTo,
             error,
@@ -183,14 +181,8 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
 
   persist(opts: { initialState: TProps }, data?: WalletStorePersistData) {
     let isConnectingTo = data?.tryToReconnectTo;
-    if (
-      !isConnectingTo &&
-      typeof window !== "undefined" &&
-      this._configStore.getState().enablePersistence
-    ) {
-      isConnectingTo = this._configStore
-        .getState()
-        .getPersistedValue(STORAGE_KEYS[this._walletStorageKey]);
+    if (!isConnectingTo && typeof window !== "undefined" && this._configStore.enablePersistence) {
+      isConnectingTo = this._configStore.getPersistedValue(STORAGE_KEYS[this._walletStorageKey]);
     }
     this._setState({ isConnectingTo, isConnecting: !!isConnectingTo } as Partial<TProps>);
     opts.initialState.isConnectingTo = isConnectingTo;
@@ -202,8 +194,8 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
   }
 
   async handleUpdateError(error: unknown) {
-    this._configStore.getState().onUpdateError?.("wallet", error);
-    this._configStore.getState().wallet.onUpdateError?.(error);
+    this._configStore.onUpdateError?.("wallet", error);
+    this._configStore.wallet.onUpdateError?.(error);
     await this._runSubscriptions("updateError", error);
   }
 
