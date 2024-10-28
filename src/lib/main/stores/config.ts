@@ -50,37 +50,46 @@ const initialConfigState: WeldConfig = {
   extensions: {},
 };
 
-export type ConfigApi = {
-  update(values: Partial<WeldConfig>): void;
+export type ConfigApi<TConfig extends Omit<WeldConfig, "customWallets"> = WeldConfig> = {
+  update(values: Partial<TConfig>): void;
   getPersistedValue(key: StorageKeysType): string | undefined;
 };
 
-export type ConfigStoreState = WeldConfig & ConfigApi;
-export type ConfigStore = Store<ConfigStoreState>;
+export type ConfigStoreState<TConfig extends Omit<WeldConfig, "customWallets"> = WeldConfig> =
+  TConfig & ConfigApi<TConfig>;
 
-export const createConfigStore = createStoreFactory<ConfigStoreState>((setState, getState) => {
-  const update: ConfigApi["update"] = (values) => {
-    setState({
-      ...getState(),
-      ...values,
-      wallet: {
-        ...getState().wallet,
-        ...values.wallet,
-      },
-      extensions: {
-        ...getState().extensions,
-        ...values.extensions,
-      },
-    });
-  };
+export type ConfigStore<TConfig extends Omit<WeldConfig, "customWallets"> = WeldConfig> = Store<
+  ConfigStoreState<TConfig>
+>;
 
-  const getPersistedValue: ConfigApi["getPersistedValue"] = (key): string | undefined => {
-    return getState().storage.get(key) ?? undefined;
-  };
+export const createConfigStore = <
+  TConfig extends Omit<WeldConfig, "customWallets"> = WeldConfig,
+>() =>
+  createStoreFactory<ConfigStoreState<TConfig>>((setState, getState) => {
+    const update: ConfigApi<TConfig>["update"] = (values) => {
+      setState({
+        ...getState(),
+        ...values,
+        wallet: {
+          ...getState().wallet,
+          ...values.wallet,
+        },
+        extensions: {
+          ...getState().extensions,
+          ...values.extensions,
+        },
+      });
+    };
 
-  return {
-    ...initialConfigState,
-    update,
-    getPersistedValue,
-  };
-});
+    const getPersistedValue: ConfigApi<TConfig>["getPersistedValue"] = (
+      key,
+    ): string | undefined => {
+      return getState().storage.get(key) ?? undefined;
+    };
+
+    return {
+      ...initialConfigState,
+      update,
+      getPersistedValue,
+    } as unknown as ConfigStoreState<TConfig>;
+  })();

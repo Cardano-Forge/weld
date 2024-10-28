@@ -6,7 +6,7 @@ import { weld } from "../main";
 import type { WeldConfig } from "../main/stores/config";
 import { createContextFromStore } from "./context";
 
-const walletContext = createContextFromStore("wallet");
+const walletContext = createContextFromStore(weld.wallet);
 const WalletProvider = walletContext.provider;
 export const useWallet: {
   (): WalletStoreState;
@@ -17,7 +17,7 @@ export const useWallet: {
   ): WalletStoreState<TKeys[number]>;
 } = walletContext.hook;
 
-const extensionsContext = createContextFromStore("extensions");
+const extensionsContext = createContextFromStore(weld.extensions);
 const ExtensionsProvider = extensionsContext.provider;
 export const useExtensions = extensionsContext.hook;
 

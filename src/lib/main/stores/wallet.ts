@@ -6,7 +6,11 @@ import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/inte
 import { getFailureReason } from "@/internal/utils/errors";
 import type { PartialWithDiscriminant } from "@/internal/utils/types";
 import { UtxosUpdateManager } from "@/internal/utxos-update";
-import { type DefaultWalletStoreProps, WalletStoreManager } from "@/internal/wallet-store";
+import {
+  type DefaultWalletStoreProps,
+  WalletStoreManager,
+  type WalletStorePersistData,
+} from "@/internal/wallet-store";
 import {
   type NetworkId,
   WalletConnectionAbortedError,
@@ -17,7 +21,7 @@ import {
   weld,
 } from "@/lib/main";
 import { connect as weldConnect } from "@/lib/main/connect";
-import type { WalletConfig } from "@/lib/main/stores/config";
+import type { ConfigStore, WalletConfig } from "@/lib/main/stores/config";
 
 export type WalletProps = DefaultWalletStoreProps &
   WalletInfo & {
@@ -65,7 +69,7 @@ export type ConnectWalletCallbacks = {
 export type WalletApi = {
   connect(key: string, config?: Partial<WalletConfig & ConnectWalletCallbacks>): void;
   connectAsync: (key: string, config?: Partial<WalletConfig>) => Promise<ConnectedWalletState>;
-  disconnect(): void;
+  disconnect(): Promise<void>;
   ensureUtxos(): Promise<string[]>;
 };
 
@@ -81,21 +85,36 @@ export type WalletStoreState<
   [TKey in Extract<TKeys, keyof WalletApi>]: WalletApi[TKey];
 };
 
-export type WalletStorePersistData = {
-  tryToReconnectTo?: string;
-};
+export type { WalletStorePersistData };
 
 export type WalletStore = Store<WalletStoreState, WalletStorePersistData>;
 
 export const createWalletStore = createStoreFactory<
   WalletStoreState,
   WalletStorePersistData,
-  [] | [{ lifecycle?: LifeCycleManager; utxosUpdate?: UtxosUpdateManager }]
+  | []
+  | [
+      {
+        config?: ConfigStore;
+        lifecycle?: LifeCycleManager;
+        connect?: typeof weldConnect;
+        utxosUpdate?: UtxosUpdateManager;
+        maxUtxosUpdateRetryCount?: number;
+        utxosUpdateRetryInterval?: number;
+      },
+    ]
 >(
   (
     setState,
     getState,
-    { lifecycle = new LifeCycleManager(), utxosUpdate = new UtxosUpdateManager() } = {},
+    {
+      config = weld.config,
+      lifecycle = new LifeCycleManager(),
+      connect: connectFct = weldConnect,
+      utxosUpdate = new UtxosUpdateManager(),
+      maxUtxosUpdateRetryCount = 8,
+      utxosUpdateRetryInterval = 5000,
+    } = {},
   ) => {
     const ensureUtxos: WalletApi["ensureUtxos"] = async () => {
       return utxosUpdate.runningUpdate?.promise ?? getState().utxos ?? [];
@@ -107,7 +126,7 @@ export const createWalletStore = createStoreFactory<
       newWalletState,
       async (key, opts) => {
         const handler: WalletHandler = handleAccountChangeErrors(
-          await weldConnect(key),
+          await connectFct(key),
           async () => {
             const isEnabled = await handler.reenable();
             if (!isEnabled) {
@@ -116,7 +135,7 @@ export const createWalletStore = createStoreFactory<
               );
             }
             updateState().catch(async (error) => {
-              walletManager.handleUpdateError(error);
+              await walletManager.handleUpdateError(error);
               await walletManager.disconnect();
             });
             return handler;
@@ -138,14 +157,14 @@ export const createWalletStore = createStoreFactory<
           while (
             expectChange &&
             typeof prevUtxos !== "undefined" &&
-            retryCount++ < 8 &&
+            retryCount++ < maxUtxosUpdateRetryCount &&
             compare(prevUtxos, nextUtxos)
           ) {
             await new Promise<void>((resolve) => {
               setTimeout(async () => {
                 nextUtxos = await handler.getUtxos();
                 resolve();
-              }, 3000);
+              }, utxosUpdateRetryInterval);
             });
           }
           return nextUtxos;
@@ -161,25 +180,29 @@ export const createWalletStore = createStoreFactory<
                 setState({ isUpdatingUtxos: false, utxos });
               }
 
-              running.success(utxos);
+              running.resolve(utxos);
             })
             .catch((error) => {
-              walletManager.handleUpdateError(new WalletUtxosUpdateError(getFailureReason(error)));
-
-              if (!running.update.signal.aborted && !handler.isDisconnected) {
-                setState({ isUpdatingUtxos: false, utxos: [] });
-              }
-
-              running.error();
-            })
-            .finally(running.cleanup);
+              walletManager
+                .handleUpdateError(new WalletUtxosUpdateError(getFailureReason(error)))
+                .then(() => {
+                  if (!running.update.signal.aborted && !handler.isDisconnected) {
+                    setState({ isUpdatingUtxos: false, utxos: [] });
+                  }
+                  running.resolve([]);
+                });
+            });
         };
 
         // utxos are purposefully omitted here since getUtxos can take a long time
         // to resolve and we don't want it to affect connection speed
         const updateState = async () => {
-          const balanceLovelace = await handler.getBalanceLovelace();
+          if (handler.isDisconnected) {
+            await disconnect();
+            return;
+          }
 
+          const balanceLovelace = await handler.getBalanceLovelace();
           const prevState = getState();
           const hasBalanceChanged = balanceLovelace !== prevState.balanceLovelace;
 
@@ -217,7 +240,7 @@ export const createWalletStore = createStoreFactory<
         };
       },
       "connectedWallet",
-      weld.config,
+      config,
       lifecycle,
     ).on("beforeDisconnect", () => {
       if (utxosUpdate.runningUpdate) {
@@ -258,16 +281,18 @@ export const createWalletStore = createStoreFactory<
       walletManager.cleanup();
     };
 
-    const initialState: WalletStoreState & StoreSetupFunctions = {
-      ...newWalletState(),
-      connect,
-      connectAsync,
-      disconnect,
-      ensureUtxos,
-      __init,
-      __cleanup,
-      __persist,
-    };
+    const initialState: WalletStoreState & StoreSetupFunctions & { __mngr: typeof walletManager } =
+      {
+        ...newWalletState(),
+        connect,
+        connectAsync,
+        disconnect,
+        ensureUtxos,
+        __init,
+        __cleanup,
+        __persist,
+        __mngr: walletManager,
+      };
 
     return initialState as WalletStoreState;
   },

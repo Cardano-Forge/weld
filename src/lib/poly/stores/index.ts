@@ -2,12 +2,12 @@ export * from "@/internal/evm/extensions";
 export * from "@/internal/evm/wallet";
 
 import { type EvmExtensionsStore, createEvmExtensionsStore } from "@/internal/evm/extensions";
-import { EvmChainId } from "@/internal/evm/types";
+import type { EvmConfig } from "@/internal/evm/types";
 import { type EvmWalletStore, createEvmWalletStore } from "@/internal/evm/wallet";
 import { type ConfigStore, type WeldConfig, createConfigStore } from "@/lib/main/stores/config";
 import { POLY_EXTENSIONS } from "../types";
 
-let configStore: ConfigStore;
+let configStore: ConfigStore<EvmConfig>;
 let walletStore: EvmWalletStore;
 let extensionsStore: EvmExtensionsStore;
 
@@ -21,7 +21,7 @@ export const weldPoly = {
   get wallet() {
     if (!walletStore) {
       walletStore = createEvmWalletStore({
-        chainId: EvmChainId.POLY,
+        chain: "poly",
         extensions: this.extensions,
         config: this.config,
         storageKey: "connectedPolyWallet",
@@ -31,7 +31,10 @@ export const weldPoly = {
   },
   get extensions() {
     if (!extensionsStore) {
-      extensionsStore = createEvmExtensionsStore(POLY_EXTENSIONS);
+      extensionsStore = createEvmExtensionsStore({
+        extensions: POLY_EXTENSIONS,
+        config: this.config,
+      });
     }
     return extensionsStore;
   },

@@ -1,5 +1,5 @@
 import type { LifeCycleManager } from "@/internal/lifecycle";
-import type { ConfigStore, StoreConfig, UpdateConfig } from "@/lib/main/stores/config";
+import type { ConfigStore, StoreConfig, UpdateConfig, WeldConfig } from "@/lib/main/stores/config";
 
 function mergeConfigs<TKey extends keyof UpdateConfig>(
   key: TKey,
@@ -19,10 +19,10 @@ function mergeConfigs<TKey extends keyof UpdateConfig>(
 export function setupAutoUpdate(
   fn: (stop: () => void) => unknown,
   lifecycle: LifeCycleManager,
-  configStore: ConfigStore,
+  configStore: ConfigStore | ConfigStore<Omit<WeldConfig, "customWallets">>,
   store?: keyof StoreConfig,
   ...overrides: (Partial<UpdateConfig> | undefined)[]
-) {
+): { stop: () => void } {
   let unsubInterval: (() => void) | undefined = undefined;
   let unsubWindowFocus: (() => void) | undefined = undefined;
 
@@ -82,4 +82,6 @@ export function setupAutoUpdate(
       { fireImmediately: true },
     ),
   );
+
+  return { stop };
 }

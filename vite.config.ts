@@ -1,5 +1,6 @@
 import { copyFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
+/// <reference types="vitest" />
 import { type LibraryOptions, type PluginOption, defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 import nodePolyfills from "vite-plugin-node-stdlib-browser";
@@ -52,7 +53,7 @@ export default defineConfig({
     lib: {
       entry: entryPoints.reduce(
         (acc, file) => {
-          const ext = file === "react" ? "tsx" : "ts";
+          const ext = file.includes("react") ? "tsx" : "ts";
           acc[file] = resolve(__dirname, `src/lib/${file}/index.${ext}`);
           return acc;
         },
@@ -86,4 +87,7 @@ export default defineConfig({
     copyPackageJson(),
     nodePolyfills(),
   ],
+  test: {
+    environment: "jsdom",
+  },
 });

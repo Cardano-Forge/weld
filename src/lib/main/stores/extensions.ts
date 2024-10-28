@@ -1,22 +1,19 @@
 import { setupAutoUpdate } from "@/internal/auto-update";
 import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
-import { weld } from "..";
 import {
+  type ExtensionCache,
   type InstalledExtensions,
-  getInstalledExtensions,
+  getInstalledExtensions as defaultGetInstalledExtensions,
+  newExtensionCache,
   newInstalledExtensions,
-} from "../extensions";
+} from "@/lib/main/extensions";
+import { weld } from "..";
+import type { ConfigStore } from "./config";
 
 export type ExtensionsProps = InstalledExtensions & {
   isLoading: boolean;
   isFetching: boolean;
-};
-
-const initialExtensionsState: ExtensionsProps = {
-  ...newInstalledExtensions(),
-  isLoading: true,
-  isFetching: false,
 };
 
 export type ExtensionsApi = {
@@ -29,26 +26,47 @@ export type ExtensionsStore = Store<ExtensionsStoreState>;
 
 type ExtendedExtensionsStoreState = ExtensionsStoreState & StoreSetupFunctions;
 
-export const createExtensionsStore = createStoreFactory<ExtensionsStoreState>(
-  (setState, getState) => {
-    const lifecycle = new LifeCycleManager();
-
+export const createExtensionsStore = createStoreFactory<
+  ExtensionsStoreState,
+  undefined,
+  | []
+  | [
+      {
+        config?: ConfigStore;
+        lifecycle?: LifeCycleManager;
+        cache?: ExtensionCache;
+        getInstalledExtensions?: typeof defaultGetInstalledExtensions;
+      },
+    ]
+>(
+  (
+    setState,
+    _getState,
+    {
+      config = weld.config,
+      lifecycle = new LifeCycleManager(),
+      cache = newExtensionCache(),
+      getInstalledExtensions = defaultGetInstalledExtensions,
+    } = {},
+  ) => {
     const handleUpdateError = (error: unknown) => {
-      weld.config.getState().onUpdateError?.("extensions", error);
-      weld.config.getState().wallet.onUpdateError?.(error);
+      config.getState().onUpdateError?.("extensions", error);
+      config.getState().extensions.onUpdateError?.(error);
     };
 
-    const update: ExtensionsApi["update"] = async (signal?: InFlightSignal) => {
-      if (weld.config.getState().debug) {
+    const update = (async (signal?: InFlightSignal, stop?: () => void) => {
+      if (config.getState().debug) {
         console.log("[WELD] Extensions state update");
       }
       try {
-        if (getState()?.isFetching || signal?.aborted) {
+        if (signal?.aborted) {
+          stop?.();
           return;
         }
         setState({ isFetching: true });
-        const res = await getInstalledExtensions();
+        const res = await getInstalledExtensions({ cache });
         if (signal?.aborted) {
+          stop?.();
           return;
         }
         setState({
@@ -63,22 +81,22 @@ export const createExtensionsStore = createStoreFactory<ExtensionsStoreState>(
           isFetching: false,
         });
       }
-    };
+    }) satisfies ExtensionsApi["update"];
 
-    const __init = () => {
-      if (typeof window !== "undefined") {
-        lifecycle.subscriptions.clearAll();
-        const signal = lifecycle.inFlight.add();
-        update()
-          .then(() => {
-            if (signal.aborted) {
-              return;
-            }
-            setupAutoUpdate(update, lifecycle, weld.config, "extensions");
-          })
-          .finally(() => {
-            lifecycle.inFlight.remove(signal);
-          });
+    const __init = async () => {
+      if (typeof window === "undefined") {
+        return;
+      }
+      lifecycle.subscriptions.clearAll();
+      const signal = lifecycle.inFlight.add();
+      try {
+        await update(signal);
+        if (signal.aborted) {
+          return;
+        }
+        setupAutoUpdate((stop) => update(signal, stop), lifecycle, config, "extensions");
+      } finally {
+        lifecycle.inFlight.remove(signal);
       }
     };
 
@@ -87,7 +105,9 @@ export const createExtensionsStore = createStoreFactory<ExtensionsStoreState>(
     };
 
     const initialState: ExtendedExtensionsStoreState = {
-      ...initialExtensionsState,
+      ...newInstalledExtensions(),
+      isLoading: true,
+      isFetching: false,
       update,
       __init,
       __cleanup,
