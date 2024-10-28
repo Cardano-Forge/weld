@@ -87,7 +87,7 @@ export type WalletStoreState<
 
 export type { WalletStorePersistData };
 
-export type WalletStore = Store<WalletStoreState, WalletStorePersistData>;
+export type WalletStore = Store<WalletStoreState, WalletStorePersistData> & WalletStoreState;
 
 export const createWalletStore = createStoreFactory<
   WalletStoreState,

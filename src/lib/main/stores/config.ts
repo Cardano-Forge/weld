@@ -60,7 +60,8 @@ export type ConfigStoreState<TConfig extends Omit<WeldConfig, "customWallets"> =
 
 export type ConfigStore<TConfig extends Omit<WeldConfig, "customWallets"> = WeldConfig> = Store<
   ConfigStoreState<TConfig>
->;
+> &
+  ConfigStoreState<TConfig>;
 
 export const createConfigStore = <
   TConfig extends Omit<WeldConfig, "customWallets"> = WeldConfig,

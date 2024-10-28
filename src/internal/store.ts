@@ -49,7 +49,7 @@ export type ExtractStoreState<TStore> = TStore extends { getState: () => infer T
 
 export function createStore<TState extends object, TPersistData = never>(
   createState: StoreHandler<TState>,
-): Store<TState, TPersistData> {
+): Store<TState, TPersistData> & TState {
   let state: TState;
   const listeners = new Set<StoreListener<TState>>();
 
@@ -135,14 +135,25 @@ export function createStore<TState extends object, TPersistData = never>(
   const initialState = createState(setState, getState);
   state = initialState;
 
-  return store;
+  return new Proxy(store, {
+    get(target, p, receiver) {
+      if (p in store) {
+        return Reflect.get(target, p, receiver);
+      }
+      if (p in state) {
+        return state[p as keyof typeof state];
+      }
+      return undefined;
+    },
+    // biome-ignore lint/suspicious/noExplicitAny: TODO
+  }) as any;
 }
 
 export type StoreFactory<
   TState extends object,
   TPersistData = never,
   TParams extends ReadonlyArray<unknown> = [],
-> = (...params: TParams) => Store<TState, TPersistData>;
+> = (...params: TParams) => Store<TState, TPersistData> & TState;
 
 export function createStoreFactory<
   TState extends object,

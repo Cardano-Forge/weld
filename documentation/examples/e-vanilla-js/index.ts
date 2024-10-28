@@ -1,7 +1,7 @@
 import { getFailureReason } from "@/internal/utils/errors";
 import { weld } from "@/lib/main";
 
-weld.config.getState().update({
+weld.config.update({
   debug: true,
   onUpdateError(context, error) {
     console.log("error", context, getFailureReason(error));

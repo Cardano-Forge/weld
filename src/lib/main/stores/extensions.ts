@@ -22,7 +22,7 @@ export type ExtensionsApi = {
 
 export type ExtensionsStoreState = ExtensionsProps & ExtensionsApi;
 
-export type ExtensionsStore = Store<ExtensionsStoreState>;
+export type ExtensionsStore = Store<ExtensionsStoreState> & ExtensionsStoreState;
 
 type ExtendedExtensionsStoreState = ExtensionsStoreState & StoreSetupFunctions;
 
