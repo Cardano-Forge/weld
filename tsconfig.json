@@ -23,7 +23,9 @@
     "noFallthroughCasesInSwitch": true,
 
     "baseUrl": ".",
-    "paths": { "@/documentation/*": ["documentation/*"], "@/*": ["src/*"] }
+    "paths": { "@/documentation/*": ["documentation/*"], "@/*": ["src/*"] },
+
+    "types": ["vitest/jsdom"]
   },
   "include": ["src", "documentation"],
   "exclude": ["node_modules", "dist"]

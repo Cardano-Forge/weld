@@ -4,8 +4,9 @@ import type {
   TransactionSignature,
   VersionedTransaction,
 } from "@solana/web3.js";
+import type { WeldConfig } from "../main/stores/config";
 
-export type SolHandler = {
+export type SolApi = {
   isPhantom?: boolean;
   publicKey?: { toBytes(): Uint8Array };
   isConnected: boolean;
@@ -22,44 +23,57 @@ export type SolHandler = {
   disconnect(): Promise<void>;
 };
 
-export function isSolHandler(obj: unknown): obj is SolHandler {
+export function isSolApi(obj: unknown): obj is SolApi {
   return (
     typeof obj === "object" && obj !== null && "connect" in obj && typeof obj.connect === "function"
   );
 }
 
+export const defaultSolConnectionEndpoint =
+  "https://solana-mainnet.g.alchemy.com/v2/sReIBMwUbvwelgkh1R1ay33uNmAk4Qu-";
+
 export type SolExtensionInfo = {
   key: string;
   displayName: string;
+  path: string;
 };
 
-export type SolExtension = SolExtensionInfo & {
-  handlerPath: string;
-  isInstalled: boolean;
-  handler?: SolHandler;
+export type SolExtension = {
+  info: SolExtensionInfo;
+  api?: SolApi;
 };
 
 export const SOL_EXTENSIONS = [
   {
     key: "phantom",
     displayName: "Phantom",
-    handlerPath: "phantom.solana",
+    path: "phantom.solana",
   },
   {
     key: "nufi",
     displayName: "NuFi",
-    handlerPath: "nufiSolana",
+    path: "nufiSolana",
   },
   {
     key: "coinbase",
     displayName: "CoinBase",
-    handlerPath: "coinbaseSolana",
+    path: "coinbaseSolana",
   },
   {
     key: "exodus",
     displayName: "Exodus",
-    handlerPath: "exodus.solana",
+    path: "exodus.solana",
   },
-] as const satisfies readonly Omit<SolExtension, "isInstalled" | "handler">[];
+] as const satisfies readonly SolExtensionInfo[];
 
 export type SolExtensionKey = (typeof SOL_EXTENSIONS)[number]["key"];
+
+export type SolConfig = Omit<WeldConfig, "customWallets"> & { connectionEndpoint?: string };
+
+export const solUnits = ["lamport", "sol"] as const;
+export type SolUnit = (typeof solUnits)[number];
+export function isSolUnit(obj?: unknown): obj is SolUnit {
+  return typeof obj === "string" && solUnits.includes(obj as SolUnit);
+}
+
+export type SolTokenAddress = string;

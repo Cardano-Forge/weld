@@ -2,17 +2,18 @@ export * from "./extensions";
 export * from "./wallet";
 
 import { type ConfigStore, type WeldConfig, createConfigStore } from "@/lib/main/stores/config";
+import type { SolConfig } from "../types";
 import { type SolExtensionsStore, createSolExtensionsStore } from "./extensions";
 import { type SolWalletStore, createSolWalletStore } from "./wallet";
 
-let configStore: ConfigStore;
+let configStore: ConfigStore<SolConfig>;
 let walletStore: SolWalletStore;
 let extensionsStore: SolExtensionsStore;
 
 export const weldSol = {
   get config() {
     if (!configStore) {
-      configStore = createConfigStore();
+      configStore = createConfigStore<SolConfig>();
     }
     return configStore;
   },

@@ -1,21 +1,21 @@
-import type { EvmExtensionPath } from "@/internal/evm/types";
+import type { EvmExtensionInfo } from "@/internal/evm/types";
 
 export const ETH_EXTENSIONS = [
   {
     key: "metamask",
     displayName: "Metamask",
-    handlerPath: "ethereum",
+    path: "ethereum",
   },
   {
     key: "phantom",
     displayName: "Phantom",
-    handlerPath: "phantom.ethereum",
+    path: "phantom.ethereum",
   },
   {
     key: "exodus",
     displayName: "Exodus",
-    handlerPath: "exodus.ethereum",
+    path: "exodus.ethereum",
   },
-] as const satisfies readonly EvmExtensionPath[];
+] as const satisfies readonly EvmExtensionInfo[];
 
 export type EthExtensionKey = (typeof ETH_EXTENSIONS)[number]["key"];

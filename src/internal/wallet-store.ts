@@ -1,11 +1,13 @@
 import { setupAutoUpdate } from "@/internal/auto-update";
 import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
 import type { MaybePromise, PartialWithDiscriminant } from "@/internal/utils/types";
-import { type WalletConfig, createConfigStore } from "@/lib/main/stores/config";
 import {
-  WalletConnectionAbortedError,
-  WalletDisconnectAccountError,
-} from "@/lib/main/utils/errors";
+  type ConfigStore,
+  type WalletConfig,
+  type WeldConfig,
+  createConfigStore,
+} from "@/lib/main/stores/config";
+import { WalletConnectionAbortedError } from "@/lib/main/utils/errors";
 import { STORAGE_KEYS } from "@/lib/server";
 
 export type DefaultWalletStoreProps = {
@@ -20,9 +22,13 @@ export type DefaultWalletStoreState = PartialWithDiscriminant<
   "isConnected"
 >;
 
-type ConnectOpts = {
+export type WalletStoreManagerConnectOpts = {
   signal: InFlightSignal;
   configOverrides?: Partial<WalletConfig>;
+};
+
+export type WalletStorePersistData = {
+  tryToReconnectTo?: string;
 };
 
 type Events = {
@@ -40,26 +46,34 @@ type EventHandler<TEvent extends keyof Events> = Events[TEvent] extends undefine
   ? () => MaybePromise<void>
   : (params: Events[TEvent]) => MaybePromise<void>;
 
-export class WalletStoreManager<TProps extends DefaultWalletStoreState = DefaultWalletStoreState> {
-  private _subscriptions: { [TEvent in keyof Events]: Set<EventHandler<TEvent>> } = {
+export type WalletStoreManagerSubscriptions = {
+  [TEvent in keyof Events]: Set<EventHandler<TEvent>>;
+};
+export function newWalletStoreManagerSubscriptions(): WalletStoreManagerSubscriptions {
+  return {
     beforeDisconnect: new Set(),
     afterDisconnect: new Set(),
     updateError: new Set(),
   };
+}
 
+export class WalletStoreManager<TProps extends DefaultWalletStoreState = DefaultWalletStoreState> {
   constructor(
     private _setState: (s: Partial<TProps>) => void,
     private _getState: () => TProps,
     private _newState: () => TProps,
     private _createConnection: (
       key: NonNullable<TProps["key"]>,
-      opts: ConnectOpts,
+      opts: WalletStoreManagerConnectOpts,
     ) => MaybePromise<{
       updateState: () => MaybePromise<void>;
     }>,
     private _walletStorageKey: keyof typeof STORAGE_KEYS,
-    private _configStore = createConfigStore(),
+    private _configStore:
+      | ConfigStore
+      | ConfigStore<Omit<WeldConfig, "customWallets">> = createConfigStore(),
     private _lifecycle = new LifeCycleManager(),
+    private _subscriptions = newWalletStoreManagerSubscriptions(),
   ) {}
 
   on<TEvent extends keyof Events>(event: TEvent, handler: EventHandler<TEvent>) {
@@ -68,8 +82,7 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
   }
 
   async disconnect() {
-    this._lifecycle.subscriptions.clearAll();
-    this._lifecycle.inFlight.abortAll();
+    this._lifecycle.cleanup();
     this._runSubscriptions("beforeDisconnect");
     this._setState(this._newState());
     if (this._configStore.getState().enablePersistence) {
@@ -80,7 +93,10 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
 
   async connect(
     key: NonNullable<TProps["key"]>,
-    { signal = this._lifecycle.inFlight.add(), configOverrides }: Partial<ConnectOpts> = {},
+    {
+      signal = this._lifecycle.inFlight.add(),
+      configOverrides,
+    }: Partial<WalletStoreManagerConnectOpts> = {},
   ) {
     try {
       this._lifecycle.subscriptions.clearAll();
@@ -143,7 +159,7 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
 
       return newState as Extract<TProps, { isConnected: true }>;
     } catch (error) {
-      if (error instanceof WalletDisconnectAccountError) {
+      if (!(error instanceof WalletConnectionAbortedError)) {
         await this.disconnect();
       }
       throw error;
@@ -152,9 +168,9 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
     }
   }
 
-  init(opts: { initialState: TProps }) {
+  async init(opts: { initialState: TProps }) {
     if (opts.initialState.isConnectingTo) {
-      this.connect(opts.initialState.isConnectingTo).catch((error) => {
+      await this.connect(opts.initialState.isConnectingTo).catch((error) => {
         if (this._configStore.getState().debug) {
           console.log("[WELD] Wallet auto connect failed", {
             key: opts.initialState.isConnectingTo,
@@ -165,7 +181,7 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
     }
   }
 
-  persist(opts: { initialState: TProps }, data?: { tryToReconnectTo?: string }) {
+  persist(opts: { initialState: TProps }, data?: WalletStorePersistData) {
     let isConnectingTo = data?.tryToReconnectTo;
     if (
       !isConnectingTo &&
@@ -185,10 +201,10 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
     this._lifecycle.cleanup();
   }
 
-  handleUpdateError(error: unknown) {
+  async handleUpdateError(error: unknown) {
     this._configStore.getState().onUpdateError?.("wallet", error);
     this._configStore.getState().wallet.onUpdateError?.(error);
-    this._runSubscriptions("updateError", error);
+    await this._runSubscriptions("updateError", error);
   }
 
   private async _runSubscriptions<TEvent extends keyof EventsWithParams>(

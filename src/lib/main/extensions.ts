@@ -2,8 +2,8 @@ import {
   type DefaultWalletApi,
   type WalletInfo,
   type WalletKey,
-  getWalletExtensions,
-  getWalletInfo,
+  getWalletExtensions as defaultGetWalletExtensions,
+  getWalletInfo as defaultGetWalletInfo,
 } from "@/lib/main";
 
 export type InstalledExtension = {
@@ -31,10 +31,20 @@ export function newInstalledExtensions(): InstalledExtensions {
   };
 }
 
-const cache = new Map<DefaultWalletApi, InstalledExtension>();
+export type ExtensionCache = Map<DefaultWalletApi, InstalledExtension>;
+
+export function newExtensionCache(): ExtensionCache {
+  return new Map();
+}
 
 export async function getInstalledExtensions({
-  caching = true,
+  cache,
+  getWalletInfo = defaultGetWalletInfo,
+  getWalletExtensions = defaultGetWalletExtensions,
+}: {
+  cache?: ExtensionCache;
+  getWalletInfo?: typeof defaultGetWalletInfo;
+  getWalletExtensions?: typeof defaultGetWalletExtensions;
 } = {}): Promise<InstalledExtensions> {
   const walletExtensions = await getWalletExtensions();
   const res = newInstalledExtensions();
@@ -43,13 +53,9 @@ export async function getInstalledExtensions({
     const info = getWalletInfo(extension);
 
     let api: InstalledExtension;
-    if (!caching) {
-      api = { info, defaultApi: extension.defaultApi };
-    } else {
-      api = cache.get(extension.defaultApi) ?? { info, defaultApi: extension.defaultApi };
-    }
+    api = cache?.get(extension.defaultApi) ?? { info, defaultApi: extension.defaultApi };
 
-    cache.set(extension.defaultApi, api);
+    cache?.set(extension.defaultApi, api);
 
     res.allMap.set(info.key, api);
     res.allArr.push(api);

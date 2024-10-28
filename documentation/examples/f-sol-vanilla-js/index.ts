@@ -10,11 +10,11 @@ weldSol.wallet.subscribeWithSelector(
 );
 
 weldSol.wallet.subscribeWithSelector(
-  (state) => state.balance?.toFixed(2) ?? "-",
+  (state) => state.balanceSol ?? "-",
   (balance) => {
     console.log("balance", balance);
     // biome-ignore lint/style/noNonNullAssertion: We know the element exists
-    document.querySelector("#balance")!.textContent = balance;
+    document.querySelector("#balance")!.textContent = String(balance);
   },
 );
 
@@ -45,7 +45,7 @@ document.querySelector("#send")?.addEventListener("click", () => {
   weldSol.wallet.getState().send({
     to: "3rTMfB64SpBvnA2ErfSSs7zYa9sHJciVw2uaWuCmb7Gd",
     amount: "0.1",
-    tokenAddress: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263", // Bonk token
+    unit: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263", // Bonk token
   });
 });
 
