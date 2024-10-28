@@ -95,7 +95,8 @@ export type EvmWalletStoreState<
   [TKey in Extract<TKeys, keyof EvmWalletApi>]: EvmWalletApi[TKey];
 };
 
-export type EvmWalletStore = Store<EvmWalletStoreState, WalletStorePersistData>;
+export type EvmWalletStore = Store<EvmWalletStoreState, WalletStorePersistData> &
+  EvmWalletStoreState;
 
 export type EvmWalletStoreOptions = {
   chain: keyof typeof evmChainIds;

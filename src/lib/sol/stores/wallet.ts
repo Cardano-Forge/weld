@@ -97,7 +97,8 @@ export type SolWalletStoreState<
   [TKey in Extract<TKeys, keyof SolWalletApi>]: SolWalletApi[TKey];
 };
 
-export type SolWalletStore = Store<SolWalletStoreState, WalletStorePersistData>;
+export type SolWalletStore = Store<SolWalletStoreState, WalletStorePersistData> &
+  SolWalletStoreState;
 
 export type CreateSolWalletStoreOpts = {
   lifecycle?: LifeCycleManager;

@@ -30,7 +30,7 @@ weldEth.wallet.subscribeWithSelector(
 
 document.querySelector("#connect")?.addEventListener("click", () => {
   console.log("click");
-  weldEth.wallet.getState().connect("metamask", {
+  weldEth.wallet.connect("metamask", {
     onError(error) {
       console.log("error", error);
     },

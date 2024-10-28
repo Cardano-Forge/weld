@@ -23,7 +23,7 @@ export type EvmExtensionsApi = {
 
 export type EvmExtensionsState = EvmExtensionsProps & EvmExtensionsApi;
 
-export type EvmExtensionsStore = Store<EvmExtensionsState>;
+export type EvmExtensionsStore = Store<EvmExtensionsState> & EvmExtensionsState;
 
 function newInitialEvmState(): EvmExtensionsProps {
   return {
