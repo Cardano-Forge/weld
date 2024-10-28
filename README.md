@@ -19,8 +19,45 @@
 ## Table of Contents
 
 - [Table of Contents](#table-of-contents)
+- [About](#about)
+- [Getting Started](#getting-started)
+  - [Installation](#installation)
+  - [Usage](#usage)
+    - [Connecting a Wallet](#connecting-a-wallet)
+    - [Retrieve Connected Wallet Info](#retrieve-connected-wallet-info)
+    - [Interacting with the Wallet](#interacting-with-the-wallet)
+    - [Disconnecting the Wallet](#disconnecting-the-wallet)
+    - [Retrieving Wallet Extensions](#retrieving-wallet-extensions)
+    - [Updating Wallet Extensions](#updating-wallet-extensions)
+- [Concepts](#concepts)
+  - [Universal Reactive Stores](#universal-reactive-stores)
+  - [Error handling](#error-handling)
+    - [Synchronous errors](#synchronous-errors)
+    - [Asynchronous errors](#asynchronous-errors)
+  - [Wallet Connection Persistence](#wallet-connection-persistence)
+    - [Automatic reconnection](#automatic-reconnection)
+    - [Configuration](#configuration)
+- [Cross-Chain Support](#cross-chain-support)
+  - [Usage with Ethereum](#usage-with-ethereum)
+  - [Usage with Polygon](#usage-with-polygon)
+  - [Usage with Solana](#usage-with-solana)
+- [Cross-Framework Support](#cross-framework-support)
+    - [Usage with Svelte](#usage-with-svelte)
+    - [Usage with Vanilla JavaScript](#usage-with-vanilla-javascript)
+- [Server-Side Rendering](#server-side-rendering)
 
 ## About
+
+**Weld** is a universal wallet connector library designed to make managing Web3 wallet connections seamless and intuitive. With a focus on flexibility and developer experience, Weld stands out among wallet connectors due to its innovative features:
+
+- **Universal Reactivity System**  
+  Weld's reactivity system is framework-agnostic, making it possible to integrate seamlessly with any frontend framework or pure JavaScript. Weld's reactive stores enable developers to subscribe to specific state properties, minimizing unnecessary re-renders and improving performance, especially in complex applications.
+
+- **Unified Multi-Blockchain Support**  
+  Weld provides a single, unified API to interact with wallet extensions across multiple blockchain ecosystems, including Cardano, Ethereum, Polygon, and Solana. This means developers can manage wallet connections and user interactions consistently, regardless of the underlying blockchain.
+
+- **Extensive TypeScript Support**  
+  Weld is built with TypeScript from the ground up, offering comprehensive type definitions for all hooks and APIs. This provides a robust developer experience with powerful autocomplete and type inference.
 
 ## Getting Started
 
@@ -291,7 +328,7 @@ _Note: `getPersistedValue` always returns `undefined` when persistence is disabl
 By default, the user's wallet connection is persisted in a cookie to allow support for SSR.
 This behavior can be customized by updating the configuration store to provide a different [Storage](https://developer.mozilla.org/en-US/docs/Web/API/Storage) interface.
 
-Here’s how to customize the persistence using the WeldProvider:
+Here's how to customize the persistence using the WeldProvider:
 
 ```tsx
 import { WeldProvider } from "@ada-anvil/weld/react";
@@ -321,7 +358,7 @@ export default function RootLayout({ children }) {
 }
 ```
 
-Here’s an example using the default configuration.
+Here's an example using the default configuration.
 
 ```typescript
 weld.config.getState().update({
@@ -367,15 +404,138 @@ Currently, Weld integrates with the following chains:
 
 ### Usage with Ethereum
 
-[Ethereum](https://ethereum.org/en/)
+First, make sure all required dependencies are installed:
+
+```bash
+npm install @ada-anvil/weld ethers
+```
+
+_To use the react bindings, you'll also need to make sure that react is installed and available_
+
+Then, wrap your entire application within the `WeldEthProvider`:
+
+```tsx
+import { WeldEthProvider } from "@ada-anvil/weld/eth/react";
+import { App } from "./app";
+
+export function Index() {
+  return (
+    <WeldEthProvider>
+      <App />
+    </WeldEthProvider>
+  );
+}
+```
+
+Now, you can interact with the library through custom hooks from anywhere in your application.
+
+```tsx
+import { useEthWallet, useEthExtensions } from "@ada-anvil/weld/eth/react";
+```
+
+To use Weld's ethereum stores outside of React, use the `weldEth` instance as you would the `weld` instance.
+
+```tsx
+import { weldEth } from "@ada-anvil/weld/eth";
+weldEth.wallet.subscribeWithSelector(
+  s => s.isConnected,
+  isConnected => {
+    if (isConnected) {
+      console.log("Eth wallet is connected");
+    }
+  }
+);
+```
 
 ### Usage with Polygon
 
-[Polygon](https://polygon.technology/)
+First, make sure all required dependencies are installed:
+
+```bash
+npm install @ada-anvil/weld ethers
+```
+
+_To use the react bindings, you'll also need to make sure that react is installed and available_
+
+Then, wrap your entire application within the `WeldPolyProvider`:
+
+```tsx
+import { WeldPolyProvider } from "@ada-anvil/weld/poly/react";
+import { App } from "./app";
+
+export function Index() {
+  return (
+    <WeldPolyProvider>
+      <App />
+    </WeldPolyProvider>
+  );
+}
+```
+
+Now, you can interact with the library through custom hooks from anywhere in your application.
+
+```tsx
+import { usePolyWallet, usePolyExtensions } from "@ada-anvil/weld/poly/react";
+```
+
+To use Weld's polygon stores outside of React, use the `weldPoly` instance as you would the `weld` instance.
+
+```tsx
+import { weldPoly } from "@ada-anvil/weld/poly";
+weldPoly.wallet.subscribeWithSelector(
+  s => s.isConnected,
+  isConnected => {
+    if (isConnected) {
+      console.log("Poly wallet is connected");
+    }
+  }
+);
+```
 
 ### Usage with Solana
 
-[Solana](https://solana.com/)
+First, make sure all required dependencies are installed:
+
+```bash
+npm install @ada-anvil/weld @solana/web3.js @solana/spl-token
+```
+
+_To use the react bindings, you'll also need to make sure that react is installed and available_
+
+Then, wrap your entire application within the `WeldSolProvider`:
+
+```tsx
+import { WeldSolProvider } from "@ada-anvil/weld/sol/react";
+import { App } from "./app";
+
+export function Index() {
+  return (
+    <WeldSolProvider>
+      <App />
+    </WeldSolProvider>
+  );
+}
+```
+
+Now, you can interact with the library through custom hooks from anywhere in your application.
+
+```tsx
+import { useSolWallet, useSolExtensions } from "@ada-anvil/weld/sol/react";
+```
+
+To use Weld's solana stores outside of React, use the `weldSol` instance as you would the `weld` instance.
+
+```tsx
+import { weldSol } from "@ada-anvil/weld/sol";
+weldSol.wallet.subscribeWithSelector(
+  s => s.isConnected,
+  isConnected => {
+    if (isConnected) {
+      console.log("Sol wallet is connected");
+    }
+  }
+);
+```
 
 ## Cross-Framework Support
 
