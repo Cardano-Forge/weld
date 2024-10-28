@@ -22,6 +22,7 @@
 - [About](#about)
 - [Getting Started](#getting-started)
   - [Installation](#installation)
+  - [Examples](#examples)
   - [Usage](#usage)
     - [Connecting a Wallet](#connecting-a-wallet)
     - [Retrieve Connected Wallet Info](#retrieve-connected-wallet-info)
@@ -66,6 +67,14 @@
 ```bash
 npm install @ada-anvil/weld
 ```
+
+### Examples
+
+> **Note:** A recent version of Node.js is required to run the demo server and view the examples.
+
+To get started with the examples, navigate to the project's root directory, install dependencies with `npm install`, and then start the demo server by running `npm run dev`.
+
+Alternatively, you can explore the example code directly by browsing the [examples folder](/documentation/examples/).
 
 ### Usage
 
@@ -321,7 +330,7 @@ function initFunction() {
 }
 ```
 
-_Note: `getPersistedValue` always returns `undefined` when persistence is disabled._
+> Note: `getPersistedValue` always returns `undefined` when persistence is disabled.
 
 #### Configuration
 
@@ -390,7 +399,7 @@ weld.config.getState().update({
 });
 ```
 
-_Note: When using a SSR framework, make sure to set configuration options inside a client side file_
+> Note: When using a SSR framework, make sure to set configuration options inside a client side file.
 
 ## Cross-Chain Support
 
@@ -693,7 +702,7 @@ Weld can be used without any framework. Here's an example of how you can leverag
 </html>
 ```
 
-Note: When using a build tool like [Vite](https://vite.dev/), we recommend using a package manager instead of the CDN version to install and manage Weld:
+> Note: When using a build tool like [Vite](https://vite.dev/), we recommend using a package manager instead of the CDN version to install and manage Weld:
 
 ```bash
 npm install @ada-anvil/weld
@@ -732,7 +741,7 @@ export default function RootLayout({ children }) {
 
 This setup ensures that the correct wallet connection state is available when the application first renders.
 
-<small>_Note: This approach works only if you use cookies to store persisted data, as they are accessible on both the client and server— unlike window.localStorage, for example, which is only available in the browser._</small>
+> <small>Note: This approach works only if you use cookies to store persisted data, as they are accessible on both the client and server— unlike window.localStorage, for example, which is only available in the browser.</small>
 
 ---
 
