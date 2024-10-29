@@ -14,7 +14,7 @@ import { UNSAFE_LIB_USAGE_ERROR, isBrowser } from "@/internal/utils/browser";
 export async function connect<T extends WalletKey>(key: T): Promise<WalletHandlerByKey[T]>;
 export async function connect(key: string): Promise<WalletHandler>;
 export async function connect(key: string): Promise<WalletHandler> {
-  if (!isBrowser() && !weld.config.getState().ignoreUnsafeUsageError) {
+  if (!isBrowser() && !weld.config.ignoreUnsafeUsageError) {
     console.error(UNSAFE_LIB_USAGE_ERROR);
   }
 

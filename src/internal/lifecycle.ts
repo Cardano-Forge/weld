@@ -1,7 +1,7 @@
 export type UnsubscribeFct = () => void;
 
-class SubscriptionManager {
-  private _subscriptions = new Set<UnsubscribeFct>();
+export class SubscriptionManager {
+  constructor(private _subscriptions = new Set<UnsubscribeFct>()) {}
 
   add(unsubscribe: UnsubscribeFct) {
     this._subscriptions.add(unsubscribe);
@@ -20,33 +20,42 @@ class SubscriptionManager {
 }
 
 export type InFlightSignal = {
+  id: string;
   aborted: boolean;
 };
 
-class InFlightManager {
-  private _inFlight = new Set<InFlightSignal>();
+export function newInFlightSignal({
+  id = crypto.randomUUID(),
+  aborted = false,
+} = {}): InFlightSignal {
+  return { id, aborted };
+}
 
-  add() {
-    const signal: InFlightSignal = { aborted: false };
-    this._inFlight.add(signal);
+export class InFlightManager {
+  constructor(public signals = new Set<InFlightSignal>()) {}
+
+  add(signal: InFlightSignal = newInFlightSignal()): InFlightSignal {
+    this.signals.add(signal);
     return signal;
   }
 
   remove(signal: InFlightSignal) {
-    this._inFlight.delete(signal);
+    this.signals.delete(signal);
   }
 
   abortAll() {
-    for (const inFlight of this._inFlight) {
+    for (const inFlight of this.signals) {
       inFlight.aborted = true;
     }
-    this._inFlight.clear();
+    this.signals.clear();
   }
 }
 
 export class LifeCycleManager {
-  subscriptions = new SubscriptionManager();
-  inFlight = new InFlightManager();
+  constructor(
+    public subscriptions = new SubscriptionManager(),
+    public inFlight = new InFlightManager(),
+  ) {}
 
   cleanup() {
     this.subscriptions.clearAll();

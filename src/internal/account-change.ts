@@ -1,5 +1,6 @@
+import { getFailureReason } from "@/internal/utils/errors";
 import { WalletDisconnectAccountError } from "@/lib/main";
-import { getFailureReason } from "./utils/errors";
+import type { MaybePromise } from "./utils/types";
 
 function defaultIsAccountChangeError(error: unknown): error is Error {
   return getFailureReason(error) === "account changed";
@@ -7,8 +8,8 @@ function defaultIsAccountChangeError(error: unknown): error is Error {
 
 export function handleAccountChangeErrors<T extends Record<string, unknown>>(
   enabledApi: T,
-  updateEnabledApi: () => Promise<T>,
-  isApiEnabled: () => Promise<boolean>,
+  updateEnabledApi: () => MaybePromise<T>,
+  isApiEnabled: () => MaybePromise<boolean>,
   { isAccountChangeError = defaultIsAccountChangeError } = {},
 ): T {
   const proxy = new Proxy(enabledApi, {
@@ -21,11 +22,12 @@ export function handleAccountChangeErrors<T extends Record<string, unknown>>(
       }
 
       // biome-ignore lint/suspicious/noExplicitAny: We don't care about the param types here
-      return async (...params: any[]) => {
-        try {
-          const res: unknown = await value.apply(target, params);
+      return (...params: any[]) => {
+        const res: unknown = value.apply(target, params);
+        if (!(res instanceof Promise)) {
           return res;
-        } catch (error) {
+        }
+        return res.catch(async (error) => {
           if (isAccountChangeError(error)) {
             const updatedApi = await updateEnabledApi();
             const newValue: unknown = updatedApi[p];
@@ -43,7 +45,7 @@ export function handleAccountChangeErrors<T extends Record<string, unknown>>(
           }
 
           throw error;
-        }
+        });
       };
     },
   });

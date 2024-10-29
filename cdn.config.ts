@@ -9,12 +9,13 @@ export default defineConfig({
     },
   },
   build: {
-    minify: false,
+    minify: true,
     emptyOutDir: false,
     lib: {
       formats: ["iife"],
       name: "cdn",
       entry: "/src/lib/cdn/index.ts",
+      fileName: () => "cdn.min.js",
     },
   },
 });

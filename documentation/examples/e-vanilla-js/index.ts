@@ -1,7 +1,7 @@
 import { getFailureReason } from "@/internal/utils/errors";
 import { weld } from "@/lib/main";
 
-weld.config.getState().update({
+weld.config.update({
   debug: true,
   onUpdateError(context, error) {
     console.log("error", context, getFailureReason(error));
@@ -11,6 +11,9 @@ weld.config.getState().update({
   },
   extensions: {
     // updateInterval: false,
+  },
+  customWallets: {
+    blacklist: ["nufiSnap"],
   },
 });
 
@@ -41,6 +44,7 @@ weld.extensions.subscribeWithSelector(
 weld.wallet.subscribeWithSelector(
   (state) => state.displayName ?? "-",
   (displayName) => {
+    console.log("displayName", displayName);
     // biome-ignore lint/style/noNonNullAssertion: We know the element exists
     document.querySelector("#name")!.textContent = displayName;
   },
@@ -69,13 +73,13 @@ if (form instanceof HTMLFormElement) {
     const data = new FormData(form);
     const walletKey = data.get("wallet-key")?.toString();
     if (walletKey) {
-      weld.wallet.getState().connect(walletKey);
+      weld.wallet.connect(walletKey);
     }
   });
 }
 
 document.querySelector("#disconnect")?.addEventListener("click", () => {
-  weld.wallet.getState().disconnect();
+  weld.wallet.disconnect();
 });
 
 window.addEventListener("load", () => {

@@ -1,32 +1,36 @@
 // adapted from https://github.com/pmndrs/zustand/blob/main/src/vanilla.ts
 
-import { compare } from "./compare";
-import { initCustomWallets } from "./custom/init";
+import { compare } from "@/internal/compare";
+import type { MaybePromise } from "./utils/types";
 
 export type StoreListener<T> = (state: T, prevState: T | undefined) => void;
 
 export type StoreSetupFunctions = {
-  __init?(): void;
-  __cleanup?(): void;
-  __persist?(data?: unknown): void;
+  __init?(): MaybePromise<void>;
+  __cleanup?(): MaybePromise<void>;
+  __persist?(data?: unknown): MaybePromise<void>;
 };
+
+export type GetStateFunction<TState> = () => TState;
+
+export type SetStateFunction<TState> = (
+  partial: TState | Partial<TState> | ((state: TState) => TState | Partial<TState>),
+) => void;
 
 // biome-ignore lint/suspicious/noExplicitAny: Allow any store for generics
 export type Store<TState = any, TPersistData = never> = {
-  getState: () => TState;
+  getState: GetStateFunction<TState>;
   getInitialState: () => TState;
-  setState: (
-    partial: TState | Partial<TState> | ((state: TState) => TState | Partial<TState>),
-  ) => void;
+  setState: SetStateFunction<TState>;
   subscribe: (listener: StoreListener<TState>, opts?: { fireImmediately?: boolean }) => () => void;
   subscribeWithSelector: <TSlice>(
     selector: (state: TState) => TSlice,
     listener: StoreListener<TSlice>,
     opts?: { fireImmediately?: boolean },
   ) => () => void;
-  persist: (persistData?: TPersistData) => void;
-  init: () => void;
-  cleanup: () => void;
+  persist: (persistData?: TPersistData) => MaybePromise<void>;
+  init: () => MaybePromise<void>;
+  cleanup: () => MaybePromise<void>;
 };
 
 export type StoreHandler<
@@ -45,7 +49,7 @@ export type ExtractStoreState<TStore> = TStore extends { getState: () => infer T
 
 export function createStore<TState extends object, TPersistData = never>(
   createState: StoreHandler<TState>,
-): Store<TState, TPersistData> {
+): Store<TState, TPersistData> & TState {
   let state: TState;
   const listeners = new Set<StoreListener<TState>>();
 
@@ -103,19 +107,18 @@ export function createStore<TState extends object, TPersistData = never>(
 
   const persist = (data?: unknown) => {
     const state = getState() as StoreSetupFunctions | undefined;
-    state?.__persist?.(data);
+    return state?.__persist?.(data);
   };
 
   const init = () => {
-    initCustomWallets();
     const state = getState() as StoreSetupFunctions | undefined;
-    state?.__init?.();
+    return state?.__init?.();
   };
 
   const cleanup = () => {
     const state = getState() as StoreSetupFunctions | undefined;
-    state?.__cleanup?.();
     listeners.clear();
+    return state?.__cleanup?.();
   };
 
   const store = {
@@ -132,14 +135,25 @@ export function createStore<TState extends object, TPersistData = never>(
   const initialState = createState(setState, getState);
   state = initialState;
 
-  return store;
+  return new Proxy(store, {
+    get(target, p, receiver) {
+      if (p in store) {
+        return Reflect.get(target, p, receiver);
+      }
+      if (p in state) {
+        return state[p as keyof typeof state];
+      }
+      return undefined;
+    },
+    // biome-ignore lint/suspicious/noExplicitAny: TODO
+  }) as any;
 }
 
 export type StoreFactory<
   TState extends object,
   TPersistData = never,
   TParams extends ReadonlyArray<unknown> = [],
-> = (...params: TParams) => Store<TState, TPersistData>;
+> = (...params: TParams) => Store<TState, TPersistData> & TState;
 
 export function createStoreFactory<
   TState extends object,

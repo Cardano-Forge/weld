@@ -1,6 +1,5 @@
-import { weld } from "@/lib/main";
-import type { StoreConfig, UpdateConfig } from "@/lib/main/stores/config";
-import type { LifeCycleManager } from "./lifecycle";
+import type { LifeCycleManager } from "@/internal/lifecycle";
+import type { ConfigStore, StoreConfig, UpdateConfig, WeldConfig } from "@/lib/main/stores/config";
 
 function mergeConfigs<TKey extends keyof UpdateConfig>(
   key: TKey,
@@ -20,9 +19,10 @@ function mergeConfigs<TKey extends keyof UpdateConfig>(
 export function setupAutoUpdate(
   fn: (stop: () => void) => unknown,
   lifecycle: LifeCycleManager,
+  configStore: ConfigStore | ConfigStore<Omit<WeldConfig, "customWallets">>,
   store?: keyof StoreConfig,
   ...overrides: (Partial<UpdateConfig> | undefined)[]
-) {
+): { stop: () => void } {
   let unsubInterval: (() => void) | undefined = undefined;
   let unsubWindowFocus: (() => void) | undefined = undefined;
 
@@ -44,7 +44,7 @@ export function setupAutoUpdate(
   };
 
   lifecycle.subscriptions.add(
-    weld.config.subscribeWithSelector(
+    configStore.subscribeWithSelector(
       (config) => mergeConfigs("updateInterval", config, store && config[store], ...overrides),
       (updateInterval) => {
         if (unsubInterval) {
@@ -63,7 +63,7 @@ export function setupAutoUpdate(
   );
 
   lifecycle.subscriptions.add(
-    weld.config.subscribeWithSelector(
+    configStore.subscribeWithSelector(
       (config) => mergeConfigs("updateOnWindowFocus", config, store && config[store], ...overrides),
       (updateOnWindowFocus) => {
         if (unsubWindowFocus) {
@@ -82,4 +82,6 @@ export function setupAutoUpdate(
       { fireImmediately: true },
     ),
   );
+
+  return { stop };
 }

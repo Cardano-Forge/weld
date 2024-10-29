@@ -2,6 +2,7 @@ import { copyFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { type LibraryOptions, type PluginOption, defineConfig } from "vite";
 import dts from "vite-plugin-dts";
+import { nodePolyfills } from "vite-plugin-node-polyfills";
 import * as pkg from "./package.json";
 
 const entryPoints = Object.values(pkg.exports)
@@ -51,7 +52,7 @@ export default defineConfig({
     lib: {
       entry: entryPoints.reduce(
         (acc, file) => {
-          const ext = file === "react" ? "tsx" : "ts";
+          const ext = file.includes("react") ? "tsx" : "ts";
           acc[file] = resolve(__dirname, `src/lib/${file}/index.${ext}`);
           return acc;
         },
@@ -59,7 +60,14 @@ export default defineConfig({
       ),
     },
     rollupOptions: {
-      external: ["react", "react-dom", "@types/react", "@types/react-dom"],
+      external: [
+        "react",
+        "react-dom",
+        "@types/react",
+        "@types/react-dom",
+        "@solana/web3.js",
+        "ethers",
+      ],
       output: {
         banner(chunk) {
           const banners: string[] = [];
@@ -76,5 +84,9 @@ export default defineConfig({
     dts({ outputDir: "dist/types", exclude: ["documentation/**"] }),
     generateDtsEntryPoints(),
     copyPackageJson(),
+    nodePolyfills(),
   ],
+  test: {
+    environment: "jsdom",
+  },
 });

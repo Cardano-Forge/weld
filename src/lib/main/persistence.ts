@@ -11,7 +11,7 @@ export const defaultStorage: WeldStorage = {
       for (const str of arr) {
         const [k, v] = str.split("=");
         if (k === key) {
-          return v;
+          return v || undefined;
         }
       }
       return undefined;

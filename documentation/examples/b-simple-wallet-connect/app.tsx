@@ -104,8 +104,8 @@ export const App = () => {
 };
 
 function updateExtensionsUpdateInterval() {
-  const curr = weld.config.getState().extensions.updateInterval;
-  weld.config.getState().update({
+  const curr = weld.config.extensions.updateInterval;
+  weld.config.update({
     extensions: {
       updateInterval: curr === 500 ? 6000 : 500,
     },
