@@ -52,7 +52,7 @@
 **Weld** is a universal wallet connector library designed to make managing Web3 wallet connections seamless and intuitive. With a focus on flexibility and developer experience, Weld stands out among wallet connectors due to its innovative features:
 
 - **Universal Reactivity System**  
-  Weld's reactivity system is framework-agnostic, making it possible to integrate seamlessly with any frontend framework or pure JavaScript. Weld's reactive stores enable developers to subscribe to specific state properties, minimizing unnecessary re-renders and improving performance, especially in complex applications.
+  Weld's reactivity system is framework-agnostic, making it possible to integrate seamlessly with any frontend framework or Vanilla JavaScript. Weld's reactive stores enable developers to subscribe to specific state properties, minimizing unnecessary re-renders and improving performance, especially in complex applications.
 
 - **Unified Cross-Chain Support**  
   Weld provides a single, unified API to interact with wallet extensions across multiple blockchain ecosystems, including Cardano, Ethereum, Polygon, and Solana. This means developers can manage wallet connections and user interactions consistently, regardless of the underlying blockchain.
@@ -548,7 +548,7 @@ weldSol.wallet.subscribeWithSelector(
 
 ## Cross-Framework Support
 
-Weld is built with flexibility in mind and as such can be used with any frontend framework or even pure JavaScript.
+Weld is built with flexibility in mind and as such can be used with any frontend framework or even Vanilla JavaScript.
 
 Here are some examples of how Weld can be integrated with popular modern frameworks.
 
@@ -625,7 +625,7 @@ Finally, use the context anywhere in your application:
 
 #### Usage with Vanilla JavaScript
 
-Weld can be used without any framework. Here's an example of how you can leverage Weld's reactivity system in pure html and JavaScript:
+Weld can be used without any framework. Here's an example of how you can leverage Weld's reactivity system in regular html and JavaScript:
 
 ```html
 <!DOCTYPE html>
