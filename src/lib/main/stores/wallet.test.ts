@@ -74,7 +74,7 @@ describe("connectAsync", () => {
     const { DefaultWalletHandler } = await import("@/internal/handler");
     const handler = new DefaultWalletHandler(namiInfo, defaultApi, enabledApi, enable);
     const wallet = createWalletStore({ lifecycle, connect: async () => handler });
-    const connected = await wallet.getState().connectAsync("nami");
+    const connected = await wallet.connectAsync("nami");
     for (const key of keys(namiInfo)) {
       expect(connected[key]).toBe(namiInfo[key]);
     }
@@ -100,18 +100,18 @@ describe("connectAsync", () => {
         return handler;
       },
     });
-    expect(wallet.getState().isConnected).toBe(false);
-    expect(wallet.getState().isConnecting).toBe(false);
-    expect(wallet.getState().isConnectingTo).toBeUndefined();
-    const promise = wallet.getState().connectAsync("nami");
+    expect(wallet.isConnected).toBe(false);
+    expect(wallet.isConnecting).toBe(false);
+    expect(wallet.isConnectingTo).toBeUndefined();
+    const promise = wallet.connectAsync("nami");
     await connectPromise.promise;
-    expect(wallet.getState().isConnected).toBe(false);
-    expect(wallet.getState().isConnecting).toBe(true);
-    expect(wallet.getState().isConnectingTo).toBe("nami");
+    expect(wallet.isConnected).toBe(false);
+    expect(wallet.isConnecting).toBe(true);
+    expect(wallet.isConnectingTo).toBe("nami");
     await promise;
-    expect(wallet.getState().isConnected).toBe(true);
-    expect(wallet.getState().isConnecting).toBe(false);
-    expect(wallet.getState().isConnectingTo).toBeUndefined();
+    expect(wallet.isConnected).toBe(true);
+    expect(wallet.isConnecting).toBe(false);
+    expect(wallet.isConnectingTo).toBeUndefined();
   });
 
   it("should fail if the connection fails", async () => {
@@ -121,7 +121,7 @@ describe("connectAsync", () => {
         throw new Error();
       },
     });
-    expect(() => wallet.getState().connectAsync("notinstalled")).rejects.toThrow();
+    expect(() => wallet.connectAsync("notinstalled")).rejects.toThrow();
   });
 
   it("should fail connection when is aborted", async () => {
@@ -139,7 +139,7 @@ describe("connectAsync", () => {
         return handler;
       },
     });
-    const promise = wallet.getState().connectAsync("nami");
+    const promise = wallet.connectAsync("nami");
     await connectReached.promise;
     lifecycle.cleanup();
     connectTrigger.resolve();
@@ -155,10 +155,10 @@ describe("connectAsync", () => {
     const handler = new DefaultWalletHandler(namiInfo, defaultApi, enabledApi, enable);
     const wallet = createWalletStore({ lifecycle, connect: async () => handler });
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    vi.spyOn((wallet.getState() as any).__mngr, "disconnect");
-    await wallet.getState().connectAsync("nami");
+    vi.spyOn((wallet as any).__mngr, "disconnect");
+    await wallet.connectAsync("nami");
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    expect((wallet.getState() as any).__mngr.disconnect).toHaveBeenCalled();
+    expect((wallet as any).__mngr.disconnect).toHaveBeenCalled();
   });
 
   it("should update the utxos when balance changes", async () => {
@@ -180,7 +180,7 @@ describe("connectAsync", () => {
     const { DefaultWalletHandler } = await import("@/internal/handler");
     const handler = new DefaultWalletHandler(namiInfo, defaultApi, updatedEnabledApi, enable);
     const wallet = createWalletStore({ lifecycle, utxosUpdate, connect: async () => handler });
-    await wallet.getState().connectAsync("nami");
+    await wallet.connectAsync("nami");
     expect(utxosUpdate.start).toHaveBeenCalledOnce();
     window.dispatchEvent(new Event("focus"));
     await vi.advanceTimersToNextTimerAsync();
@@ -198,12 +198,12 @@ describe("connectAsync", () => {
     const { DefaultWalletHandler } = await import("@/internal/handler");
     const handler = new DefaultWalletHandler(namiInfo, defaultApi, enabledApi, enable);
     const wallet = createWalletStore({ lifecycle, connect: async () => handler });
-    await wallet.getState().connectAsync("nami");
-    expect(wallet.getState().isConnected).toBe(true);
+    await wallet.connectAsync("nami");
+    expect(wallet.isConnected).toBe(true);
     await handler.disconnect();
     window.dispatchEvent(new Event("focus"));
     await vi.advanceTimersToNextTimerAsync();
-    expect(wallet.getState().isConnected).toBe(false);
+    expect(wallet.isConnected).toBe(false);
     vi.useRealTimers();
   });
 
@@ -219,12 +219,12 @@ describe("connectAsync", () => {
         return key === "nami" ? namiHandler : eternlHandler;
       },
     });
-    const connected = await wallet.getState().connectAsync("nami");
+    const connected = await wallet.connectAsync("nami");
     expect(connected.key).toBe("nami");
-    expect(wallet.getState().key).toBe("nami");
-    const connected2 = await wallet.getState().connectAsync("eternl");
+    expect(wallet.key).toBe("nami");
+    const connected2 = await wallet.connectAsync("eternl");
     expect(connected2.key).toBe("eternl");
-    expect(wallet.getState().key).toBe("eternl");
+    expect(wallet.key).toBe("eternl");
   });
 
   it("should retry fetching utxos until they change upon balance update", async () => {
@@ -263,19 +263,19 @@ describe("connectAsync", () => {
       maxUtxosUpdateRetryCount,
       connect: async () => handler,
     });
-    await wallet.getState().connectAsync("nami");
+    await wallet.connectAsync("nami");
     await vi.advanceTimersToNextTimerAsync();
-    expect(wallet.getState().balanceAda).toBe(balanceAda);
-    expect(wallet.getState().utxos).toBe(initUtxos);
+    expect(wallet.balanceAda).toBe(balanceAda);
+    expect(wallet.utxos).toBe(initUtxos);
     window.dispatchEvent(new Event("focus"));
     for (let i = 0; i < maxUtxosUpdateRetryCount - 1; i++) {
       await vi.advanceTimersByTimeAsync(utxosUpdateRetryInterval);
-      expect(wallet.getState().isUpdatingUtxos).toBe(true);
-      expect(wallet.getState().utxos).toBe(initUtxos);
+      expect(wallet.isUpdatingUtxos).toBe(true);
+      expect(wallet.utxos).toBe(initUtxos);
     }
     await vi.advanceTimersByTimeAsync(utxosUpdateRetryInterval);
-    expect(wallet.getState().isUpdatingUtxos).toBe(false);
-    expect(wallet.getState().utxos).toBe(nextUtxos);
+    expect(wallet.isUpdatingUtxos).toBe(false);
+    expect(wallet.utxos).toBe(nextUtxos);
     vi.useRealTimers();
   });
 
@@ -312,10 +312,10 @@ describe("connectAsync", () => {
       maxUtxosUpdateRetryCount,
       connect: async () => handler,
     });
-    await wallet.getState().connectAsync("nami");
+    await wallet.connectAsync("nami");
     await vi.advanceTimersToNextTimerAsync();
-    expect(wallet.getState().balanceAda).toBe(balanceAda);
-    expect(wallet.getState().utxos).toBe(initUtxos);
+    expect(wallet.balanceAda).toBe(balanceAda);
+    expect(wallet.utxos).toBe(initUtxos);
     window.dispatchEvent(new Event("focus"));
     await vi.advanceTimersByTimeAsync(utxosUpdateRetryInterval * maxUtxosUpdateRetryCount * 2);
     expect(getUtxosCount).toBe(maxUtxosUpdateRetryCount + 2); // First fetch + second fetch + retries
@@ -335,10 +335,10 @@ describe("disconnect", () => {
     const handler = new DefaultWalletHandler(namiInfo, defaultApi, enabledApi, enable);
     const wallet = createWalletStore({ lifecycle, connect: async () => handler });
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    vi.spyOn((wallet.getState() as any).__mngr, "disconnect");
-    await wallet.getState().disconnect();
+    vi.spyOn((wallet as any).__mngr, "disconnect");
+    await wallet.disconnect();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    expect((wallet.getState() as any).__mngr.disconnect).toHaveBeenCalled();
+    expect((wallet as any).__mngr.disconnect).toHaveBeenCalled();
   });
 });
 
@@ -350,10 +350,10 @@ describe("init", () => {
     const handler = new DefaultWalletHandler(namiInfo, defaultApi, enabledApi, enable);
     const wallet = createWalletStore({ lifecycle, connect: async () => handler });
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    vi.spyOn((wallet.getState() as any).__mngr, "init");
+    vi.spyOn((wallet as any).__mngr, "init");
     wallet.init();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    expect((wallet.getState() as any).__mngr.init).toHaveBeenCalled();
+    expect((wallet as any).__mngr.init).toHaveBeenCalled();
   });
 });
 
@@ -365,10 +365,10 @@ describe("persist", () => {
     const handler = new DefaultWalletHandler(namiInfo, defaultApi, enabledApi, enable);
     const wallet = createWalletStore({ lifecycle, connect: async () => handler });
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    vi.spyOn((wallet.getState() as any).__mngr, "persist");
+    vi.spyOn((wallet as any).__mngr, "persist");
     wallet.persist();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    expect((wallet.getState() as any).__mngr.persist).toHaveBeenCalled();
+    expect((wallet as any).__mngr.persist).toHaveBeenCalled();
   });
 });
 
@@ -380,9 +380,9 @@ describe("cleanup", () => {
     const handler = new DefaultWalletHandler(namiInfo, defaultApi, enabledApi, enable);
     const wallet = createWalletStore({ lifecycle, connect: async () => handler });
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    vi.spyOn((wallet.getState() as any).__mngr, "cleanup");
+    vi.spyOn((wallet as any).__mngr, "cleanup");
     wallet.cleanup();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    expect((wallet.getState() as any).__mngr.cleanup).toHaveBeenCalled();
+    expect((wallet as any).__mngr.cleanup).toHaveBeenCalled();
   });
 });

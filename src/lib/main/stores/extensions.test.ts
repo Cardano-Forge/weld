@@ -40,26 +40,25 @@ describe("update", () => {
       invalid: {},
     };
     const store = createExtensionsStore({ lifecycle });
-    await store.getState().update();
-    const state = store.getState();
-    expect(state.allArr.length).toBe(2);
-    expect(state.supportedMap.get("nami")?.defaultApi).not.toBeUndefined();
-    expect(state.supportedMap.get("nami")?.defaultApi).toBe(window.cardano.nami);
-    expect(state.unsupportedMap.get("unsupported")?.defaultApi).not.toBeUndefined();
-    expect(state.unsupportedMap.get("unsupported")?.defaultApi).toBe(window.cardano.unsupported);
+    await store.update();
+    expect(store.allArr.length).toBe(2);
+    expect(store.supportedMap.get("nami")?.defaultApi).not.toBeUndefined();
+    expect(store.supportedMap.get("nami")?.defaultApi).toBe(window.cardano.nami);
+    expect(store.unsupportedMap.get("unsupported")?.defaultApi).not.toBeUndefined();
+    expect(store.unsupportedMap.get("unsupported")?.defaultApi).toBe(window.cardano.unsupported);
   });
 
   it("should update boolean flags", async () => {
     window.cardano = {};
     const store = createExtensionsStore({ lifecycle });
-    expect(store.getState().isLoading).toBe(true);
-    expect(store.getState().isFetching).toBe(false);
-    const promise = store.getState().update();
-    expect(store.getState().isLoading).toBe(true);
-    expect(store.getState().isFetching).toBe(true);
+    expect(store.isLoading).toBe(true);
+    expect(store.isFetching).toBe(false);
+    const promise = store.update();
+    expect(store.isLoading).toBe(true);
+    expect(store.isFetching).toBe(true);
     await promise;
-    expect(store.getState().isLoading).toBe(false);
-    expect(store.getState().isFetching).toBe(false);
+    expect(store.isLoading).toBe(false);
+    expect(store.isFetching).toBe(false);
   });
 
   it("should handle update errors", async () => {
@@ -68,7 +67,7 @@ describe("update", () => {
     const onUpdateError = vi.fn();
     const onExtensionsUpdateError = vi.fn();
     const config = createConfigStore();
-    config.getState().update({
+    config.update({
       onUpdateError,
       extensions: { onUpdateError: onExtensionsUpdateError },
     });
@@ -79,14 +78,14 @@ describe("update", () => {
         throw updateError;
       },
     });
-    expect(store.getState().isLoading).toBe(true);
-    expect(store.getState().isFetching).toBe(false);
-    const promise = store.getState().update();
-    expect(store.getState().isLoading).toBe(true);
-    expect(store.getState().isFetching).toBe(true);
+    expect(store.isLoading).toBe(true);
+    expect(store.isFetching).toBe(false);
+    const promise = store.update();
+    expect(store.isLoading).toBe(true);
+    expect(store.isFetching).toBe(true);
     await promise;
-    expect(store.getState().isLoading).toBe(false);
-    expect(store.getState().isFetching).toBe(false);
+    expect(store.isLoading).toBe(false);
+    expect(store.isFetching).toBe(false);
     expect(onUpdateError).toHaveBeenCalledWith("extensions", updateError);
     expect(onExtensionsUpdateError).toHaveBeenCalledWith(updateError);
   });
@@ -101,7 +100,7 @@ describe("init", () => {
     };
     const store = createExtensionsStore({ lifecycle });
     await store.init();
-    expect(store.getState().allArr.length).toBe(2);
+    expect(store.allArr.length).toBe(2);
   });
 
   it("should setup auto updates", async () => {

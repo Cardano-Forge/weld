@@ -39,13 +39,11 @@ describe("updateExtensions", () => {
       path: "phantom.solana",
     };
     const store = createSolExtensionsStore({ supportedExtensionInfos: [supported], lifecycle });
-    store.getState().updateExtensions();
-    expect(store.getState().installedArr.length).toBe(1);
-    expect(store.getState().installedArr.find((ext) => ext.info.key === supported.key)?.info).toBe(
-      supported,
-    );
-    expect(store.getState().installedMap.size).toBe(1);
-    expect(store.getState().installedMap.get(supported.key)?.info).toBe(supported);
+    store.updateExtensions();
+    expect(store.installedArr.length).toBe(1);
+    expect(store.installedArr.find((ext) => ext.info.key === supported.key)?.info).toBe(supported);
+    expect(store.installedMap.size).toBe(1);
+    expect(store.installedMap.get(supported.key)?.info).toBe(supported);
   });
 
   it("should extensions that are not installed", () => {
@@ -55,9 +53,9 @@ describe("updateExtensions", () => {
       path: "nowhere.to.be.found",
     };
     const store = createSolExtensionsStore({ supportedExtensionInfos: [supported], lifecycle });
-    store.getState().updateExtensions();
-    expect(store.getState().installedArr.length).toBe(0);
-    expect(store.getState().installedMap.size).toBe(0);
+    store.updateExtensions();
+    expect(store.installedArr.length).toBe(0);
+    expect(store.installedMap.size).toBe(0);
   });
 
   it("should ignore invalid extensions", () => {
@@ -68,9 +66,9 @@ describe("updateExtensions", () => {
     };
     (window as unknown as Record<string, unknown>).invalid = { invalid: "api" };
     const store = createSolExtensionsStore({ supportedExtensionInfos: [supported], lifecycle });
-    store.getState().updateExtensions();
-    expect(store.getState().installedArr.length).toBe(0);
-    expect(store.getState().installedMap.size).toBe(0);
+    store.updateExtensions();
+    expect(store.installedArr.length).toBe(0);
+    expect(store.installedMap.size).toBe(0);
     (window as unknown as Record<string, unknown>).invalid = undefined;
   });
 
@@ -81,17 +79,17 @@ describe("updateExtensions", () => {
       path: "phantom.solana",
     };
     const store = createSolExtensionsStore({ supportedExtensionInfos: [supported], lifecycle });
-    store.getState().updateExtensions();
-    const fromArr1 = store.getState().installedArr.find((ext) => ext.info === supported);
+    store.updateExtensions();
+    const fromArr1 = store.installedArr.find((ext) => ext.info === supported);
     expect(fromArr1).not.toBeUndefined();
-    const fromMap1 = store.getState().installedMap.get(supported.key);
+    const fromMap1 = store.installedMap.get(supported.key);
     expect(fromMap1).not.toBeUndefined();
     expect(fromArr1).toBe(fromMap1);
-    store.getState().updateExtensions();
-    const fromArr2 = store.getState().installedArr.find((ext) => ext.info === supported);
+    store.updateExtensions();
+    const fromArr2 = store.installedArr.find((ext) => ext.info === supported);
     expect(fromArr2).not.toBeUndefined();
     expect(fromArr2).toBe(fromArr1);
-    const fromMap2 = store.getState().installedMap.get(supported.key);
+    const fromMap2 = store.installedMap.get(supported.key);
     expect(fromMap2).not.toBeUndefined();
     expect(fromMap2).toBe(fromMap1);
   });
@@ -103,17 +101,17 @@ describe("updateExtensions", () => {
       path: "phantom.solana",
     };
     const store = createSolExtensionsStore({ supportedExtensionInfos: [supported], lifecycle });
-    store.getState().updateExtensions();
-    const fromArr1 = store.getState().installedArr.find((ext) => ext.info === supported);
+    store.updateExtensions();
+    const fromArr1 = store.installedArr.find((ext) => ext.info === supported);
     expect(fromArr1).not.toBeUndefined();
-    const fromMap1 = store.getState().installedMap.get(supported.key);
+    const fromMap1 = store.installedMap.get(supported.key);
     expect(fromMap1).not.toBeUndefined();
     expect(fromArr1).toBe(fromMap1);
-    store.getState().updateExtensions({ caching: false });
-    const fromArr2 = store.getState().installedArr.find((ext) => ext.info === supported);
+    store.updateExtensions({ caching: false });
+    const fromArr2 = store.installedArr.find((ext) => ext.info === supported);
     expect(fromArr2).not.toBeUndefined();
     expect(fromArr2).not.toBe(fromArr1);
-    const fromMap2 = store.getState().installedMap.get(supported.key);
+    const fromMap2 = store.installedMap.get(supported.key);
     expect(fromMap2).not.toBeUndefined();
     expect(fromMap2).not.toBe(fromMap1);
     expect(fromArr2).toBe(fromMap2);
@@ -129,7 +127,7 @@ describe("init", () => {
     };
     const store = createSolExtensionsStore({ supportedExtensionInfos: [supported], lifecycle });
     store.init();
-    expect(store.getState().installedArr.length).toBe(1);
+    expect(store.installedArr.length).toBe(1);
   });
 
   it("should setup auto updates", () => {

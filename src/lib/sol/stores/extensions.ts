@@ -23,7 +23,7 @@ export type SolExtensionsApi = {
 
 export type SolExtensionsState = SolExtensionsProps & SolExtensionsApi;
 
-export type SolExtensionsStore = Store<SolExtensionsState>;
+export type SolExtensionsStore = Store<SolExtensionsState> & SolExtensionsState;
 
 function newInitialSolState(): SolExtensionsProps {
   return {

@@ -22,7 +22,7 @@ export type ExtensionsApi = {
 
 export type ExtensionsStoreState = ExtensionsProps & ExtensionsApi;
 
-export type ExtensionsStore = Store<ExtensionsStoreState>;
+export type ExtensionsStore = Store<ExtensionsStoreState> & ExtensionsStoreState;
 
 type ExtendedExtensionsStoreState = ExtensionsStoreState & StoreSetupFunctions;
 
@@ -50,12 +50,12 @@ export const createExtensionsStore = createStoreFactory<
     } = {},
   ) => {
     const handleUpdateError = (error: unknown) => {
-      config.getState().onUpdateError?.("extensions", error);
-      config.getState().extensions.onUpdateError?.(error);
+      config.onUpdateError?.("extensions", error);
+      config.extensions.onUpdateError?.(error);
     };
 
     const update = (async (signal?: InFlightSignal, stop?: () => void) => {
-      if (config.getState().debug) {
+      if (config.debug) {
         console.log("[WELD] Extensions state update");
       }
       try {

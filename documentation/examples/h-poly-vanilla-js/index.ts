@@ -29,7 +29,7 @@ weldPoly.wallet.subscribeWithSelector(
 
 document.querySelector("#connect")?.addEventListener("click", () => {
   console.log("click");
-  weldPoly.wallet.getState().connect("metamask", {
+  weldPoly.wallet.connect("metamask", {
     onError(error) {
       console.log("error", error);
     },
@@ -37,14 +37,12 @@ document.querySelector("#connect")?.addEventListener("click", () => {
 });
 
 document.querySelector("#disconnect")?.addEventListener("click", () => {
-  weldPoly.wallet.getState().disconnect();
+  weldPoly.wallet.disconnect();
 });
 
 document.querySelector("#send")?.addEventListener("click", () => {
   console.log("send");
-  weldPoly.wallet
-    .getState()
-    .send({ to: "0xAD68508FCb4D5ee8e764b031a695d12830bCc324", amount: "0.0001" });
+  weldPoly.wallet.send({ to: "0xAD68508FCb4D5ee8e764b031a695d12830bCc324", amount: "0.0001" });
 });
 
 window.addEventListener("load", () => {

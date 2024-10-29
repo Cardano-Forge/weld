@@ -29,7 +29,7 @@ weldSol.wallet.subscribeWithSelector(
 
 document.querySelector("#connect")?.addEventListener("click", () => {
   console.log("click");
-  weldSol.wallet.getState().connect("phantom", {
+  weldSol.wallet.connect("phantom", {
     onError(error) {
       console.log("error", error);
     },
@@ -37,12 +37,12 @@ document.querySelector("#connect")?.addEventListener("click", () => {
 });
 
 document.querySelector("#disconnect")?.addEventListener("click", () => {
-  weldSol.wallet.getState().disconnect();
+  weldSol.wallet.disconnect();
 });
 
 document.querySelector("#send")?.addEventListener("click", () => {
   console.log("send");
-  weldSol.wallet.getState().send({
+  weldSol.wallet.send({
     to: "3rTMfB64SpBvnA2ErfSSs7zYa9sHJciVw2uaWuCmb7Gd",
     amount: "0.1",
     unit: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263", // Bonk token

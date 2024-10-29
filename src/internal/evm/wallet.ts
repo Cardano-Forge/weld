@@ -95,7 +95,8 @@ export type EvmWalletStoreState<
   [TKey in Extract<TKeys, keyof EvmWalletApi>]: EvmWalletApi[TKey];
 };
 
-export type EvmWalletStore = Store<EvmWalletStoreState, WalletStorePersistData>;
+export type EvmWalletStore = Store<EvmWalletStoreState, WalletStorePersistData> &
+  EvmWalletStoreState;
 
 export type EvmWalletStoreOptions = {
   chain: keyof typeof evmChainIds;
@@ -116,9 +117,9 @@ export const createEvmWalletStore = createStoreFactory<
     newEvmWalletState,
     async (key, opts) => {
       // Make sure the extensions are loaded
-      storeOptions.extensions.getState().updateExtensions();
+      storeOptions.extensions.updateExtensions();
 
-      const extension = storeOptions.extensions.getState().installedMap.get(key);
+      const extension = storeOptions.extensions.installedMap.get(key);
       if (!extension) {
         throw new WalletConnectionError(`The ${key} extension is not installed`);
       }

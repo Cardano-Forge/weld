@@ -1,11 +1,16 @@
 import { memo, useEffect, useState } from "react";
 
 import type { WeldConfig } from "@/lib/main/stores/config";
-import type { EvmWalletApi, EvmWalletProps, EvmWalletStoreState } from "@/lib/poly/stores";
-import { weldPoly } from "@/lib/poly/stores";
+import {
+  type EvmWalletApi,
+  type EvmWalletProps,
+  type EvmWalletStoreState,
+  type WeldPolyInstance,
+  createWeldPolyInstance,
+} from "@/lib/poly/stores";
 import { createContextFromStore } from "@/lib/react/context";
 
-const walletContext = createContextFromStore(weldPoly.wallet);
+const walletContext = createContextFromStore<WeldPolyInstance, "wallet">("wallet");
 const WalletProvider = walletContext.provider;
 export const usePolyWallet: {
   (): EvmWalletStoreState;
@@ -16,35 +21,41 @@ export const usePolyWallet: {
   ): EvmWalletStoreState<TKeys[number]>;
 } = walletContext.hook;
 
-const extensionsContext = createContextFromStore(weldPoly.extensions);
+const extensionsContext = createContextFromStore<WeldPolyInstance, "extensions">("extensions");
 const ExtensionsProvider = extensionsContext.provider;
 export const usePolyExtensions = extensionsContext.hook;
 
-export type WeldPolyProviderProps = React.PropsWithChildren<Partial<WeldConfig>>;
+export type WeldPolyProviderProps = React.PropsWithChildren<Partial<WeldConfig>> & {
+  instance?: WeldPolyInstance;
+};
 
-export const WeldPolyProvider = memo(({ children, ...config }: WeldPolyProviderProps) => {
-  // Keep config store in sync with provider props
-  useEffect(() => {
-    weldPoly.config.getState().update(config);
-  });
+export const WeldPolyProvider = memo(
+  ({ children, instance: instanceProp, ...config }: WeldPolyProviderProps) => {
+    const [instance] = useState(() => instanceProp ?? createWeldPolyInstance());
 
-  useState(() => {
-    weldPoly.persist(config);
-  });
-
-  useEffect(() => {
-    weldPoly.init({
-      // Persistence is performed once and only once during hydration
-      persist: false,
+    // Keep config store in sync with provider props
+    useEffect(() => {
+      instance.config.update(config);
     });
-    return () => {
-      weldPoly.cleanup();
-    };
-  }, []);
 
-  return (
-    <WalletProvider>
-      <ExtensionsProvider>{children}</ExtensionsProvider>
-    </WalletProvider>
-  );
-});
+    useState(() => {
+      instance.persist(config);
+    });
+
+    useEffect(() => {
+      instance.init({
+        // Persistence is performed once and only once during hydration
+        persist: false,
+      });
+      return () => {
+        instance.cleanup();
+      };
+    }, [instance]);
+
+    return (
+      <WalletProvider instance={instance}>
+        <ExtensionsProvider instance={instance}>{children}</ExtensionsProvider>
+      </WalletProvider>
+    );
+  },
+);
