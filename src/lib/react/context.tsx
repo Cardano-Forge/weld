@@ -4,13 +4,21 @@ import { createContext, useContext } from "react";
 import { useCompare } from "./compare";
 import { useStore } from "./store";
 
-export function createContextFromStore<TStore extends Store>(store: TStore) {
+type ExtractStores<TInstance extends Record<string, unknown>> = {
+  [TKey in keyof TInstance as TInstance[TKey] extends Store ? TKey : never]: TInstance[TKey];
+};
+
+export function createContextFromStore<
+  TInstance extends Record<string, unknown>,
+  TKey extends keyof ExtractStores<TInstance>,
+>(key: TKey) {
+  type TStore = ExtractStores<TInstance>[TKey];
   type TState = ExtractStoreState<TStore>;
 
   const Context = createContext<TStore | undefined>(undefined);
 
-  function provider({ children }: { children: React.ReactNode }) {
-    return <Context.Provider value={store}>{children}</Context.Provider>;
+  function provider({ children, instance }: { children: React.ReactNode; instance: TInstance }) {
+    return <Context.Provider value={instance[key]}>{children}</Context.Provider>;
   }
 
   function hook(): TState;
@@ -32,7 +40,7 @@ export function createContextFromStore<TStore extends Store>(store: TStore) {
     }
 
     return useStore(
-      store,
+      store as unknown as Store,
       useCompare((state) => {
         if (typeof selectorOrKey === "function") {
           return selectorOrKey(state);

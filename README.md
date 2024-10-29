@@ -561,26 +561,27 @@ You can easily integrate Weld with Svelte by leveraging the [context](https://sv
 First, create a `.svelte.ts` file containing the context:
 
 ```typescript
-import { weld, type WeldConfig } from "@ada-anvil/weld";
+import { createWeldInstance, type WeldConfig } from "@ada-anvil/weld";
 import { getContext, setContext } from "svelte";
 
 export class Weld {
+  instance = createWeldInstance();
   // Use the $state rune to create a reactive object for each Weld store
-  config = $state(weld.config);
-  wallet = $state(weld.wallet);
-  extensions = $state(weld.extensions);
+  config = $state(instance.config);
+  wallet = $state(instance.wallet);
+  extensions = $state(instance.extensions);
 
   constructor(persist?: Partial<WeldConfig>) {
-    weld.config.update({ updateInterval: 2000 });
-    if (persist) weld.persist(persist);
+    instance.config.update({ updateInterval: 2000 });
+    if (persist) instance.persist(persist);
     $effect(() => {
-      weld.init();
+      instance.init();
       // Subscribe to Weld stores and update reactive objects when changse occur
       // Note: No need to use subscribeWithSelector as $state objects are deeply reactive
-      weld.config.subscribe(s => (this.config = s));
-      weld.wallet.subscribe(s => (this.wallet = s));
-      weld.extensions.subscribe(s => (this.extensions = s));
-      return () => weld.cleanup();
+      instance.config.subscribe(s => (this.config = s));
+      instance.wallet.subscribe(s => (this.wallet = s));
+      instance.extensions.subscribe(s => (this.extensions = s));
+      return () => instance.cleanup();
     });
   }
 }

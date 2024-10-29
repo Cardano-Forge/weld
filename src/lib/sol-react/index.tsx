@@ -1,11 +1,16 @@
 import { memo, useEffect, useState } from "react";
 
+import type { WeldConfig } from "@/lib/main/stores/config";
 import { createContextFromStore } from "@/lib/react/context";
-import type { SolWalletApi, SolWalletProps, SolWalletStoreState } from "@/lib/sol/stores";
-import { weldSol } from "@/lib/sol/stores";
-import type { SolConfig } from "../sol/types";
+import {
+  type SolWalletApi,
+  type SolWalletProps,
+  type SolWalletStoreState,
+  type WeldSolInstance,
+  createWeldSolInstance,
+} from "@/lib/sol/stores";
 
-const walletContext = createContextFromStore(weldSol.wallet);
+const walletContext = createContextFromStore<WeldSolInstance, "wallet">("wallet");
 const WalletProvider = walletContext.provider;
 export const useSolWallet: {
   (): SolWalletStoreState;
@@ -16,35 +21,41 @@ export const useSolWallet: {
   ): SolWalletStoreState<TKeys[number]>;
 } = walletContext.hook;
 
-const extensionsContext = createContextFromStore(weldSol.extensions);
+const extensionsContext = createContextFromStore<WeldSolInstance, "extensions">("extensions");
 const ExtensionsProvider = extensionsContext.provider;
 export const useSolExtensions = extensionsContext.hook;
 
-export type WeldSolProviderProps = React.PropsWithChildren<Partial<SolConfig>>;
+export type WeldSolProviderProps = React.PropsWithChildren<Partial<WeldConfig>> & {
+  instance?: WeldSolInstance;
+};
 
-export const WeldSolProvider = memo(({ children, ...config }: WeldSolProviderProps) => {
-  // Keep config store in sync with provider props
-  useEffect(() => {
-    weldSol.config.update(config);
-  });
+export const WeldSolProvider = memo(
+  ({ children, instance: instanceProp, ...config }: WeldSolProviderProps) => {
+    const [instance] = useState(() => instanceProp ?? createWeldSolInstance());
 
-  useState(() => {
-    weldSol.persist(config);
-  });
-
-  useEffect(() => {
-    weldSol.init({
-      // Persistence is performed once and only once during hydration
-      persist: false,
+    // Keep config store in sync with provider props
+    useEffect(() => {
+      instance.config.update(config);
     });
-    return () => {
-      weldSol.cleanup();
-    };
-  }, []);
 
-  return (
-    <WalletProvider>
-      <ExtensionsProvider>{children}</ExtensionsProvider>
-    </WalletProvider>
-  );
-});
+    useState(() => {
+      instance.persist(config);
+    });
+
+    useEffect(() => {
+      instance.init({
+        // Persistence is performed once and only once during hydration
+        persist: false,
+      });
+      return () => {
+        instance.cleanup();
+      };
+    }, [instance]);
+
+    return (
+      <WalletProvider instance={instance}>
+        <ExtensionsProvider instance={instance}>{children}</ExtensionsProvider>
+      </WalletProvider>
+    );
+  },
+);
