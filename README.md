@@ -119,7 +119,7 @@ You can pass callbacks to handle success and error cases:
 ```tsx
 const connect = useWallet("connect");
 
-connect("nami", {
+connect("eternl", {
   onSuccess: wallet => {
     console.log("Connected to", wallet.displayName);
   },
@@ -135,11 +135,30 @@ connect("nami", {
 const connectAsync = useWallet("connectAsync");
 
 try {
-  const wallet = await connectAsync("nami"):
+  const wallet = await connectAsync("eternl"):
 } catch (error) {
   console.error("Failed to connect wallet", error);
 }
 ```
+
+Weld has been thoroughly tested with the following wallet extensions:
+
+| key         | Name       | Website                                                                                          |
+| ----------- | ---------- | ------------------------------------------------------------------------------------------------ |
+| eternl      | Eternl     | https://chrome.google.com/webstore/detail/eternl/kmhcihpebfmpgmihbkipmjlmmioameka?hl=en-US       |
+| nami        | Nami       | https://chrome.google.com/webstore/detail/nami/lpfcbjknijpeeillifnkikgncikgfhdo?hl=en-US         |
+| tokeo       | Tokeo      | https://tokeopay.io                                                                              |
+| flint       | Flint      | https://chrome.google.com/webstore/detail/flint-wallet/hnhobjmcibchnmglfbldbfabcgaknlkj?hl=en-US |
+| gerowallet  | Gero       | https://chrome.google.com/webstore/detail/gerowallet/bgpipimickeadkjlklgciifhnalhdjhe/overview   |
+| typhoncip30 | Typhon     | https://chrome.google.com/webstore/detail/typhon-wallet/kfdniefadaanbjodldohaedphafoffoh         |
+| nufi        | NuFi       | https://chrome.google.com/webstore/detail/nufi/gpnihlnnodeiiaakbikldcihojploeca?hl=en-US         |
+| nufiSnap    | MetaMask   | https://chrome.google.com/webstore/detail/nufi/gpnihlnnodeiiaakbikldcihojploeca?hl=en-US         |
+| lace        | Lace       | https://chrome.google.com/webstore/detail/lace/gafhhkghbfjjkeiendhlofajokpaflmk?hl=en-US         |
+| vespr       | VESPR      | https://www.vespr.xyz/                                                                           |
+
+> **Note:** While these extensions are fully compatible with Weld, you can pass any `key` that corresponds to a valid extension API (i.e., `window.cardano[key]`) to the connect function. However, functionality is only guaranteed with the supported extensions listed above.
+
+> **Tip:** Use the [extensions store](#retrieving-wallet-extensions) to dynamically retrieve all wallet extensions installed on the user’s machine.
 
 #### Retrieve Connected Wallet Info
 
@@ -173,7 +192,7 @@ const interact = async () => {
     return;
   }
   const utxos = await wallet.handler.getUtxos();
-  const res = await wallet.handler.signTx("[TX_HASH]");
+  const res = await wallet.handler.signTx("<CBOR>");
 };
 ```
 
@@ -193,7 +212,7 @@ const supportedArr = useExtensions("supportedArr");
 const names = supportedArr.map(ext => ext.info.displayName);
 
 const supportedMap = useExtensions("supportedArr");
-const name = supportedMap.get("nami")?.info.displayName;
+const name = supportedMap.get("eternl")?.info.displayName;
 
 const hasInstalledExtensions = useExtensions(s => s.allArr.length > 0);
 
@@ -337,7 +356,7 @@ function initFunction() {
 By default, the user's wallet connection is persisted in a cookie to allow support for SSR.
 This behavior can be customized by updating the configuration store to provide a different [Storage](https://developer.mozilla.org/en-US/docs/Web/API/Storage) interface.
 
-Here's how to customize the persistence using the WeldProvider:
+Here's how to customize the persistence strategy to use [localStorage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage) instead of cookies:
 
 ```tsx
 import { WeldProvider } from "@ada-anvil/weld/react";
