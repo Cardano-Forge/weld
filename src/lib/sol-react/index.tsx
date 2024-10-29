@@ -1,6 +1,5 @@
 import { memo, useEffect, useState } from "react";
 
-import type { WeldConfig } from "@/lib/main/stores/config";
 import { createContextFromStore } from "@/lib/react/context";
 import {
   type SolWalletApi,
@@ -9,6 +8,7 @@ import {
   type WeldSolInstance,
   createWeldSolInstance,
 } from "@/lib/sol/stores";
+import type { SolConfig } from "../sol/types";
 
 const walletContext = createContextFromStore<WeldSolInstance, "wallet">("wallet");
 const WalletProvider = walletContext.provider;
@@ -25,7 +25,7 @@ const extensionsContext = createContextFromStore<WeldSolInstance, "extensions">(
 const ExtensionsProvider = extensionsContext.provider;
 export const useSolExtensions = extensionsContext.hook;
 
-export type WeldSolProviderProps = React.PropsWithChildren<Partial<WeldConfig>> & {
+export type WeldSolProviderProps = React.PropsWithChildren<Partial<SolConfig>> & {
   instance?: WeldSolInstance;
 };
 

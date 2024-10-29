@@ -55,17 +55,17 @@
   },
   "files": ["**"],
   "scripts": {
-    "dev": "vite",
     "build": "tsc && vite build && vite build --config ./cdn.config.ts",
     "build:cdn": "tsc && vite build --config ./cdn.config.ts",
-    "lint": "biome lint --write .",
-    "format": "biome format --write .",
     "check": "biome check --write .",
+    "dev": "vite",
+    "format": "biome format --write .",
+    "lint": "biome lint --write .",
+    "pack": "cd dist && npm pack && mv *.tgz ..",
     "test": "vitest --run",
-    "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui --coverage.enabled=true",
-    "pack": "cd dist && npm pack && mv *.tgz .."
+    "test:watch": "vitest --watch"
   },
   "devDependencies": {
     "@actions/core": "^1.10.1",
@@ -96,6 +96,7 @@
     "typescript": "^5.4.5",
     "vite": "^5.2.0",
     "vite-plugin-dts": "^2.3.0",
+    "vite-plugin-node-polyfills": "^0.22.0",
     "vitest": "^2.0.5"
   },
   "peerDependencies": {
@@ -127,8 +128,7 @@
     "@nufi/dapp-client-core": "^0.3.5",
     "bech32": "^2.0.0",
     "cbor-js": "^0.1.0",
-    "use-sync-external-store": "^1.2.2",
-    "vite-plugin-node-stdlib-browser": "^0.2.1"
+    "use-sync-external-store": "^1.2.2"
   },
   "license": "MIT",
   "publishConfig": {

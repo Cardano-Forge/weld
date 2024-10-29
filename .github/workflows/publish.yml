@@ -35,11 +35,29 @@ jobs:
         with:
           bump: ${{ inputs.bump }}
 
-      - run: npm run check
+      - name: Update version in README examples
+        if: github.ref_name == 'main'
+        run: sed -i 's/weld@[0-9].[0-9].[0-9]/weld@${{ steps.update-versions.outputs.version }}/g' ./README.md
 
       - uses: webfactory/ssh-agent@v0.9.0
         with:
             ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # Append -{{ ref_name }} to version number if not on production branch
+      - name: Add pre-release flag
+        if: github.ref_name != 'main'
+        run: |
+          full_version=$(echo "-${{ github.ref_name }}" | sed 's/\//-/g')
+          jq --arg v "${full_version}" '.version += $v' package.json > tmp.json
+          mv tmp.json package.json
+
+      - run: npm install
+
+      - run: npm run check
+
+      - run: npm run test
+
+      - run: npm run build
 
       - name: Commit and push to main branch
         if: github.ref_name == 'main'
@@ -50,16 +68,6 @@ jobs:
           git tag -a ${{ steps.update-versions.outputs.version }} -m "Version ${{ steps.update-versions.outputs.version }}"
           git push origin ${{ steps.update-versions.outputs.version }}
           git push origin main
-
-      # Append -{{ ref_name }} to version number if not on production branch
-      - name: Add pre-release flag
-        if: github.ref_name != 'main'
-        run: |
-          full_version=$(echo "-${{ github.ref_name }}" | sed 's/\//-/g')
-          jq --arg v "${full_version}" '.version += $v' package.json > tmp.json
-          mv tmp.json package.json
-
-      - run: npm run build
 
       - name: Publish to registry
         if: github.ref_name == 'main'

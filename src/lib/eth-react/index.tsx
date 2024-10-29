@@ -1,5 +1,6 @@
 import { memo, useEffect, useState } from "react";
 
+import type { EvmConfig } from "@/internal/evm/types";
 import {
   type EvmWalletApi,
   type EvmWalletProps,
@@ -7,7 +8,6 @@ import {
   type WeldEthInstance,
   createWeldEthInstance,
 } from "@/lib/eth/stores";
-import type { WeldConfig } from "@/lib/main/stores/config";
 import { createContextFromStore } from "@/lib/react/context";
 
 const walletContext = createContextFromStore<WeldEthInstance, "wallet">("wallet");
@@ -25,7 +25,7 @@ const extensionsContext = createContextFromStore<WeldEthInstance, "extensions">(
 const ExtensionsProvider = extensionsContext.provider;
 export const useEthExtensions = extensionsContext.hook;
 
-export type WeldEthProviderProps = React.PropsWithChildren<Partial<WeldConfig>> & {
+export type WeldEthProviderProps = React.PropsWithChildren<Partial<EvmConfig>> & {
   instance?: WeldEthInstance;
 };
 

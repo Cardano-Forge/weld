@@ -565,23 +565,23 @@ import { createWeldInstance, type WeldConfig } from "@ada-anvil/weld";
 import { getContext, setContext } from "svelte";
 
 export class Weld {
-  instance = createWeldInstance();
+  weld = createWeldInstance();
   // Use the $state rune to create a reactive object for each Weld store
-  config = $state(instance.config);
-  wallet = $state(instance.wallet);
-  extensions = $state(instance.extensions);
+  config = $state(this.weld.config);
+  wallet = $state(this.weld.wallet);
+  extensions = $state(this.weld.extensions);
 
   constructor(persist?: Partial<WeldConfig>) {
-    instance.config.update({ updateInterval: 2000 });
-    if (persist) instance.persist(persist);
+    this.weld.config.update({ updateInterval: 2000 });
+    if (persist) this.weld.persist(persist);
     $effect(() => {
-      instance.init();
+      this.weld.init();
       // Subscribe to Weld stores and update reactive objects when changse occur
       // Note: No need to use subscribeWithSelector as $state objects are deeply reactive
-      instance.config.subscribe(s => (this.config = s));
-      instance.wallet.subscribe(s => (this.wallet = s));
-      instance.extensions.subscribe(s => (this.extensions = s));
-      return () => instance.cleanup();
+      this.weld.config.subscribe(s => (this.config = s));
+      this.weld.wallet.subscribe(s => (this.wallet = s));
+      this.weld.extensions.subscribe(s => (this.extensions = s));
+      return () => this.weld.cleanup();
     });
   }
 }
@@ -698,7 +698,7 @@ Weld can be used without any framework. Here's an example of how you can leverag
       }
     </script>
 
-    <script onload="init()" src="https://unpkg.com/@ada-anvil/weld/weld.iife.js" defer></script>
+    <script onload="init()" src="https://unpkg.com/@ada-anvil/weld@0.1.6/cdn.min.js" defer></script>
   </body>
 </html>
 ```

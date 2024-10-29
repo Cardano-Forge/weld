@@ -1,6 +1,6 @@
 import { memo, useEffect, useState } from "react";
 
-import type { WeldConfig } from "@/lib/main/stores/config";
+import type { EvmConfig } from "@/internal/evm/types";
 import {
   type EvmWalletApi,
   type EvmWalletProps,
@@ -25,7 +25,7 @@ const extensionsContext = createContextFromStore<WeldPolyInstance, "extensions">
 const ExtensionsProvider = extensionsContext.provider;
 export const usePolyExtensions = extensionsContext.hook;
 
-export type WeldPolyProviderProps = React.PropsWithChildren<Partial<WeldConfig>> & {
+export type WeldPolyProviderProps = React.PropsWithChildren<Partial<EvmConfig>> & {
   instance?: WeldPolyInstance;
 };
 
