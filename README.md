@@ -586,9 +586,9 @@ import { getContext, setContext } from "svelte";
 export class Weld {
   weld = createWeldInstance();
   // Use the $state rune to create a reactive object for each Weld store
-  config = $state(this.weld.config);
-  wallet = $state(this.weld.wallet);
-  extensions = $state(this.weld.extensions);
+  config = $state(this.weld.config.getState());
+  wallet = $state(this.weld.wallet.getState());
+  extensions = $state(this.weld.extensions.getState());
 
   constructor(persist?: Partial<WeldConfig>) {
     this.weld.config.update({ updateInterval: 2000 });
@@ -625,7 +625,7 @@ Then, initialize the context **once** at the root of your app:
 
 ```html
 <script>
-  import { setWeldContext } from "./weld.svelte.ts";
+  import { setWeldContext } from "./weld.svelte";
   setWeldContext();
 </script>
 ```
@@ -634,7 +634,7 @@ Finally, use the context anywhere in your application:
 
 ```html
 <script>
-  import { getWeldContext } from "./weld.svelte.ts";
+  import { getWeldContext } from "./weld.svelte";
   const weld = getWeldContext();
   const displayedBalance = $derived(weld.wallet.balanceAda?.toFixed(2) ?? "-");
 </script>
