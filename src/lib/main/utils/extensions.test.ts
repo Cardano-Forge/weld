@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   type DefaultWalletApi,
+  type EnabledWalletApi,
   type WindowCardano,
   enableWallet,
   getWalletExtensions,
   getWindowCardano,
-  type EnabledWalletApi,
 } from "./extensions";
 
 beforeEach(() => {
