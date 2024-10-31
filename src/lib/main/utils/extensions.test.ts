@@ -5,6 +5,7 @@ import {
   enableWallet,
   getWalletExtensions,
   getWindowCardano,
+  type EnabledWalletApi,
 } from "./extensions";
 
 beforeEach(() => {
@@ -114,22 +115,38 @@ describe("enableWallet", () => {
     expect(res).toBe(enabledApi);
   });
 
-  it("should retry", async () => {
+  it("should not retry when enable fails", async () => {
     vi.useFakeTimers();
-    const enabledApi = {};
     const retryIntervalMs = 1000;
     const maxRetryCount = 5;
-    let retryCount = 0;
+    let enableCount = 0;
     const defaultApi = {
-      async enable() {
-        if (++retryCount >= maxRetryCount) {
-          return enabledApi;
-        }
+      async enable(): Promise<EnabledWalletApi> {
+        enableCount++;
         throw new Error("not ready");
       },
     } as DefaultWalletApi;
     const promise = enableWallet(defaultApi, { maxRetryCount, retryIntervalMs });
     await vi.advanceTimersByTimeAsync(retryIntervalMs * maxRetryCount);
+    const res = await promise;
+    expect(res).toBeUndefined();
+    expect(enableCount).toBe(1);
+    vi.useRealTimers();
+  });
+
+  it("should retry when API does not have a 'enable' property", async () => {
+    vi.useFakeTimers();
+    const enabledApi = {} as EnabledWalletApi;
+    async function enable() {
+      return enabledApi;
+    }
+    const retryIntervalMs = 1000;
+    const maxRetryCount = 5;
+    const defaultApi = {} as DefaultWalletApi;
+    const promise = enableWallet(defaultApi, { maxRetryCount, retryIntervalMs });
+    await vi.advanceTimersByTimeAsync(retryIntervalMs * (maxRetryCount - 1));
+    defaultApi.enable = enable;
+    await vi.advanceTimersByTimeAsync(retryIntervalMs);
     const res = await promise;
     expect(res).toBe(enabledApi);
     vi.useRealTimers();
@@ -139,17 +156,10 @@ describe("enableWallet", () => {
     vi.useFakeTimers();
     const retryIntervalMs = 1000;
     const maxRetryCount = 5;
-    let retryCount = -1; // First try is not a retry
-    const defaultApi = {
-      async enable() {
-        retryCount++;
-        throw new Error("not ready");
-      },
-    } as unknown as DefaultWalletApi;
+    const defaultApi = {} as DefaultWalletApi;
     const promise = enableWallet(defaultApi, { maxRetryCount, retryIntervalMs });
     await vi.advanceTimersByTimeAsync(retryIntervalMs * maxRetryCount);
     const res = await promise;
-    expect(retryCount).toBe(maxRetryCount);
     expect(res).toBeUndefined();
     vi.useRealTimers();
   });

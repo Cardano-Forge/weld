@@ -215,14 +215,19 @@ export async function enableWallet(
 
   async function evaluate() {
     try {
-      const resp = await defaultApi.enable();
-      resolve(resp);
-    } catch {
-      if (++retryCount > maxRetryCount) {
-        resolve(undefined);
-      } else {
-        setTimeout(evaluate, retryIntervalMs);
+      if ("enable" in defaultApi) {
+        const resp = await defaultApi.enable();
+        resolve(resp);
+        return;
       }
+
+      if (++retryCount > maxRetryCount) {
+        throw new Error("API not found");
+      }
+
+      setTimeout(evaluate, retryIntervalMs);
+    } catch {
+      resolve(undefined);
     }
   }
 
