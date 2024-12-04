@@ -29,6 +29,7 @@
     - [Interacting with the Wallet](#interacting-with-the-wallet)
     - [Disconnecting the Wallet](#disconnecting-the-wallet)
     - [Retrieving Wallet Extensions](#retrieving-wallet-extensions)
+    - [Retrieving All Supported Wallet Extensions](#retrieving-all-supported-wallet-extensions)
     - [Updating Wallet Extensions](#updating-wallet-extensions)
 - [Concepts](#concepts)
   - [Universal Reactive Stores](#universal-reactive-stores)
@@ -225,6 +226,36 @@ return (
     ))}
   </ul>
 );
+```
+
+#### Retrieving All Supported Wallet Extensions
+
+All the supported wallet extensions info can be retrieved from the `SUPPORTED_WALLETS` object.
+This info can be used to build a wallet connection dialog.  
+
+```tsx
+import { SUPPORTED_WALLETS } from "@ada-anvil/weld";
+import { useExtensions, useWallet } from "@ada-anvil/weld/react";
+
+export function WalletConnectionDialog() {
+  const connect = useWallet("connect");
+  const installed = useExtensions("supportedMap");
+  return (
+    <dialog>
+      <ul>
+        {SUPPORTED_WALLETS.map(info => (
+          <li key={info.key}>
+            {installed.has(info.key) ? (
+              <button onClick={() => connect(info.key)}>{info.displayName}</button>
+            ) : (
+              <a href={info.website}>Install {info.displayName}</a>
+            )}
+          </li>
+        ))}
+      </ul>
+    </dialog>
+  );
+}
 ```
 
 #### Updating Wallet Extensions
