@@ -249,7 +249,7 @@ export function WalletConnectionDialog() {
             {installed.has(info.key) ? (
               <button onClick={() => connect(info.key)}>{info.displayName}</button>
             ) : (
-              <a href={info.website}>Install {info.displayName}</a>
+              <a href={info.website} target="_blank">Install {info.displayName}</a>
             )}
           </li>
         ))}
