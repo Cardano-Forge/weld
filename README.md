@@ -230,8 +230,9 @@ return (
 
 #### Retrieving All Supported Wallet Extensions
 
-All the supported wallet extensions info can be retrieved from the `SUPPORTED_WALLETS` object.
-This info can be used to build a wallet connection dialog.  
+Info for all of the wallet extensions that Weld support (not just the ones installed on the user's machine) can be retrieved from the `SUPPORTED_WALLETS` object.
+
+This info can be used to build a wallet connection dialog that has links to extensions that aren't installed.  
 
 ```tsx
 import { SUPPORTED_WALLETS } from "@ada-anvil/weld";
