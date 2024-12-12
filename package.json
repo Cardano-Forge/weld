@@ -51,6 +51,11 @@
       "import": "./poly-react.js",
       "require": "./poly-react.cjs",
       "types": "./poly-react.d.ts"
+    },
+    "./btc": {
+      "import": "./btc.js",
+      "require": "./btc.cjs",
+      "types": "./btc.d.ts"
     }
   },
   "files": ["**"],
