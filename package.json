@@ -97,7 +97,6 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-toastify": "^10.0.5",
-    "sats-connect": "^3.0.1",
     "tailwindcss": "^3.4.3",
     "typescript": "^5.4.5",
     "vite": "^5.2.0",
@@ -110,7 +109,6 @@
     "@solana/web3.js": ">=1.95.2",
     "@types/react": ">=17.0.0",
     "ethers": "^6.13.4",
-    "sats-connect": ">=3.0.1",
     "react": ">=17.0.0"
   },
   "peerDependenciesMeta": {
