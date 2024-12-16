@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <link rel="stylesheet" href="/documentation/base.css" />
+  <title>Bitcoin | Anvil Weld</title>
+</head>
+
+<body>
+  <main>
+    BTC Vanilla JS example
+    <div>
+      Connecting: <span id="connecting">-</span>
+    </div>
+    <div>
+      Wallet: <span id="name">-</span>
+    </div>
+    <div>
+      Balance: <span id="balance">-</span>
+    </div>
+
+    <form id="wallet-selector">
+      <select name="wallet-key" value="" style="min-width: 100px;">
+        <option value="">
+          Loading...
+        </option>
+      </select>
+      <button type="submit">
+        Connect
+      </button>
+    </form>
+
+    <button id="disconnect">Disconnect</button>
+  </main>
+  <script type="module" src="/documentation/examples/i-btc-vanilla-js/index.ts"></script>
+</body>
+
+</html>
