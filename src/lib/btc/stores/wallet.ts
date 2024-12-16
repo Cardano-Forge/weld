@@ -17,7 +17,7 @@ export type BtcWalletProps = DefaultWalletStoreProps &
     isConnected: boolean;
     isConnecting: boolean;
     isConnectingTo: string | undefined;
-    balanceBtc: bigint;
+    balanceBtc: number;
     api: BtcApi;
     handler: BtcWalletHandler;
   };
@@ -97,7 +97,7 @@ export const createBtcWalletStore = createStoreFactory<
       newBtcWalletState,
       async (key, opts) => {
         // Make sure the extensions are loaded
-        extensions.updateExtensions();
+        await extensions.updateExtensions();
         const extension = extensions.installedMap.get(key);
 
         if (!extension) {
@@ -108,10 +108,12 @@ export const createBtcWalletStore = createStoreFactory<
           throw new WalletConnectionAbortedError();
         }
 
-        const handler = new DefaultBtcWalletHandler(extension);
+        if (extension.info.methods?.includes("wallet_connect")) {
+          console.log("connecting wallet!");
+          await extension.api.request("wallet_connect");
+        }
 
-        const addresses = await extension.api.request("getAddresses", { purposes: ["payment"] });
-        console.log("addresses", addresses);
+        const handler = new DefaultBtcWalletHandler(extension);
 
         const updateState = async () => {
           const balance = await handler.getBalance();
