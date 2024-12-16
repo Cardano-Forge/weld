@@ -1,3 +1,4 @@
+import { type BtcWalletHandler, DefaultBtcWalletHandler } from "@/internal/btc/handler";
 import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
 import type { PartialWithDiscriminant } from "@/internal/utils/types";
@@ -18,6 +19,7 @@ export type BtcWalletProps = DefaultWalletStoreProps &
     isConnectingTo: string | undefined;
     balanceBtc: bigint;
     api: BtcApi;
+    handler: BtcWalletHandler;
   };
 
 function newBtcWalletState(): PartialWithDiscriminant<BtcWalletProps, "isConnected"> {
@@ -37,6 +39,7 @@ function newBtcWalletState(): PartialWithDiscriminant<BtcWalletProps, "isConnect
     isConnectingTo: undefined,
     balanceBtc: undefined,
     api: undefined,
+    handler: undefined,
   };
 }
 
@@ -105,12 +108,13 @@ export const createBtcWalletStore = createStoreFactory<
           throw new WalletConnectionAbortedError();
         }
 
-        const api = extension?.api;
-        const addresses = await api?.request("getAddresses", { purposes: ["payment"] });
+        const handler = new DefaultBtcWalletHandler(extension);
+
+        const addresses = await extension.api.request("getAddresses", { purposes: ["payment"] });
         console.log("addresses", addresses);
 
         const updateState = async () => {
-          const balanceBtc = BigInt(0);
+          const balance = await handler.getBalance();
 
           const newState: Partial<ConnectedBtcWalletState> = {
             ...extension.info,
@@ -119,7 +123,7 @@ export const createBtcWalletStore = createStoreFactory<
             isConnecting: false,
             isConnectingTo: undefined,
             api: extension.api,
-            balanceBtc,
+            balanceBtc: balance.btc,
           };
 
           if (opts.signal.aborted) {
