@@ -1,5 +1,32 @@
 import { weldBtc } from "@/lib/btc";
 
+weldBtc.wallet.subscribeWithSelector(
+  (state) => state.name ?? "-",
+  (name) => {
+    console.log("displayName", name);
+    // biome-ignore lint/style/noNonNullAssertion: We know the element exists
+    document.querySelector("#name")!.textContent = name;
+  },
+);
+
+weldBtc.wallet.subscribeWithSelector(
+  (state) => state.balanceBtc ?? "-",
+  (balance) => {
+    console.log("balance", balance);
+    // biome-ignore lint/style/noNonNullAssertion: We know the element exists
+    document.querySelector("#balance")!.textContent = String(balance);
+  },
+);
+
+weldBtc.wallet.subscribeWithSelector(
+  (state) => state.isConnectingTo ?? "-",
+  (isConnectingTo) => {
+    console.log("isConnectingTo", isConnectingTo);
+    // biome-ignore lint/style/noNonNullAssertion: We know the element exists
+    document.querySelector("#connecting")!.textContent = isConnectingTo;
+  },
+);
+
 weldBtc.extensions.subscribeWithSelector(
   (s) => s.installedArr,
   (extensions) => {
@@ -33,14 +60,17 @@ if (form instanceof HTMLFormElement) {
     if (!key) {
       return;
     }
-    try {
-      const res = await weldBtc.wallet.connectAsync(key);
-      console.log("connection res", res);
-    } catch (error) {
-      console.log("connection error", error);
-    }
+    weldBtc.wallet.connect(key, {
+      onError(error) {
+        console.log("connection error", error);
+      },
+    });
   });
 }
+
+document.querySelector("#disconnect")?.addEventListener("click", () => {
+  weldBtc.wallet.disconnect();
+});
 
 window.addEventListener("load", () => {
   weldBtc.init();
