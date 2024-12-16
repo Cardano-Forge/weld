@@ -1,4 +1,6 @@
-export type BtcInfo = {
+import type { Prettify } from "@/internal/utils/types";
+
+export type BtcExtensionInfo = {
   id: string; // Path on global/window object
   name: string; // Name shown in UI components
   icon: string; // Data URI of an iamge to show in UI components
@@ -18,11 +20,13 @@ export type BtcProviderMethods = {
       purposes: BtcAddressPurpose[];
     };
     returns: {
-      address: string;
-      type?: BtcAddressType;
-      addressType?: BtcAddressType;
-      purpose?: BtcAddressPurpose;
-      publicKey?: string;
+      addresses: {
+        address: string;
+        type?: BtcAddressType;
+        addressType?: BtcAddressType;
+        purpose?: BtcAddressPurpose;
+        publicKey?: string;
+      }[];
     };
   };
 };
@@ -31,19 +35,22 @@ export type BtcAddressType = "p2pkh" | "p2sh" | "p2wpkh-p2sh" | "p2wpkh" | "p2tr
 
 export type BtcAddressPurpose = "ordinals" | "payment" | "stacks";
 
+export type RpcResult<TMethod extends keyof BtcProviderMethods> = Prettify<
+  { jsonrpc: string; id: string } & (
+    | { result: BtcProviderMethods[TMethod]["returns"] }
+    | { error: unknown }
+  )
+>;
+
 export type BtcApi = {
   request: <TMethod extends keyof BtcProviderMethods>(
     method: TMethod,
     params: BtcProviderMethods[TMethod]["params"],
-  ) => Promise<{
-    jsonrpc: string;
-    id: string;
-    result: BtcProviderMethods[TMethod]["returns"];
-  }>;
+  ) => Promise<RpcResult<TMethod>>;
 };
 
 export type BtcExtension = {
-  info: BtcInfo;
+  info: BtcExtensionInfo;
   api: BtcApi;
 };
 
@@ -55,6 +62,6 @@ export function isBtcApi(obj: unknown): obj is BtcApi {
 
 declare global {
   interface Window {
-    btc_providers?: BtcInfo[];
+    btc_providers?: BtcExtensionInfo[];
   }
 }

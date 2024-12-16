@@ -12,3 +12,5 @@ export type PartialWithDiscriminant<
 export type Modify<T, U> = Omit<T, keyof U> & U;
 
 export type MaybePromise<T> = T | Promise<T>;
+
+export type Prettify<T> = { [TKey in keyof T]: T[TKey] } & {};
