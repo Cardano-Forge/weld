@@ -1,5 +1,13 @@
 import { get } from "@/internal/utils/get";
 import { identity } from "@/internal/utils/identity";
+import { weldBtc } from "@/lib/btc";
+
+weldBtc.extensions.subscribeWithSelector(
+  (s) => s.installedArr,
+  (installed) => {
+    console.log("installed", installed);
+  },
+);
 
 async function initWallets() {
   const extensions = window.btc_providers ?? [];
@@ -79,3 +87,11 @@ if (form instanceof HTMLFormElement) {
     }
   });
 }
+
+window.addEventListener("load", () => {
+  weldBtc.init();
+});
+
+window.addEventListener("unload", () => {
+  weldBtc.cleanup();
+});
