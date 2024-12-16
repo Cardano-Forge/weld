@@ -9,7 +9,7 @@ export type BtcExtensionInfo = {
   mozillaAddOnsUrl?: string; // URL to Mozilla Add-Ons Page
   googlePlayStoreUrl?: string; // URL to Google Play Store Page
   iOSAppStoreUrl?: string; // URL to iOS App Store Page
-  methods?: string[]; // List of methods supported by this provider
+  methods?: (keyof BtcProviderMethods)[]; // List of methods supported by this provider
 };
 
 export type BtcProviderMethods = {
@@ -29,6 +29,21 @@ export type BtcProviderMethods = {
       }[];
     };
   };
+  getBalance: {
+    returns: {
+      confirmed: string | number;
+      total: string | number;
+      unconfirmed: string | number;
+    };
+  };
+  wallet_connect: {
+    returns: BtcExtensionInfo;
+  };
+  getInfo: {
+    returns: {
+      methods?: (keyof BtcProviderMethods)[];
+    };
+  };
 };
 
 export type BtcAddressType = "p2pkh" | "p2sh" | "p2wpkh-p2sh" | "p2wpkh" | "p2tr";
@@ -37,15 +52,15 @@ export type BtcAddressPurpose = "ordinals" | "payment" | "stacks";
 
 export type RpcResult<TMethod extends keyof BtcProviderMethods> = Prettify<
   { jsonrpc: string; id: string } & (
-    | { result: BtcProviderMethods[TMethod]["returns"] }
-    | { error: unknown }
+    | { result: BtcProviderMethods[TMethod]["returns"]; error?: undefined }
+    | { error: unknown; result?: undefined }
   )
 >;
 
 export type BtcApi = {
   request: <TMethod extends keyof BtcProviderMethods>(
     method: TMethod,
-    params: BtcProviderMethods[TMethod]["params"],
+    ...params: BtcProviderMethods[TMethod] extends { params: infer TParams } ? [TParams] : []
   ) => Promise<RpcResult<TMethod>>;
 };
 

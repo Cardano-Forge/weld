@@ -12,7 +12,7 @@ export type BtcExtensionsProps = {
 };
 
 export type BtcExtensionsApi = {
-  updateExtensions(opts?: { caching?: boolean }): void;
+  updateExtensions(opts?: { caching?: boolean }): Promise<void>;
 };
 
 export type BtcExtensionsState = BtcExtensionsProps & BtcExtensionsApi;
@@ -39,7 +39,7 @@ export const createBtcExtensionsStore = createStoreFactory<
 >((setState, _getState, { lifecycle = new LifeCycleManager(), config = weldBtc.config } = {}) => {
   const cache = new Map<BtcApi, BtcExtension>();
 
-  const updateExtensions = ({ caching = true } = {}) => {
+  const updateExtensions = async ({ caching = true } = {}) => {
     if (typeof window === "undefined") {
       return;
     }
@@ -50,12 +50,24 @@ export const createBtcExtensionsStore = createStoreFactory<
       if (!isBtcApi(api)) {
         continue;
       }
+
       let extension: BtcExtension;
-      if (caching) {
-        extension = cache.get(api) ?? { info, api };
+      let reusedFromCache = false;
+      const cached = cache.get(api);
+      if (caching && cached) {
+        reusedFromCache = true;
+        extension = cached;
       } else {
         extension = { info, api };
       }
+
+      if (!reusedFromCache && info.methods?.includes("getInfo")) {
+        const res = await api.request("getInfo");
+        if (res.result?.methods) {
+          info.methods = res.result.methods;
+        }
+      }
+
       cache.set(api, extension);
       newState.installedArr.push(extension);
       newState.installedMap.set(info.id, extension);
