@@ -173,7 +173,7 @@ wallet.balanceAda; // number | undefined
 
 // Because of Weld's powerful type inference, `isConnected` can be used
 // as a type guard to narrow down the other property types!
-if (wallet.isConected) {
+if (wallet.isConnected) {
   wallet.displayName; // string
   wallet.balanceAda; // number
 }
