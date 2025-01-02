@@ -1,4 +1,4 @@
-import { type BtcWalletHandler, DefaultBtcWalletHandler } from "@/internal/btc/handler";
+import type { BtcWalletHandler } from "@/internal/btc/handlers";
 import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
 import type { PartialWithDiscriminant } from "@/internal/utils/types";
@@ -108,24 +108,19 @@ export const createBtcWalletStore = createStoreFactory<
           throw new WalletConnectionAbortedError();
         }
 
-        if (extension.info.methods?.includes("wallet_connect")) {
-          console.log("connecting wallet!");
-          await extension.api.request("wallet_connect");
-        }
-
-        const handler = new DefaultBtcWalletHandler(extension);
+        const handler = await extension.connect();
 
         const updateState = async () => {
           const balance = await handler.getBalance();
 
           const newState: Partial<ConnectedBtcWalletState> = {
             ...extension.info,
-            key: extension.info.id,
+            key: extension.key,
             isConnected: true,
             isConnecting: false,
             isConnectingTo: undefined,
             api: extension.api,
-            balanceBtc: balance.btc,
+            balanceBtc: balance.total,
           };
 
           if (opts.signal.aborted) {

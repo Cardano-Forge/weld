@@ -41,7 +41,7 @@ weldBtc.extensions.subscribeWithSelector(
     const options = [];
     for (const extension of extensions) {
       const option = document.createElement("option");
-      option.value = extension.info.id;
+      option.value = extension.key;
       option.innerText = extension.info.name;
       options.push(option);
     }

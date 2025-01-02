@@ -2,9 +2,10 @@ import { LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
 
 import { setupAutoUpdate } from "@/internal/auto-update";
+import { btcWallets } from "@/internal/btc/handlers";
 import { get } from "@/internal/utils/get";
 import { weldBtc } from ".";
-import { type BtcApi, type BtcExtension, isBtcApi } from "../types";
+import type { BtcApi, BtcExtension } from "../types";
 
 export type BtcExtensionsProps = {
   installedArr: BtcExtension[];
@@ -44,33 +45,20 @@ export const createBtcExtensionsStore = createStoreFactory<
       return;
     }
     const newState = newInitialBtcState();
-    const infos = window.btc_providers ?? [];
-    for (const info of infos) {
-      const api = get(window, info.id);
-      if (!isBtcApi(api)) {
-        continue;
-      }
-
+    const wallets = Object.values(btcWallets);
+    for (const wallet of wallets) {
+      const api = get(window, wallet.info.id);
       let extension: BtcExtension;
-      let reusedFromCache = false;
       const cached = cache.get(api);
       if (caching && cached) {
-        reusedFromCache = true;
         extension = cached;
       } else {
-        extension = { info, api };
-      }
-
-      if (!reusedFromCache && info.methods?.includes("getInfo")) {
-        const res = await api.request("getInfo");
-        if (res.result?.methods) {
-          info.methods = res.result.methods;
-        }
+        extension = { ...wallet, api };
       }
 
       cache.set(api, extension);
       newState.installedArr.push(extension);
-      newState.installedMap.set(info.id, extension);
+      newState.installedMap.set(wallet.key, extension);
     }
     setState(newState);
   };
