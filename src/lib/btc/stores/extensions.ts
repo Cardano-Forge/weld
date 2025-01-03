@@ -2,7 +2,7 @@ import { LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
 
 import { setupAutoUpdate } from "@/internal/auto-update";
-import { btcWallets } from "@/internal/btc/handlers";
+import { supportedBtcWallets } from "@/internal/btc/handlers";
 import { get } from "@/internal/utils/get";
 import { weldBtc } from ".";
 import type { BtcApi, BtcExtension } from "../types";
@@ -45,7 +45,7 @@ export const createBtcExtensionsStore = createStoreFactory<
       return;
     }
     const newState = newInitialBtcState();
-    const wallets = Object.values(btcWallets);
+    const wallets = Object.values(supportedBtcWallets);
     for (const wallet of wallets) {
       const api = get(window, wallet.info.id);
       let extension: BtcExtension;

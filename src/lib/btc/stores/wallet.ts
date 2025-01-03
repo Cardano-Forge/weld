@@ -1,4 +1,4 @@
-import type { BtcWalletHandler } from "@/internal/btc/handlers";
+import type { BtcWalletHandler } from "@/internal/btc/handlers/types";
 import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
 import type { PartialWithDiscriminant } from "@/internal/utils/types";
@@ -113,7 +113,7 @@ export const createBtcWalletStore = createStoreFactory<
         const updateState = async () => {
           const balance = await handler.getBalance();
 
-          const newState: Partial<ConnectedBtcWalletState> = {
+          const newState: ConnectedBtcWalletState = {
             ...extension.info,
             key: extension.key,
             isConnected: true,
@@ -121,6 +121,7 @@ export const createBtcWalletStore = createStoreFactory<
             isConnectingTo: undefined,
             api: extension.api,
             balanceBtc: balance.total,
+            handler,
           };
 
           if (opts.signal.aborted) {
@@ -137,9 +138,8 @@ export const createBtcWalletStore = createStoreFactory<
       "connectedBtcWallet",
       config,
       lifecycle,
-    ).on("beforeDisconnect", () => {
-      // TODO: Is there a disconnect method?
-      // getState().api?.disconnect();
+    ).on("beforeDisconnect", async () => {
+      await getState().handler?.disconnect?.();
     });
 
     const connectAsync = (async (key, configOverrides, signal?: InFlightSignal) => {
