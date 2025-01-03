@@ -1,6 +1,7 @@
 import type { UnsubscribeFct } from "@/internal/lifecycle";
 import { get } from "@/internal/utils/get";
 import {
+  AddressPurpose,
   type BitcoinProvider,
   DefaultAdaptersInfo,
   type SatsConnectAdapter,
@@ -28,6 +29,21 @@ class XverseBtcWalletHandler implements BtcWalletHandler {
       confirmed: Number(res.result.confirmed),
       total: Number(res.result.total),
     };
+  }
+
+  async getPaymentAddress(): Promise<string> {
+    await this.checkPermissions();
+    const res = await this._ctx.adapter.request("getAddresses", {
+      purposes: [AddressPurpose.Payment],
+    });
+    if ("error" in res) {
+      throw new Error(`Unable to retrieve balance: ${res.error.message}`);
+    }
+    const paymentAddress = res.result.addresses[0]?.address;
+    if (!paymentAddress) {
+      throw new Error("Unable to retrieve payment address");
+    }
+    return paymentAddress;
   }
 
   async disconnect(): Promise<void> {

@@ -12,6 +12,7 @@ export type BtcWalletEvent = "accountChange" | "networkChange";
 
 export interface BtcWalletHandler {
   getBalance(): Promise<GetBalanceResult>;
+  getPaymentAddress(): Promise<string>;
   disconnect?(): MaybePromise<void>;
   on?(event: BtcWalletEvent, handler: () => void): UnsubscribeFct;
 }

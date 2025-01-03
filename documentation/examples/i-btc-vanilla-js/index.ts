@@ -7,7 +7,6 @@ import { weldBtc } from "@/lib/btc";
 weldBtc.wallet.subscribeWithSelector(
   (state) => state.name ?? "-",
   (name) => {
-    console.log("displayName", name);
     // biome-ignore lint/style/noNonNullAssertion: We know the element exists
     document.querySelector("#name")!.textContent = name;
   },
@@ -16,16 +15,22 @@ weldBtc.wallet.subscribeWithSelector(
 weldBtc.wallet.subscribeWithSelector(
   (state) => state.balanceBtc ?? "-",
   (balance) => {
-    console.log("balance", balance);
     // biome-ignore lint/style/noNonNullAssertion: We know the element exists
     document.querySelector("#balance")!.textContent = String(balance);
   },
 );
 
 weldBtc.wallet.subscribeWithSelector(
+  (state) => state.paymentAddress ?? "-",
+  (address) => {
+    // biome-ignore lint/style/noNonNullAssertion: We know the element exists
+    document.querySelector("#address")!.textContent = address;
+  },
+);
+
+weldBtc.wallet.subscribeWithSelector(
   (state) => state.isConnectingTo ?? "-",
   (isConnectingTo) => {
-    console.log("isConnectingTo", isConnectingTo);
     // biome-ignore lint/style/noNonNullAssertion: We know the element exists
     document.querySelector("#connecting")!.textContent = isConnectingTo;
   },
@@ -67,6 +72,9 @@ if (form instanceof HTMLFormElement) {
     weldBtc.wallet.connect(key, {
       onError(error) {
         console.log("connection error", error);
+      },
+      onUpdateError(error) {
+        console.log("update error", error);
       },
     });
   });
