@@ -104,6 +104,24 @@ if (signMessageForm instanceof HTMLFormElement) {
   });
 }
 
+const signPsbtForm = document.querySelector("#sign-psbt");
+if (signPsbtForm instanceof HTMLFormElement) {
+  signPsbtForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!weldBtc.wallet.isConnected) {
+      return;
+    }
+    const data = new FormData(signPsbtForm);
+    const psbt = data.get("psbt")?.toString();
+    if (psbt?.length) {
+      const res = await weldBtc.wallet.signPsbt(psbt, {
+        inputsToSign: { [weldBtc.wallet.paymentAddress]: [0, 1] },
+      });
+      console.log("res", res);
+    }
+  });
+}
+
 document.querySelector("#disconnect")?.addEventListener("click", () => {
   weldBtc.wallet.disconnect();
 });

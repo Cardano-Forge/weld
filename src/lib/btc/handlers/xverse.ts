@@ -1,5 +1,9 @@
 import type { UnsubscribeFct } from "@/internal/lifecycle";
+import { base64ToHex } from "@/internal/utils/base64-to-hex";
+import { castArray } from "@/internal/utils/cast-array";
+import { entries } from "@/internal/utils/entries";
 import { get } from "@/internal/utils/get";
+import { hexToBase64 } from "@/internal/utils/hex-to-base64";
 import {
   AddressPurpose,
   type BitcoinProvider,
@@ -15,6 +19,8 @@ import {
   type GetBalanceResult,
   type SignMessageOpts,
   type SignMessageResult,
+  type SignPsbtOpts,
+  type SignPsbtResult,
   isBtcProvider,
 } from "./types";
 
@@ -70,9 +76,23 @@ class XverseBtcWalletHandler implements BtcWalletHandler {
       opts?.protocol === "bip322" ? MessageSigningProtocols.BIP322 : MessageSigningProtocols.ECDSA;
     const res = await this._ctx.adapter.request("signMessage", { address, message, protocol });
     if ("error" in res) {
-      throw new Error(`Unable to sign message: ${res.error}`);
+      throw new Error(`Unable to sign message: ${res.error.message}`);
     }
     return { signature: res.result.signature };
+  }
+
+  async signPsbt(psbtHex: string, opts: SignPsbtOpts): Promise<SignPsbtResult> {
+    const psbtBase64 = hexToBase64(psbtHex);
+    const signInputs: Record<string, number[]> = {};
+    for (const [key, value] of entries(opts.inputsToSign)) {
+      signInputs[key] = castArray(value);
+    }
+    const res = await this._ctx.adapter.request("signPsbt", { psbt: psbtBase64, signInputs });
+    if ("error" in res) {
+      throw new Error(`Unable to sign psbt: ${res.error.message}`);
+    }
+    const signedPsbtHex = base64ToHex(res.result.psbt);
+    return { signedPsbtHex };
   }
 
   async disconnect(): Promise<void> {

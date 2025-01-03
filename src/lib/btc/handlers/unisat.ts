@@ -1,4 +1,6 @@
 import type { UnsubscribeFct } from "@/internal/lifecycle";
+import { castArray } from "@/internal/utils/cast-array";
+import { entries } from "@/internal/utils/entries";
 import { DefaultAdaptersInfo, type SatsConnectAdapter, defaultAdapters } from "@sats-connect/core";
 import type {
   BtcWalletDef,
@@ -7,6 +9,8 @@ import type {
   GetBalanceResult,
   SignMessageOpts,
   SignMessageResult,
+  SignPsbtOpts,
+  SignPsbtResult,
 } from "./types";
 
 type UnisatEvents = {
@@ -16,6 +20,11 @@ type UnisatEvents = {
 
 type SignMessageType = "ecdsa" | "bip322-simple";
 
+type ToSignInput = {
+  address: string;
+  index: number;
+};
+
 export type UnisatApi = {
   requestAccounts(): Promise<string[]>;
   getAccounts(): Promise<string[]>;
@@ -23,6 +32,7 @@ export type UnisatApi = {
   getBalance(): Promise<GetBalanceResult>;
   disconnect(): Promise<void>;
   signMessage(msg: string, type: SignMessageType): Promise<string>;
+  signPsbt(psbtHex: string, opts: { toSignInputs: ToSignInput[] }): Promise<string>;
   on<TEvent extends keyof UnisatEvents>(
     event: TEvent,
     handler: (data: UnisatEvents[TEvent]) => void,
@@ -63,6 +73,17 @@ export class UnisatBtcWalletHandler implements BtcWalletHandler {
     const type: SignMessageType = opts?.protocol === "bip322" ? "bip322-simple" : "ecdsa";
     const signature = await this._ctx.api.signMessage(message, type);
     return { signature };
+  }
+
+  async signPsbt(psbtHex: string, opts: SignPsbtOpts): Promise<SignPsbtResult> {
+    const toSignInputs: ToSignInput[] = [];
+    for (const [address, indexes] of entries(opts.inputsToSign)) {
+      for (const index of castArray(indexes)) {
+        toSignInputs.push({ address, index });
+      }
+    }
+    const signedPsbtHex = await this._ctx.api.signPsbt(psbtHex, { toSignInputs });
+    return { signedPsbtHex };
   }
 
   async disconnect(): Promise<void> {

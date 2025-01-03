@@ -10,14 +10,28 @@ export type GetBalanceResult = {
 
 export type BtcWalletEvent = "accountChange" | "networkChange";
 
-export type SignMessageOpts = { protocol: "ecdsa" | "bip322" };
-export type SignMessageResult = { signature: string };
+export type SignMessageOpts = {
+  protocol: "ecdsa" | "bip322";
+};
+export type SignMessageResult = {
+  signature: string;
+};
+
+type Address = string;
+type InputIndex = number;
+export type SignPsbtOpts = {
+  inputsToSign: Record<Address, InputIndex | InputIndex[]>;
+};
+export type SignPsbtResult = {
+  signedPsbtHex: string;
+};
 
 export interface BtcWalletHandler {
   getBalance(): Promise<GetBalanceResult>;
   getPaymentAddress(): Promise<string>;
   getPublicKey(): Promise<string>;
   signMessage(message: string, opts?: SignMessageOpts): Promise<SignMessageResult>;
+  signPsbt(psbtHex: string, opts: SignPsbtOpts): Promise<SignPsbtResult>;
   disconnect?(): MaybePromise<void>;
   on?(event: BtcWalletEvent, handler: () => void): UnsubscribeFct;
 }
