@@ -120,11 +120,11 @@ export const createSolWalletStore = createStoreFactory<
       config = weldSol.config,
     } = {},
   ) => {
-    const walletManager = new WalletStoreManager<SolWalletState>(
+    const walletManager = new WalletStoreManager<SolWalletState>({
       setState,
       getState,
-      newSolWalletState,
-      async (key, opts) => {
+      newState: newSolWalletState,
+      createConnection: async (key, opts) => {
         // Make sure the extensions are loaded
         extensions.updateExtensions();
         const extension = extensions.installedMap.get(key);
@@ -173,10 +173,10 @@ export const createSolWalletStore = createStoreFactory<
           updateState,
         };
       },
-      "connectedSolWallet",
-      config,
+      walletStorageKey: "connectedSolWallet",
+      configStore: config,
       lifecycle,
-    ).on("beforeDisconnect", () => {
+    }).on("beforeDisconnect", () => {
       getState().api?.disconnect();
     });
 

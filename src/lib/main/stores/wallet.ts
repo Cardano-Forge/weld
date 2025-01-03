@@ -120,11 +120,11 @@ export const createWalletStore = createStoreFactory<
       return utxosUpdate.runningUpdate?.promise ?? getState().utxos ?? [];
     };
 
-    const walletManager = new WalletStoreManager<WalletState>(
+    const walletManager = new WalletStoreManager<WalletState>({
       setState,
       getState,
-      newWalletState,
-      async (key, opts) => {
+      newState: newWalletState,
+      createConnection: async (key, opts) => {
         const handler: WalletHandler = handleAccountChangeErrors(
           await connectFct(key),
           async () => {
@@ -239,10 +239,10 @@ export const createWalletStore = createStoreFactory<
           updateState,
         };
       },
-      "connectedWallet",
-      config,
+      walletStorageKey: "connectedWallet",
+      configStore: config,
       lifecycle,
-    ).on("beforeDisconnect", () => {
+    }).on("beforeDisconnect", () => {
       if (utxosUpdate.runningUpdate) {
         utxosUpdate.runningUpdate.signal.aborted = true;
         utxosUpdate.runningUpdate.resolve([]);

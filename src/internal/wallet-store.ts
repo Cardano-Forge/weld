@@ -57,36 +57,43 @@ export function newWalletStoreManagerSubscriptions(): WalletStoreManagerSubscrip
   };
 }
 
+type WalletStoreManagerCtx<TProps extends DefaultWalletStoreState> = {
+  setState: (s: Partial<TProps>) => void;
+  getState: () => TProps;
+  newState: () => TProps;
+  createConnection: (
+    key: NonNullable<TProps["key"]>,
+    opts: WalletStoreManagerConnectOpts,
+  ) => MaybePromise<{ updateState: () => MaybePromise<void> }>;
+  walletStorageKey: keyof typeof STORAGE_KEYS;
+  configStore?: ConfigStore | ConfigStore<Omit<WeldConfig, "customWallets">>;
+  lifecycle?: LifeCycleManager;
+  subscriptions?: WalletStoreManagerSubscriptions;
+};
+
 export class WalletStoreManager<TProps extends DefaultWalletStoreState = DefaultWalletStoreState> {
-  constructor(
-    private _setState: (s: Partial<TProps>) => void,
-    private _getState: () => TProps,
-    private _newState: () => TProps,
-    private _createConnection: (
-      key: NonNullable<TProps["key"]>,
-      opts: WalletStoreManagerConnectOpts,
-    ) => MaybePromise<{
-      updateState: () => MaybePromise<void>;
-    }>,
-    private _walletStorageKey: keyof typeof STORAGE_KEYS,
-    private _configStore:
-      | ConfigStore
-      | ConfigStore<Omit<WeldConfig, "customWallets">> = createConfigStore(),
-    private _lifecycle = new LifeCycleManager(),
-    private _subscriptions = newWalletStoreManagerSubscriptions(),
-  ) {}
+  private _ctx: Required<WalletStoreManagerCtx<TProps>>;
+
+  constructor({
+    configStore = createConfigStore(),
+    lifecycle = new LifeCycleManager(),
+    subscriptions = newWalletStoreManagerSubscriptions(),
+    ...rest
+  }: WalletStoreManagerCtx<TProps>) {
+    this._ctx = { configStore, lifecycle, subscriptions, ...rest };
+  }
 
   on<TEvent extends keyof Events>(event: TEvent, handler: EventHandler<TEvent>) {
-    this._subscriptions[event].add(handler);
+    this._ctx.subscriptions[event].add(handler);
     return this;
   }
 
   async disconnect() {
-    this._lifecycle.cleanup();
+    this._ctx.lifecycle.cleanup();
     this._runSubscriptions("beforeDisconnect");
-    this._setState(this._newState());
-    if (this._configStore.enablePersistence) {
-      this._configStore.storage.remove(STORAGE_KEYS[this._walletStorageKey]);
+    this._ctx.setState(this._ctx.newState());
+    if (this._ctx.configStore.enablePersistence) {
+      this._ctx.configStore.storage.remove(STORAGE_KEYS[this._ctx.walletStorageKey]);
     }
     this._runSubscriptions("afterDisconnect");
   }
@@ -94,26 +101,26 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
   async connect(
     key: NonNullable<TProps["key"]>,
     {
-      signal = this._lifecycle.inFlight.add(),
+      signal = this._ctx.lifecycle.inFlight.add(),
       configOverrides,
     }: Partial<WalletStoreManagerConnectOpts> = {},
   ) {
     try {
-      this._lifecycle.subscriptions.clearAll();
+      this._ctx.lifecycle.subscriptions.clearAll();
 
-      this._setState({ isConnectingTo: key, isConnecting: true } as Partial<TProps>);
+      this._ctx.setState({ isConnectingTo: key, isConnecting: true } as Partial<TProps>);
 
       let abortTimeout: NodeJS.Timeout | undefined = undefined;
       const connectTimeout =
-        configOverrides?.connectTimeout ?? this._configStore.wallet?.connectTimeout;
+        configOverrides?.connectTimeout ?? this._ctx.configStore.wallet?.connectTimeout;
       if (connectTimeout) {
         abortTimeout = setTimeout(() => {
           signal.aborted = true;
-          this._setState({ isConnectingTo: undefined, isConnecting: false } as Partial<TProps>);
+          this._ctx.setState({ isConnectingTo: undefined, isConnecting: false } as Partial<TProps>);
         }, connectTimeout);
       }
 
-      const connection = await this._createConnection(key, { signal, configOverrides });
+      const connection = await this._ctx.createConnection(key, { signal, configOverrides });
 
       const safeUpdateState = async (stopUpdates?: () => void) => {
         if (signal.aborted) {
@@ -130,7 +137,7 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
 
       await connection.updateState();
 
-      const newState = this._getState();
+      const newState = this._ctx.getState();
       if (!newState.isConnected) {
         throw new Error("Connection failed");
       }
@@ -141,14 +148,14 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
 
       setupAutoUpdate(
         safeUpdateState,
-        this._lifecycle,
-        this._configStore,
+        this._ctx.lifecycle,
+        this._ctx.configStore,
         "wallet",
         configOverrides,
       );
 
-      if (this._configStore.enablePersistence) {
-        this._configStore.storage.set(STORAGE_KEYS[this._walletStorageKey], newState.key);
+      if (this._ctx.configStore.enablePersistence) {
+        this._ctx.configStore.storage.set(STORAGE_KEYS[this._ctx.walletStorageKey], newState.key);
       }
 
       if (abortTimeout) {
@@ -162,14 +169,14 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
       }
       throw error;
     } finally {
-      this._lifecycle.inFlight.remove(signal);
+      this._ctx.lifecycle.inFlight.remove(signal);
     }
   }
 
   async init(opts: { initialState: TProps }) {
     if (opts.initialState.isConnectingTo) {
       await this.connect(opts.initialState.isConnectingTo).catch((error) => {
-        if (this._configStore.debug) {
+        if (this._ctx.configStore.debug) {
           console.log("[WELD] Wallet auto connect failed", {
             key: opts.initialState.isConnectingTo,
             error,
@@ -181,21 +188,27 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
 
   persist(opts: { initialState: TProps }, data?: WalletStorePersistData) {
     let isConnectingTo = data?.tryToReconnectTo;
-    if (!isConnectingTo && typeof window !== "undefined" && this._configStore.enablePersistence) {
-      isConnectingTo = this._configStore.getPersistedValue(STORAGE_KEYS[this._walletStorageKey]);
+    if (
+      !isConnectingTo &&
+      typeof window !== "undefined" &&
+      this._ctx.configStore.enablePersistence
+    ) {
+      isConnectingTo = this._ctx.configStore.getPersistedValue(
+        STORAGE_KEYS[this._ctx.walletStorageKey],
+      );
     }
-    this._setState({ isConnectingTo, isConnecting: !!isConnectingTo } as Partial<TProps>);
+    this._ctx.setState({ isConnectingTo, isConnecting: !!isConnectingTo } as Partial<TProps>);
     opts.initialState.isConnectingTo = isConnectingTo;
     opts.initialState.isConnecting = !!isConnectingTo;
   }
 
   cleanup() {
-    this._lifecycle.cleanup();
+    this._ctx.lifecycle.cleanup();
   }
 
   async handleUpdateError(error: unknown) {
-    this._configStore.onUpdateError?.("wallet", error);
-    this._configStore.wallet.onUpdateError?.(error);
+    this._ctx.configStore.onUpdateError?.("wallet", error);
+    this._ctx.configStore.wallet.onUpdateError?.(error);
     await this._runSubscriptions("updateError", error);
   }
 
@@ -210,7 +223,7 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
     event: TEvent,
     params?: Events[TEvent],
   ) {
-    for (const handler of this._subscriptions[event]) {
+    for (const handler of this._ctx.subscriptions[event]) {
       await handler(params);
     }
   }

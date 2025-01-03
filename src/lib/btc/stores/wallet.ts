@@ -91,11 +91,11 @@ export const createBtcWalletStore = createStoreFactory<
       config = weldBtc.config,
     } = {},
   ) => {
-    const walletManager = new WalletStoreManager<BtcWalletState>(
+    const walletManager = new WalletStoreManager<BtcWalletState>({
       setState,
       getState,
-      newBtcWalletState,
-      async (key, opts) => {
+      newState: newBtcWalletState,
+      createConnection: async (key, opts) => {
         // Make sure the extensions are loaded
         await extensions.updateExtensions();
         const extension = extensions.installedMap.get(key);
@@ -135,10 +135,10 @@ export const createBtcWalletStore = createStoreFactory<
           updateState,
         };
       },
-      "connectedBtcWallet",
-      config,
+      walletStorageKey: "connectedBtcWallet",
+      configStore: config,
       lifecycle,
-    ).on("beforeDisconnect", async () => {
+    }).on("beforeDisconnect", async () => {
       await getState().handler?.disconnect?.();
     });
 
