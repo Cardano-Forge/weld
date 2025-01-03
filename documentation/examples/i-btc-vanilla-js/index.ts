@@ -88,6 +88,22 @@ if (form instanceof HTMLFormElement) {
   });
 }
 
+const signMessageForm = document.querySelector("#sign-message");
+if (signMessageForm instanceof HTMLFormElement) {
+  signMessageForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!weldBtc.wallet.isConnected) {
+      return;
+    }
+    const data = new FormData(signMessageForm);
+    const message = data.get("message")?.toString();
+    if (message?.length) {
+      const res = await weldBtc.wallet.signMessage(message);
+      console.log("res", res);
+    }
+  });
+}
+
 document.querySelector("#disconnect")?.addEventListener("click", () => {
   weldBtc.wallet.disconnect();
 });

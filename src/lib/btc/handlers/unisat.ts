@@ -1,11 +1,20 @@
 import type { UnsubscribeFct } from "@/internal/lifecycle";
 import { DefaultAdaptersInfo, type SatsConnectAdapter, defaultAdapters } from "@sats-connect/core";
-import type { BtcWalletDef, BtcWalletEvent, BtcWalletHandler, GetBalanceResult } from "./types";
+import type {
+  BtcWalletDef,
+  BtcWalletEvent,
+  BtcWalletHandler,
+  GetBalanceResult,
+  SignMessageOpts,
+  SignMessageResult,
+} from "./types";
 
 type UnisatEvents = {
   accountsChanged: string[];
   networkChanged: string;
 };
+
+type SignMessageType = "ecdsa" | "bip322-simple";
 
 export type UnisatApi = {
   requestAccounts(): Promise<string[]>;
@@ -13,6 +22,7 @@ export type UnisatApi = {
   getPublicKey(): Promise<string>;
   getBalance(): Promise<GetBalanceResult>;
   disconnect(): Promise<void>;
+  signMessage(msg: string, type: SignMessageType): Promise<string>;
   on<TEvent extends keyof UnisatEvents>(
     event: TEvent,
     handler: (data: UnisatEvents[TEvent]) => void,
@@ -47,6 +57,12 @@ export class UnisatBtcWalletHandler implements BtcWalletHandler {
 
   async getPublicKey(): Promise<string> {
     return this._ctx.api.getPublicKey();
+  }
+
+  async signMessage(message: string, opts?: SignMessageOpts): Promise<SignMessageResult> {
+    const type: SignMessageType = opts?.protocol === "bip322" ? "bip322-simple" : "ecdsa";
+    const signature = await this._ctx.api.signMessage(message, type);
+    return { signature };
   }
 
   async disconnect(): Promise<void> {

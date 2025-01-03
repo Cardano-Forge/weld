@@ -4,6 +4,7 @@ import {
   AddressPurpose,
   type BitcoinProvider,
   DefaultAdaptersInfo,
+  MessageSigningProtocols,
   type SatsConnectAdapter,
   defaultAdapters,
 } from "@sats-connect/core";
@@ -12,6 +13,8 @@ import {
   type BtcWalletEvent,
   type BtcWalletHandler,
   type GetBalanceResult,
+  type SignMessageOpts,
+  type SignMessageResult,
   isBtcProvider,
 } from "./types";
 
@@ -59,6 +62,17 @@ class XverseBtcWalletHandler implements BtcWalletHandler {
       throw new Error("Unable to retrieve public key");
     }
     return publicKey;
+  }
+
+  async signMessage(message: string, opts?: SignMessageOpts): Promise<SignMessageResult> {
+    const address = await this.getPaymentAddress();
+    const protocol =
+      opts?.protocol === "bip322" ? MessageSigningProtocols.BIP322 : MessageSigningProtocols.ECDSA;
+    const res = await this._ctx.adapter.request("signMessage", { address, message, protocol });
+    if ("error" in res) {
+      throw new Error(`Unable to sign message: ${res.error}`);
+    }
+    return { signature: res.result.signature };
   }
 
   async disconnect(): Promise<void> {

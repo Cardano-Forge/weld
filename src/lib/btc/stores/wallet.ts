@@ -22,6 +22,7 @@ export type BtcWalletProps = DefaultWalletStoreProps &
     publicKey: string;
     api: BtcApi;
     handler: BtcWalletHandler;
+    signMessage: BtcWalletHandler["signMessage"];
   };
 
 function newBtcWalletState(): PartialWithDiscriminant<BtcWalletProps, "isConnected"> {
@@ -44,6 +45,7 @@ function newBtcWalletState(): PartialWithDiscriminant<BtcWalletProps, "isConnect
     publicKey: undefined,
     api: undefined,
     handler: undefined,
+    signMessage: undefined,
   };
 }
 
@@ -128,6 +130,7 @@ export const createBtcWalletStore = createStoreFactory<
             paymentAddress: await handler.getPaymentAddress(),
             publicKey: await handler.getPublicKey(),
             handler,
+            signMessage: handler.signMessage.bind(handler),
           };
 
           if (opts.signal.aborted) {

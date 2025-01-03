@@ -10,10 +10,14 @@ export type GetBalanceResult = {
 
 export type BtcWalletEvent = "accountChange" | "networkChange";
 
+export type SignMessageOpts = { protocol: "ecdsa" | "bip322" };
+export type SignMessageResult = { signature: string };
+
 export interface BtcWalletHandler {
   getBalance(): Promise<GetBalanceResult>;
   getPaymentAddress(): Promise<string>;
   getPublicKey(): Promise<string>;
+  signMessage(message: string, opts?: SignMessageOpts): Promise<SignMessageResult>;
   disconnect?(): MaybePromise<void>;
   on?(event: BtcWalletEvent, handler: () => void): UnsubscribeFct;
 }
