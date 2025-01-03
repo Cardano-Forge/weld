@@ -46,6 +46,21 @@ class XverseBtcWalletHandler implements BtcWalletHandler {
     return paymentAddress;
   }
 
+  async getPublicKey(): Promise<string> {
+    await this.checkPermissions();
+    const res = await this._ctx.adapter.request("getAddresses", {
+      purposes: [AddressPurpose.Payment],
+    });
+    if ("error" in res) {
+      throw new Error(`Unable to retrieve balance: ${res.error.message}`);
+    }
+    const publicKey = res.result.addresses[0]?.publicKey;
+    if (!publicKey) {
+      throw new Error("Unable to retrieve public key");
+    }
+    return publicKey;
+  }
+
   async disconnect(): Promise<void> {
     await this._ctx.adapter.request("wallet_renouncePermissions", null);
   }

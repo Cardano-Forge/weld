@@ -29,6 +29,14 @@ weldBtc.wallet.subscribeWithSelector(
 );
 
 weldBtc.wallet.subscribeWithSelector(
+  (state) => state.publicKey ?? "-",
+  (pk) => {
+    // biome-ignore lint/style/noNonNullAssertion: We know the element exists
+    document.querySelector("#pk")!.textContent = pk;
+  },
+);
+
+weldBtc.wallet.subscribeWithSelector(
   (state) => state.isConnectingTo ?? "-",
   (isConnectingTo) => {
     // biome-ignore lint/style/noNonNullAssertion: We know the element exists

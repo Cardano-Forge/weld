@@ -10,6 +10,7 @@ type UnisatEvents = {
 export type UnisatApi = {
   requestAccounts(): Promise<string[]>;
   getAccounts(): Promise<string[]>;
+  getPublicKey(): Promise<string>;
   getBalance(): Promise<GetBalanceResult>;
   disconnect(): Promise<void>;
   on<TEvent extends keyof UnisatEvents>(
@@ -42,6 +43,10 @@ export class UnisatBtcWalletHandler implements BtcWalletHandler {
       throw new Error("Unable to retrieve payment address");
     }
     return paymentAddress;
+  }
+
+  async getPublicKey(): Promise<string> {
+    return this._ctx.api.getPublicKey();
   }
 
   async disconnect(): Promise<void> {

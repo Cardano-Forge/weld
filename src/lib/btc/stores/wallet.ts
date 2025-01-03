@@ -19,6 +19,7 @@ export type BtcWalletProps = DefaultWalletStoreProps &
     isConnectingTo: string | undefined;
     balanceBtc: number;
     paymentAddress: string;
+    publicKey: string;
     api: BtcApi;
     handler: BtcWalletHandler;
   };
@@ -40,6 +41,7 @@ function newBtcWalletState(): PartialWithDiscriminant<BtcWalletProps, "isConnect
     isConnectingTo: undefined,
     balanceBtc: undefined,
     paymentAddress: undefined,
+    publicKey: undefined,
     api: undefined,
     handler: undefined,
   };
@@ -124,6 +126,7 @@ export const createBtcWalletStore = createStoreFactory<
             api: extension.api,
             balanceBtc: balance.total,
             paymentAddress: await handler.getPaymentAddress(),
+            publicKey: await handler.getPublicKey(),
             handler,
           };
 
