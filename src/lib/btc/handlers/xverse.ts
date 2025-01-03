@@ -17,6 +17,7 @@ import {
   type BtcWalletEvent,
   type BtcWalletHandler,
   type GetBalanceResult,
+  type SendBitcoinResult,
   type SignMessageOpts,
   type SignMessageResult,
   type SignPsbtOpts,
@@ -93,6 +94,16 @@ class XverseBtcWalletHandler implements BtcWalletHandler {
     }
     const signedPsbtHex = base64ToHex(res.result.psbt);
     return { signedPsbtHex };
+  }
+
+  async sendBitcoin(toAddress: string, satoshis: number): Promise<SendBitcoinResult> {
+    const res = await this._ctx.adapter.request("sendTransfer", {
+      recipients: [{ address: toAddress, amount: satoshis }],
+    });
+    if ("error" in res) {
+      throw new Error(`Unable to sends bitcoin: ${res.error.message}`);
+    }
+    return { txId: res.result.txid };
   }
 
   async disconnect(): Promise<void> {

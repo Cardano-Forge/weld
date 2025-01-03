@@ -122,6 +122,23 @@ if (signPsbtForm instanceof HTMLFormElement) {
   });
 }
 
+const sendBitcoinForm = document.querySelector("#send-bitcoin");
+if (sendBitcoinForm instanceof HTMLFormElement) {
+  sendBitcoinForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!weldBtc.wallet.isConnected) {
+      return;
+    }
+    const data = new FormData(sendBitcoinForm);
+    const toAddress = data.get("toAddress")?.toString();
+    const satoshis = Number(data.get("satoshis")?.toString());
+    if (toAddress?.length && !Number.isNaN(satoshis)) {
+      const res = await weldBtc.wallet.sendBitcoin(toAddress, satoshis);
+      console.log("res", res);
+    }
+  });
+}
+
 document.querySelector("#disconnect")?.addEventListener("click", () => {
   weldBtc.wallet.disconnect();
 });

@@ -26,12 +26,17 @@ export type SignPsbtResult = {
   signedPsbtHex: string;
 };
 
+export type SendBitcoinResult = {
+  txId: string;
+};
+
 export interface BtcWalletHandler {
   getBalance(): Promise<GetBalanceResult>;
   getPaymentAddress(): Promise<string>;
   getPublicKey(): Promise<string>;
   signMessage(message: string, opts?: SignMessageOpts): Promise<SignMessageResult>;
   signPsbt(psbtHex: string, opts: SignPsbtOpts): Promise<SignPsbtResult>;
+  sendBitcoin(toAddress: string, satoshis: number): Promise<SendBitcoinResult>;
   disconnect?(): MaybePromise<void>;
   on?(event: BtcWalletEvent, handler: () => void): UnsubscribeFct;
 }

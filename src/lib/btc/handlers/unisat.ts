@@ -7,6 +7,7 @@ import type {
   BtcWalletEvent,
   BtcWalletHandler,
   GetBalanceResult,
+  SendBitcoinResult,
   SignMessageOpts,
   SignMessageResult,
   SignPsbtOpts,
@@ -33,6 +34,7 @@ export type UnisatApi = {
   disconnect(): Promise<void>;
   signMessage(msg: string, type: SignMessageType): Promise<string>;
   signPsbt(psbtHex: string, opts: { toSignInputs: ToSignInput[] }): Promise<string>;
+  sendBitcoin(toAddress: string, satoshis: number): Promise<string>;
   on<TEvent extends keyof UnisatEvents>(
     event: TEvent,
     handler: (data: UnisatEvents[TEvent]) => void,
@@ -84,6 +86,11 @@ export class UnisatBtcWalletHandler implements BtcWalletHandler {
     }
     const signedPsbtHex = await this._ctx.api.signPsbt(psbtHex, { toSignInputs });
     return { signedPsbtHex };
+  }
+
+  async sendBitcoin(toAddress: string, satoshis: number): Promise<SendBitcoinResult> {
+    const txId = await this._ctx.api.sendBitcoin(toAddress, satoshis);
+    return { txId };
   }
 
   async disconnect(): Promise<void> {

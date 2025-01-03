@@ -24,6 +24,7 @@ export type BtcWalletProps = DefaultWalletStoreProps &
     handler: BtcWalletHandler;
     signMessage: BtcWalletHandler["signMessage"];
     signPsbt: BtcWalletHandler["signPsbt"];
+    sendBitcoin: BtcWalletHandler["sendBitcoin"];
   };
 
 function newBtcWalletState(): PartialWithDiscriminant<BtcWalletProps, "isConnected"> {
@@ -48,6 +49,7 @@ function newBtcWalletState(): PartialWithDiscriminant<BtcWalletProps, "isConnect
     handler: undefined,
     signMessage: undefined,
     signPsbt: undefined,
+    sendBitcoin: undefined,
   };
 }
 
@@ -134,6 +136,7 @@ export const createBtcWalletStore = createStoreFactory<
             handler,
             signMessage: handler.signMessage.bind(handler),
             signPsbt: handler.signPsbt.bind(handler),
+            sendBitcoin: handler.sendBitcoin.bind(handler),
           };
 
           if (opts.signal.aborted) {
