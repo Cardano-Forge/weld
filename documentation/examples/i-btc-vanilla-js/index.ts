@@ -37,6 +37,21 @@ weldBtc.wallet.subscribeWithSelector(
 );
 
 weldBtc.wallet.subscribeWithSelector(
+  (state) => state.getInscriptions?.() ?? "-",
+  async (inscriptions) => {
+    if (typeof inscriptions === "string") {
+      // biome-ignore lint/style/noNonNullAssertion: We know the element exists
+      document.querySelector("#inscriptions")!.textContent = inscriptions;
+    } else {
+      // biome-ignore lint/style/noNonNullAssertion: We know the element exists
+      document.querySelector("#inscriptions")!.textContent = (
+        await inscriptions
+      ).results.length.toString();
+    }
+  },
+);
+
+weldBtc.wallet.subscribeWithSelector(
   (state) => state.isConnectingTo ?? "-",
   (isConnectingTo) => {
     // biome-ignore lint/style/noNonNullAssertion: We know the element exists

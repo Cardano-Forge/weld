@@ -30,10 +30,31 @@ export type SendBitcoinResult = {
   txId: string;
 };
 
+export type Inscription = {
+  inscriptionId: string;
+  inscriptionNumber: number;
+  address: string;
+  contentLength: number;
+  contentType: string;
+  timestamp: number;
+  genesisTransaction: string;
+  output: string;
+  offset: number;
+};
+export type GetInscriptionsResult = {
+  total: number;
+  results: Inscription[];
+};
+export type GetInscriptionsOpts = {
+  limit?: number;
+  offset?: number;
+};
+
 export interface BtcWalletHandler {
   getBalance(): Promise<GetBalanceResult>;
   getPaymentAddress(): Promise<string>;
   getPublicKey(): Promise<string>;
+  getInscriptions(opts?: GetInscriptionsOpts): Promise<GetInscriptionsResult>;
   signMessage(message: string, opts?: SignMessageOpts): Promise<SignMessageResult>;
   signPsbt(psbtHex: string, opts: SignPsbtOpts): Promise<SignPsbtResult>;
   sendBitcoin(toAddress: string, satoshis: number): Promise<SendBitcoinResult>;

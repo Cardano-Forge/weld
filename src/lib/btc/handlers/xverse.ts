@@ -17,6 +17,9 @@ import {
   type BtcWalletEvent,
   type BtcWalletHandler,
   type GetBalanceResult,
+  type GetInscriptionsOpts,
+  type GetInscriptionsResult,
+  type Inscription,
   type SendBitcoinResult,
   type SignMessageOpts,
   type SignMessageResult,
@@ -69,6 +72,28 @@ class XverseBtcWalletHandler implements BtcWalletHandler {
       throw new Error("Unable to retrieve public key");
     }
     return publicKey;
+  }
+
+  async getInscriptions({
+    limit = 10,
+    offset = 0,
+  }: GetInscriptionsOpts = {}): Promise<GetInscriptionsResult> {
+    const res = await this._ctx.adapter.request("ord_getInscriptions", { limit, offset });
+    if ("error" in res) {
+      throw new Error(`Unable to retrieve inscriptions: ${res.error.message}`);
+    }
+    const results: Inscription[] = [];
+    for (const inscription of res.result.inscriptions) {
+      results.push({
+        ...inscription,
+        inscriptionNumber: Number(inscription.inscriptionNumber),
+        contentLength: Number(inscription.contentLength),
+      });
+    }
+    return {
+      total: res.result.total,
+      results,
+    };
   }
 
   async signMessage(message: string, opts?: SignMessageOpts): Promise<SignMessageResult> {

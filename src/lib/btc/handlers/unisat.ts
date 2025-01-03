@@ -7,6 +7,8 @@ import type {
   BtcWalletEvent,
   BtcWalletHandler,
   GetBalanceResult,
+  GetInscriptionsOpts,
+  GetInscriptionsResult,
   SendBitcoinResult,
   SignMessageOpts,
   SignMessageResult,
@@ -26,11 +28,28 @@ type ToSignInput = {
   index: number;
 };
 
+type Inscription = {
+  inscriptionId: string;
+  inscriptionNumber: number;
+  address: string;
+  outputValue: number;
+  preview: string;
+  content: string;
+  contentLength: number;
+  contentType: string;
+  timestamp: number;
+  genesisTransaction: string;
+  location: string;
+  output: string;
+  offset: number;
+};
+
 export type UnisatApi = {
   requestAccounts(): Promise<string[]>;
   getAccounts(): Promise<string[]>;
   getPublicKey(): Promise<string>;
   getBalance(): Promise<GetBalanceResult>;
+  getInscriptions(cursor: number, size: number): Promise<{ total: number; list: Inscription[] }>;
   disconnect(): Promise<void>;
   signMessage(msg: string, type: SignMessageType): Promise<string>;
   signPsbt(psbtHex: string, opts: { toSignInputs: ToSignInput[] }): Promise<string>;
@@ -69,6 +88,17 @@ export class UnisatBtcWalletHandler implements BtcWalletHandler {
 
   async getPublicKey(): Promise<string> {
     return this._ctx.api.getPublicKey();
+  }
+
+  async getInscriptions({
+    limit = 10,
+    offset = 0,
+  }: GetInscriptionsOpts = {}): Promise<GetInscriptionsResult> {
+    const res = await this._ctx.api.getInscriptions(offset, limit);
+    return {
+      total: res.total,
+      results: res.list,
+    };
   }
 
   async signMessage(message: string, opts?: SignMessageOpts): Promise<SignMessageResult> {
