@@ -1,4 +1,3 @@
-import type { BtcWalletHandler } from "@/internal/btc/handlers/types";
 import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
 import type { PartialWithDiscriminant } from "@/internal/utils/types";
@@ -10,6 +9,7 @@ import {
 import { WalletConnectionAbortedError, WalletConnectionError } from "@/lib/main";
 import type { WalletConfig } from "@/lib/main/stores/config";
 import { weldBtc } from ".";
+import type { BtcWalletHandler } from "../handlers/types";
 import type { BtcApi, BtcExtensionInfo } from "../types";
 
 export type BtcWalletProps = DefaultWalletStoreProps &

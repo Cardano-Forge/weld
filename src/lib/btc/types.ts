@@ -1,5 +1,5 @@
-import type { BtcWalletDef } from "@/internal/btc/handlers/types";
 import type { Provider } from "@sats-connect/core";
+import type { BtcWalletDef } from "./handlers/types";
 
 export type BtcExtensionInfo = Provider;
 

@@ -2,9 +2,9 @@ import { LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
 
 import { setupAutoUpdate } from "@/internal/auto-update";
-import { supportedBtcWallets } from "@/internal/btc/handlers";
 import { get } from "@/internal/utils/get";
 import { weldBtc } from ".";
+import { supportedBtcWallets } from "../handlers";
 import type { BtcApi, BtcExtension } from "../types";
 
 export type BtcExtensionsProps = {
