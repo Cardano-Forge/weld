@@ -131,6 +131,21 @@ export const createBtcWalletStore = createStoreFactory<
           setState(newState);
         };
 
+        if (handler.on) {
+          lifecycle.subscriptions.add(
+            handler.on("accountChange", () => {
+              console.log("accountChange");
+              updateState();
+            }),
+          );
+          lifecycle.subscriptions.add(
+            handler.on("networkChange", () => {
+              console.log("networkChange");
+              updateState();
+            }),
+          );
+        }
+
         return {
           updateState,
         };

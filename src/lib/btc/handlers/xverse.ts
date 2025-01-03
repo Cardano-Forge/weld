@@ -1,3 +1,4 @@
+import type { UnsubscribeFct } from "@/internal/lifecycle";
 import { get } from "@/internal/utils/get";
 import {
   type BitcoinProvider,
@@ -7,6 +8,7 @@ import {
 } from "@sats-connect/core";
 import {
   type BtcWalletDef,
+  type BtcWalletEvent,
   type BtcWalletHandler,
   type GetBalanceResult,
   isBtcProvider,
@@ -16,6 +18,7 @@ class XverseBtcWalletHandler implements BtcWalletHandler {
   constructor(private _ctx: { adapter: SatsConnectAdapter; api: BitcoinProvider }) {}
 
   async getBalance(): Promise<GetBalanceResult> {
+    await this.checkPermissions();
     const res = await this._ctx.adapter.request("getBalance", null);
     if ("error" in res) {
       throw new Error(`Unable to retrieve balance: ${res.error.message}`);
@@ -30,6 +33,19 @@ class XverseBtcWalletHandler implements BtcWalletHandler {
   async disconnect(): Promise<void> {
     await this._ctx.adapter.request("wallet_renouncePermissions", null);
   }
+
+  on(event: BtcWalletEvent, handler: () => void): UnsubscribeFct {
+    return this._ctx.adapter.addListener(event, handler);
+  }
+
+  async checkPermissions() {
+    const curr = await this._ctx.api.request("wallet_getCurrentPermissions", null);
+    const hasReadPermissions =
+      "result" in curr && curr.result.find((r) => r.type === "account" && r.actions.read);
+    if (!hasReadPermissions) {
+      await this._ctx.api.request("wallet_requestPermissions", null);
+    }
+  }
 }
 
 export const xverseWalletDef: BtcWalletDef = {
@@ -42,12 +58,8 @@ export const xverseWalletDef: BtcWalletDef = {
       throw new Error("Xverse extension is not installed");
     }
     const adapter = new this.Adapter();
-    const curr = await api.request("wallet_getCurrentPermissions", null);
-    const hasReadPermissions =
-      "result" in curr && curr.result.find((r) => r.type === "account" && r.actions.read);
-    if (!hasReadPermissions) {
-      await api.request("wallet_requestPermissions", null);
-    }
-    return new XverseBtcWalletHandler({ adapter, api });
+    const handler = new XverseBtcWalletHandler({ adapter, api });
+    await handler.checkPermissions();
+    return handler;
   },
 };

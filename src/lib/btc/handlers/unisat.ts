@@ -1,10 +1,24 @@
+import type { UnsubscribeFct } from "@/internal/lifecycle";
 import { DefaultAdaptersInfo, type SatsConnectAdapter, defaultAdapters } from "@sats-connect/core";
-import type { BtcWalletDef, BtcWalletHandler, GetBalanceResult } from "./types";
+import type { BtcWalletDef, BtcWalletEvent, BtcWalletHandler, GetBalanceResult } from "./types";
+
+type UnisatEvents = {
+  accountsChanged: string[];
+  networkChanged: string;
+};
 
 export type UnisatApi = {
   requestAccounts(): Promise<string[]>;
   getBalance(): Promise<GetBalanceResult>;
   disconnect(): Promise<void>;
+  on<TEvent extends keyof UnisatEvents>(
+    event: TEvent,
+    handler: (data: UnisatEvents[TEvent]) => void,
+  ): void;
+  removeListener<TEvent extends keyof UnisatEvents>(
+    event: TEvent,
+    handler: (data: UnisatEvents[TEvent]) => void,
+  ): void;
 };
 
 declare global {
@@ -22,6 +36,21 @@ export class UnisatBtcWalletHandler implements BtcWalletHandler {
 
   async disconnect(): Promise<void> {
     await this._ctx.api.disconnect();
+  }
+
+  on?(event: BtcWalletEvent, handler: () => void): UnsubscribeFct {
+    if (event === "accountChange") {
+      this._ctx.api.on("accountsChanged", handler);
+    } else {
+      this._ctx.api.on("networkChanged", handler);
+    }
+    return () => {
+      if (event === "accountChange") {
+        this._ctx.api.removeListener("accountsChanged", handler);
+      } else {
+        this._ctx.api.removeListener("networkChanged", handler);
+      }
+    };
   }
 }
 

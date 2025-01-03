@@ -1,8 +1,8 @@
 import { weldBtc } from "@/lib/btc";
 
-weldBtc.config.update({
-  enablePersistence: false,
-});
+// weldBtc.config.update({
+//   enablePersistence: false,
+// });
 
 weldBtc.wallet.subscribeWithSelector(
   (state) => state.name ?? "-",
