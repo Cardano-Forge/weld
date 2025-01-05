@@ -25,6 +25,7 @@ export type BtcWalletProps = DefaultWalletStoreProps &
     signMessage: BtcWalletHandler["signMessage"];
     signPsbt: BtcWalletHandler["signPsbt"];
     sendBitcoin: BtcWalletHandler["sendBitcoin"];
+    sendInscription: BtcWalletHandler["sendInscription"];
     getInscriptions: BtcWalletHandler["getInscriptions"];
   };
 
@@ -51,6 +52,7 @@ function newBtcWalletState(): PartialWithDiscriminant<BtcWalletProps, "isConnect
     signMessage: undefined,
     signPsbt: undefined,
     sendBitcoin: undefined,
+    sendInscription: undefined,
     getInscriptions: undefined,
   };
 }
@@ -139,6 +141,7 @@ export const createBtcWalletStore = createStoreFactory<
             signMessage: handler.signMessage.bind(handler),
             signPsbt: handler.signPsbt.bind(handler),
             sendBitcoin: handler.sendBitcoin.bind(handler),
+            sendInscription: handler.sendInscription.bind(handler),
             getInscriptions: handler.getInscriptions.bind(handler),
           };
 

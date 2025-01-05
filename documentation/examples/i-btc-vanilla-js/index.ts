@@ -154,6 +154,23 @@ if (sendBitcoinForm instanceof HTMLFormElement) {
   });
 }
 
+const sendInscriptionForm = document.querySelector("#send-inscription");
+if (sendInscriptionForm instanceof HTMLFormElement) {
+  sendInscriptionForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!weldBtc.wallet.isConnected) {
+      return;
+    }
+    const data = new FormData(sendInscriptionForm);
+    const toAddress = data.get("toAddress")?.toString();
+    const inscriptionId = data.get("inscriptionId")?.toString();
+    if (toAddress?.length && inscriptionId?.length) {
+      const res = await weldBtc.wallet.sendInscription(toAddress, inscriptionId);
+      console.log("res", res);
+    }
+  });
+}
+
 document.querySelector("#disconnect")?.addEventListener("click", () => {
   weldBtc.wallet.disconnect();
 });
