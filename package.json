@@ -56,6 +56,11 @@
       "import": "./btc.js",
       "require": "./btc.cjs",
       "types": "./btc.d.ts"
+    },
+    "./btc/react": {
+      "import": "./btc-react.js",
+      "require": "./btc-react.cjs",
+      "types": "./btc-react.d.ts"
     }
   },
   "files": ["**"],
