@@ -26,8 +26,8 @@ import type {
   SignMessageResult,
   SignPsbtOpts,
   SignPsbtResult,
-} from "./types";
-import { isBtcProvider } from "./types";
+} from "../types";
+import { isBtcProvider } from "../types";
 
 class XverseBtcWalletHandler implements BtcWalletHandler {
   constructor(private _ctx: { adapter: SatsConnectAdapter; api: BitcoinProvider }) {}
@@ -162,8 +162,8 @@ class XverseBtcWalletHandler implements BtcWalletHandler {
   }
 }
 
-export const xverseWalletDef: BtcWalletDef = {
-  key: "xverse",
+export const xverseWalletDef = {
+  key: "xverse" as const,
   info: DefaultAdaptersInfo.xverse,
   Adapter: defaultAdapters[DefaultAdaptersInfo.xverse.id],
   async connect() {
@@ -174,6 +174,6 @@ export const xverseWalletDef: BtcWalletDef = {
     const adapter = new this.Adapter();
     const handler = new XverseBtcWalletHandler({ adapter, api });
     await handler.checkPermissions();
-    return handler;
+    return handler as BtcWalletHandler;
   },
-};
+} satisfies BtcWalletDef;

@@ -15,7 +15,7 @@ import type {
   SignMessageResult,
   SignPsbtOpts,
   SignPsbtResult,
-} from "./types";
+} from "../types";
 
 type UnisatEvents = {
   accountsChanged: string[];
@@ -150,8 +150,8 @@ export class UnisatBtcWalletHandler implements BtcWalletHandler {
   }
 }
 
-export const unisatWalletDef: BtcWalletDef = {
-  key: "unisat",
+export const unisatWalletDef = {
+  key: "unisat" as const,
   info: DefaultAdaptersInfo.unisat,
   Adapter: defaultAdapters[DefaultAdaptersInfo.unisat.id],
   async connect() {
@@ -161,6 +161,6 @@ export const unisatWalletDef: BtcWalletDef = {
     }
     await api.requestAccounts();
     const adapter = new this.Adapter();
-    return new UnisatBtcWalletHandler({ adapter, api });
+    return new UnisatBtcWalletHandler({ adapter, api }) as BtcWalletHandler;
   },
-};
+} satisfies BtcWalletDef;

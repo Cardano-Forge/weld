@@ -1,8 +1,8 @@
-import type { BtcWalletDef } from "./types";
+import type { BtcWalletDef } from "../types";
 import { unisatWalletDef } from "./unisat";
 import { xverseWalletDef } from "./xverse";
 
-export const supportedBtcWallets: Record<string, BtcWalletDef> = {
+export const SUPPORTED_BTC_WALLETS = {
   [unisatWalletDef.key]: unisatWalletDef,
   [xverseWalletDef.key]: xverseWalletDef,
-};
+} satisfies Record<string, BtcWalletDef>;

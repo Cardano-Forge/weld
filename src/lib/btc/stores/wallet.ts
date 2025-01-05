@@ -9,8 +9,7 @@ import {
 import { WalletConnectionAbortedError, WalletConnectionError } from "@/lib/main";
 import type { WalletConfig } from "@/lib/main/stores/config";
 import { weldBtc } from ".";
-import type { BtcWalletHandler } from "../handlers/types";
-import type { BtcApi, BtcExtensionInfo } from "../types";
+import type { BtcApi, BtcExtensionInfo, BtcWalletHandler } from "../types";
 
 export type BtcWalletProps = DefaultWalletStoreProps &
   BtcExtensionInfo & {
