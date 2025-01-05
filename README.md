@@ -597,6 +597,51 @@ weldSol.wallet.subscribeWithSelector(
 );
 ```
 
+### Usage with Bitcoin
+
+First, make sure all required dependencies are installed:
+
+```bash
+npm install @ada-anvil/weld @sats-connect/core
+```
+
+_To use the react bindings, you'll also need to make sure that react is installed and available_
+
+Then, wrap your entire application within the `WeldBtcProvider`:
+
+```tsx
+import { WeldBtcProvider } from "@ada-anvil/weld/btc/react";
+import { App } from "./app";
+
+export function Index() {
+  return (
+    <WeldBtcProvider>
+      <App />
+    </WeldBtcProvider>
+  );
+}
+```
+
+Now, you can interact with the library through custom hooks from anywhere in your application.
+
+```tsx
+import { useBtcWallet, useBtcExtensions } from "@ada-anvil/weld/btc/react";
+```
+
+To use Weld's bitcoin stores outside of React, use the `weldBtc` instance as you would the `weld` instance.
+
+```tsx
+import { weldBtc } from "@ada-anvil/weld/btc";
+weldBtc.wallet.subscribeWithSelector(
+  s => s.isConnected,
+  isConnected => {
+    if (isConnected) {
+      console.log("Btc wallet is connected");
+    }
+  }
+);
+```
+
 ## Cross-Framework Support
 
 Weld is built with flexibility in mind and as such can be used with any frontend framework or even Vanilla JavaScript.
