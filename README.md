@@ -43,6 +43,7 @@
   - [Usage with Ethereum](#usage-with-ethereum)
   - [Usage with Polygon](#usage-with-polygon)
   - [Usage with Solana](#usage-with-solana)
+  - [Usage with Bitcoin](#usage-with-bitcoin)
 - [Cross-Framework Support](#cross-framework-support)
     - [Usage with Svelte](#usage-with-svelte)
     - [Usage with Vanilla JavaScript](#usage-with-vanilla-javascript)
@@ -599,19 +600,20 @@ weldSol.wallet.subscribeWithSelector(
 
 ### Usage with Bitcoin
 
-Weld builds upon the `@sats-connect/core` library to create a unified API to interact with multiple Bitcoin wallets.
+Weld builds upon the `@sats-connect/core` library to provide a unified API for interacting with multiple Bitcoin wallets.
 
-Currently, Weld supports both the [xverse](https://www.xverse.app/) and [unisat](https://unisat.io/) wallets, but we plan to add support for any [WBIP004](https://wbips.netlify.app/wbips/WBIP004) compliant wallet once it gains wider adoption. 
+Currently, Weld supports the [xverse](https://www.xverse.app/) and [unisat](https://unisat.io/) wallets.
+We plan to add support for any [WBIP004](https://wbips.netlify.app/wbips/WBIP004) compliant wallet as adoption of this standard increases.
 
-To use Weld's Bitcoin tools, make sure all required dependencies are installed:
+To use Weld's Bitcoin tools, ensure all required dependencies are installed:
 
 ```bash
 npm install @ada-anvil/weld @sats-connect/core
 ```
 
-_To use the react bindings, you'll also need to make sure that react is installed and available_
+_If you're using the react bindings, ensure that react is installed and available._
 
-Then, wrap your entire application within the `WeldBtcProvider`:
+Next, wrap your entire application with the `WeldBtcProvider`:
 
 ```tsx
 import { WeldBtcProvider } from "@ada-anvil/weld/btc/react";
@@ -626,15 +628,15 @@ export function Index() {
 }
 ```
 
-Now, you can interact with the library through custom hooks from anywhere in your application.
+You can now interact with the library using custom hooks from anywhere in your application.
 
 ```tsx
 import { useBtcWallet, useBtcExtensions } from "@ada-anvil/weld/btc/react";
 ```
 
-_Note: To see all the supported features, refer to the Bitcoin [examples folder](/documentation/examples/i-btc-vanilla-js/)._
+_Note: For a full list of supported features, refer to the Bitcoin [examples folder](/documentation/examples/i-btc-vanilla-js/)._
 
-To use Weld's bitcoin stores outside of React, use the `weldBtc` instance as you would the `weld` instance.
+To use Weld's bitcoin stores outside of React, use the `weldBtc` instance the same way as the `weld` instance.
 
 ```tsx
 import { weldBtc } from "@ada-anvil/weld/btc";
@@ -648,9 +650,9 @@ weldBtc.wallet.subscribeWithSelector(
 );
 ```
 
-For more complex use cases, Weld exposes the raw extension [provider API](https://docs.unisat.io/dev/unisat-developer-center/unisat-wallet) as well as the sats-connect [adapter](https://github.com/secretkeylabs/sats-connect-core/blob/main/src/adapters/index.ts) for the connected wallet.   
+For advanced use cases, Weld exposes both the raw extension [provider API](https://docs.unisat.io/dev/unisat-developer-center/unisat-wallet) and the sats-connect [adapter](https://github.com/secretkeylabs/sats-connect-core/blob/main/src/adapters/index.ts) for connected wallet.   
 
-> :warning: These APIs may differ  from one wallet to the other, so make sure you know what they support before using them!
+> :warning: APIs may vary between wallets, so make sure functions exist before using them.
 
 ```typescript
 import { useBtcWallet } from "./lib/btc-react";
