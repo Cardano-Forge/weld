@@ -85,5 +85,5 @@ export type BtcWalletDef = {
   key: string;
   info: Provider;
   Adapter: new () => SatsConnectAdapter;
-  connect(): Promise<BtcWalletHandler>;
+  connect(opts?: { adapter?: SatsConnectAdapter }): Promise<BtcWalletHandler>;
 };

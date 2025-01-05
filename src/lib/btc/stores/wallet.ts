@@ -8,6 +8,7 @@ import {
 } from "@/internal/wallet-store";
 import { WalletConnectionAbortedError, WalletConnectionError } from "@/lib/main";
 import type { WalletConfig } from "@/lib/main/stores/config";
+import type { SatsConnectAdapter } from "@sats-connect/core";
 import { weldBtc } from ".";
 import type { BtcApi, BtcExtensionInfo, BtcWalletHandler } from "../types";
 
@@ -21,6 +22,7 @@ export type BtcWalletProps = DefaultWalletStoreProps &
     paymentAddress: string;
     publicKey: string;
     api: BtcApi;
+    adapter: SatsConnectAdapter;
     handler: BtcWalletHandler;
     signMessage: BtcWalletHandler["signMessage"];
     signPsbt: BtcWalletHandler["signPsbt"];
@@ -49,6 +51,7 @@ function newBtcWalletState(): PartialWithDiscriminant<BtcWalletProps, "isConnect
     paymentAddress: undefined,
     publicKey: undefined,
     api: undefined,
+    adapter: undefined,
     handler: undefined,
     signMessage: undefined,
     signPsbt: undefined,
@@ -123,7 +126,8 @@ export const createBtcWalletStore = createStoreFactory<
           throw new WalletConnectionAbortedError();
         }
 
-        const handler = await extension.connect();
+        const adapter = new extension.Adapter();
+        const handler = await extension.connect({ adapter });
 
         const updateState = async () => {
           const balance = await handler.getBalance();
@@ -135,6 +139,7 @@ export const createBtcWalletStore = createStoreFactory<
             isConnecting: false,
             isConnectingTo: undefined,
             api: extension.api,
+            adapter,
             balanceBtc: balance.total / 100_000_000,
             balanceSat: balance.total,
             paymentAddress: await handler.getPaymentAddress(),

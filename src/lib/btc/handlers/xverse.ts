@@ -166,12 +166,12 @@ export const xverseWalletDef = {
   key: "xverse" as const,
   info: DefaultAdaptersInfo.xverse,
   Adapter: defaultAdapters[DefaultAdaptersInfo.xverse.id],
-  async connect() {
+  async connect(opts) {
     const api = get(window, DefaultAdaptersInfo.xverse.id) as BitcoinProvider;
     if (!isBtcProvider(api)) {
       throw new Error("Xverse extension is not installed");
     }
-    const adapter = new this.Adapter();
+    const adapter = opts?.adapter ?? new this.Adapter();
     const handler = new XverseBtcWalletHandler({ adapter, api });
     await handler.checkPermissions();
     return handler as BtcWalletHandler;

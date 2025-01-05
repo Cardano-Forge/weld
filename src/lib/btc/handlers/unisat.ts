@@ -154,13 +154,13 @@ export const unisatWalletDef = {
   key: "unisat" as const,
   info: DefaultAdaptersInfo.unisat,
   Adapter: defaultAdapters[DefaultAdaptersInfo.unisat.id],
-  async connect() {
+  async connect(opts) {
     const api = window.unisat;
     if (!api) {
       throw new Error("Unisat extension is not installed");
     }
     await api.requestAccounts();
-    const adapter = new this.Adapter();
+    const adapter = opts?.adapter ?? new this.Adapter();
     return new UnisatBtcWalletHandler({ adapter, api }) as BtcWalletHandler;
   },
 } satisfies BtcWalletDef;

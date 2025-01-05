@@ -599,7 +599,11 @@ weldSol.wallet.subscribeWithSelector(
 
 ### Usage with Bitcoin
 
-First, make sure all required dependencies are installed:
+Weld builds upon the `@sats-connect/core` library to create a unified API to interact with multiple Bitcoin wallets.
+
+Currently, Weld supports both the [xverse](https://www.xverse.app/) and [unisat](https://unisat.io/) wallets, but we plan to add support for any [WBIP004](https://wbips.netlify.app/wbips/WBIP004) compliant wallet once it gains wider adoption. 
+
+To use Weld's Bitcoin tools, make sure all required dependencies are installed:
 
 ```bash
 npm install @ada-anvil/weld @sats-connect/core
@@ -628,6 +632,8 @@ Now, you can interact with the library through custom hooks from anywhere in you
 import { useBtcWallet, useBtcExtensions } from "@ada-anvil/weld/btc/react";
 ```
 
+_Note: To see all the supported features, refer to the Bitcoin [examples folder](/documentation/examples/i-btc-vanilla-js/)._
+
 To use Weld's bitcoin stores outside of React, use the `weldBtc` instance as you would the `weld` instance.
 
 ```tsx
@@ -641,6 +647,30 @@ weldBtc.wallet.subscribeWithSelector(
   }
 );
 ```
+
+For more complex use cases, Weld exposes the raw extension [provider API](https://docs.unisat.io/dev/unisat-developer-center/unisat-wallet) as well as the sats-connect [adapter](https://github.com/secretkeylabs/sats-connect-core/blob/main/src/adapters/index.ts) for the connected wallet.   
+
+> :warning: These APIs may differ  from one wallet to the other, so make sure you know what they support before using them!
+
+```typescript
+import { useBtcWallet } from "./lib/btc-react";
+
+const wallet = useBtcWallet();
+
+if (wallet.isConnected) {
+  wallet.adapter.request("runes_mint", { /** mint input **/ });
+
+  if (
+    typeof wallet.api === "object" &&
+    wallet.api !== null &&
+    "request" in wallet.api &&
+    typeof wallet.api.request === "function"
+  ) {
+    wallet.api.request("something_special");
+  }
+}
+```
+
 
 ## Cross-Framework Support
 
