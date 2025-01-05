@@ -12,21 +12,22 @@ import {
   type SatsConnectAdapter,
   defaultAdapters,
 } from "@sats-connect/core";
-import {
-  type BtcWalletDef,
-  type BtcWalletEvent,
-  type BtcWalletHandler,
-  type GetBalanceResult,
-  type GetInscriptionsOpts,
-  type GetInscriptionsResult,
-  type Inscription,
-  type SendBitcoinResult,
-  type SignMessageOpts,
-  type SignMessageResult,
-  type SignPsbtOpts,
-  type SignPsbtResult,
-  isBtcProvider,
+import type {
+  BtcWalletDef,
+  BtcWalletEvent,
+  BtcWalletHandler,
+  GetBalanceResult,
+  GetInscriptionsOpts,
+  GetInscriptionsResult,
+  Inscription,
+  SendBitcoinResult,
+  SendInscriptionResult,
+  SignMessageOpts,
+  SignMessageResult,
+  SignPsbtOpts,
+  SignPsbtResult,
 } from "./types";
+import { isBtcProvider } from "./types";
 
 class XverseBtcWalletHandler implements BtcWalletHandler {
   constructor(private _ctx: { adapter: SatsConnectAdapter; api: BitcoinProvider }) {}
@@ -93,6 +94,18 @@ class XverseBtcWalletHandler implements BtcWalletHandler {
     return {
       total: res.result.total,
       results,
+    };
+  }
+
+  async sendInscription(toAddress: string, inscriptionId: string): Promise<SendInscriptionResult> {
+    const res = await this._ctx.adapter.request("ord_sendInscriptions", {
+      transfers: [{ address: toAddress, inscriptionId }],
+    });
+    if ("error" in res) {
+      throw new Error(`Unable to retrieve inscriptions: ${res.error.message}`);
+    }
+    return {
+      txId: res.result.txid,
     };
   }
 

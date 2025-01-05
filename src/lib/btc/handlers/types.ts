@@ -41,13 +41,17 @@ export type Inscription = {
   output: string;
   offset: number;
 };
+export type GetInscriptionsOpts = {
+  limit?: number;
+  offset?: number;
+};
 export type GetInscriptionsResult = {
   total: number;
   results: Inscription[];
 };
-export type GetInscriptionsOpts = {
-  limit?: number;
-  offset?: number;
+
+export type SendInscriptionResult = {
+  txId: string;
 };
 
 export interface BtcWalletHandler {
@@ -55,6 +59,7 @@ export interface BtcWalletHandler {
   getPaymentAddress(): Promise<string>;
   getPublicKey(): Promise<string>;
   getInscriptions(opts?: GetInscriptionsOpts): Promise<GetInscriptionsResult>;
+  sendInscription(toAddress: string, inscriptionId: string): Promise<SendInscriptionResult>;
   signMessage(message: string, opts?: SignMessageOpts): Promise<SignMessageResult>;
   signPsbt(psbtHex: string, opts: SignPsbtOpts): Promise<SignPsbtResult>;
   sendBitcoin(toAddress: string, satoshis: number): Promise<SendBitcoinResult>;
