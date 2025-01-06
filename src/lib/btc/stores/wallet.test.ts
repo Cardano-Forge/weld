@@ -1,7 +1,6 @@
 import { LifeCycleManager } from "@/internal/lifecycle";
 import { WalletConnectionAbortedError } from "@/lib/main";
 import { type WeldConfig, createConfigStore } from "@/lib/main/stores/config";
-import { defaultAdapters } from "@sats-connect/core";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, test, vi } from "vitest";
 import type {
   BtcApi,
@@ -23,8 +22,6 @@ const lifecycle = new LifeCycleManager();
 const paymentAddress = "tb1qtpz4dkmjyum40yru3mwyw4cvafpwyg7pqs7p96";
 const publicKey = "032199b7eee664cfde687013abd22d9cbe84794907a607318fde709d6c3693d0be";
 const balanceSat = 123_456_789;
-
-const spy = vi.fn();
 
 const inscription = {
   inscriptionId: "6037b17df2f48cf87f6b6e6ff89af416f6f21dd3d3bc9f1832fb1ff560037531i0",
@@ -85,7 +82,6 @@ const supportedExtension: BtcWalletDef = {
     name: "Test Wallet",
     icon: "noicon",
   },
-  Adapter: defaultAdapters.unisat,
   async connect() {
     return new BtcWalletHandlerMock();
   },
@@ -96,7 +92,6 @@ const api: BtcApi = {};
 beforeEach(() => {
   // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
   (window as any)[walletId] = api;
-  spy.mockReset();
   vi.resetAllMocks();
 });
 
@@ -139,7 +134,6 @@ describe("connectAsync", () => {
     expect(connected.publicKey).toBe(publicKey);
     expect(connected.api).toBe(api);
     expect(connected.handler).toBeInstanceOf(BtcWalletHandlerMock);
-    expect(connected.adapter).toBeInstanceOf(supportedExtension.Adapter);
     for (const [key, value] of Object.entries(supportedExtension.info)) {
       expect(connected[key as keyof typeof connected]).toBe(value);
     }

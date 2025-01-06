@@ -1,8 +1,17 @@
 import type { UnsubscribeFct } from "@/internal/lifecycle";
 import type { MaybePromise } from "@/internal/utils/types";
-import type { BitcoinProvider, Provider, SatsConnectAdapter } from "@sats-connect/core";
 
-export type BtcExtensionInfo = Provider;
+export type BtcExtensionInfo = {
+  id: string;
+  name: string;
+  icon: string;
+  webUrl?: string;
+  chromeWebStoreUrl?: string;
+  mozillaAddOnsUrl?: string;
+  googlePlayStoreUrl?: string;
+  iOSAppStoreUrl?: string;
+  methods?: string[];
+};
 
 export type BtcApi = Record<string, unknown>;
 
@@ -79,15 +88,8 @@ export interface BtcWalletHandler {
   on?(event: BtcWalletEvent, handler: () => void): UnsubscribeFct;
 }
 
-export function isBtcProvider(obj: unknown): obj is BitcoinProvider {
-  return (
-    typeof obj === "object" && obj !== null && "request" in obj && typeof obj.request === "function"
-  );
-}
-
 export type BtcWalletDef = {
   key: string;
-  info: Provider;
-  Adapter: new () => SatsConnectAdapter;
-  connect(opts?: { adapter?: SatsConnectAdapter }): Promise<BtcWalletHandler>;
+  info: BtcExtensionInfo;
+  connect(): Promise<BtcWalletHandler>;
 };

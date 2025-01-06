@@ -600,15 +600,16 @@ weldSol.wallet.subscribeWithSelector(
 
 ### Usage with Bitcoin
 
-Weld builds upon the [@sats-connect/core](https://github.com/secretkeylabs/sats-connect-core) library to provide a unified API for interacting with multiple Bitcoin wallets.
+Weld provides a unified API for interacting with multiple Bitcoin wallets.
 
 Currently, Weld supports the [xverse](https://www.xverse.app/) and [unisat](https://unisat.io/) wallets.
+
 We plan to add support for any [WBIP004](https://wbips.netlify.app/wbips/WBIP004) compliant wallet as adoption of this standard increases.
 
 To use Weld's Bitcoin tools, ensure all required dependencies are installed:
 
 ```bash
-npm install @ada-anvil/weld @sats-connect/core
+npm install @ada-anvil/weld
 ```
 
 _If you're using the react bindings, ensure that react is installed and available._
@@ -650,7 +651,7 @@ weldBtc.wallet.subscribeWithSelector(
 );
 ```
 
-For advanced use cases, Weld exposes both the raw extension [provider API](https://docs.unisat.io/dev/unisat-developer-center/unisat-wallet) and the sats-connect [adapter](https://github.com/secretkeylabs/sats-connect-core/blob/main/src/adapters/index.ts) for connected wallet.   
+For advanced use cases, Weld exposes the raw extension [provider API](https://docs.unisat.io/dev/unisat-developer-center/unisat-wallet) for the connected wallet.   
 
 > :warning: APIs may vary between wallets, so make sure functions exist before using them.
 
