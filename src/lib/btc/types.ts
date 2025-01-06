@@ -4,7 +4,11 @@ import type { BitcoinProvider, Provider, SatsConnectAdapter } from "@sats-connec
 
 export type BtcExtensionInfo = Provider;
 
-export type BtcApi = unknown;
+export type BtcApi = Record<string, unknown>;
+
+export function isBtcApi(obj: unknown): obj is BtcApi {
+  return typeof obj === "object" && obj !== null;
+}
 
 export type BtcExtension = BtcWalletDef & {
   api: BtcApi;

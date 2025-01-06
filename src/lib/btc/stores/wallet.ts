@@ -11,6 +11,7 @@ import type { WalletConfig } from "@/lib/main/stores/config";
 import type { SatsConnectAdapter } from "@sats-connect/core";
 import { weldBtc } from ".";
 import type { BtcApi, BtcExtensionInfo, BtcWalletHandler } from "../types";
+import { satToBtc } from "../utils";
 
 export type BtcWalletProps = DefaultWalletStoreProps &
   BtcExtensionInfo & {
@@ -140,7 +141,7 @@ export const createBtcWalletStore = createStoreFactory<
             isConnectingTo: undefined,
             api: extension.api,
             adapter,
-            balanceBtc: balance.total / 100_000_000,
+            balanceBtc: satToBtc(balance.total),
             balanceSat: balance.total,
             paymentAddress: await handler.getPaymentAddress(),
             publicKey: await handler.getPublicKey(),
