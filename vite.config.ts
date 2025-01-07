@@ -67,7 +67,6 @@ export default defineConfig({
         "@types/react-dom",
         "@solana/web3.js",
         "ethers",
-        "@sats-connect/core",
       ],
       output: {
         banner(chunk) {

@@ -117,9 +117,6 @@
     "react": ">=17.0.0"
   },
   "peerDependenciesMeta": {
-    "@sats-connect/core": {
-      "optional": true
-    },
     "@types/react": {
       "optional": true
     },
