@@ -111,11 +111,11 @@ export const createEvmWalletStore = createStoreFactory<
   [EvmWalletStoreOptions] | [EvmWalletStoreOptions, { lifecycle?: LifeCycleManager }]
 >((setState, getState, storeOptions, { lifecycle = new LifeCycleManager() } = {}) => {
   const chainId = evmChainIds[storeOptions.chain];
-  const walletManager = new WalletStoreManager<EvmWalletState>(
+  const walletManager = new WalletStoreManager<EvmWalletState>({
     setState,
     getState,
-    newEvmWalletState,
-    async (key, opts) => {
+    newState: newEvmWalletState,
+    createConnection: async (key, opts) => {
       // Make sure the extensions are loaded
       storeOptions.extensions.updateExtensions();
 
@@ -162,10 +162,10 @@ export const createEvmWalletStore = createStoreFactory<
         updateState,
       };
     },
-    storeOptions.storageKey,
-    storeOptions.config,
+    walletStorageKey: storeOptions.storageKey,
+    configStore: storeOptions.config,
     lifecycle,
-  );
+  });
 
   const connectAsync = (async (
     key,

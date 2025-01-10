@@ -43,6 +43,7 @@
   - [Usage with Ethereum](#usage-with-ethereum)
   - [Usage with Polygon](#usage-with-polygon)
   - [Usage with Solana](#usage-with-solana)
+  - [Usage with Bitcoin](#usage-with-bitcoin)
 - [Cross-Framework Support](#cross-framework-support)
     - [Usage with Svelte](#usage-with-svelte)
     - [Usage with Vanilla JavaScript](#usage-with-vanilla-javascript)
@@ -596,6 +597,83 @@ weldSol.wallet.subscribeWithSelector(
   }
 );
 ```
+
+### Usage with Bitcoin
+
+Weld provides a unified API for interacting with multiple Bitcoin wallets.
+
+Currently, Weld supports the [xverse](https://www.xverse.app/) and [unisat](https://unisat.io/) wallets.
+
+We plan to add support for any [WBIP004](https://wbips.netlify.app/wbips/WBIP004) compliant wallet as adoption of this standard increases.
+
+To use Weld's Bitcoin tools, ensure all required dependencies are installed:
+
+```bash
+npm install @ada-anvil/weld
+```
+
+_If you're using the react bindings, ensure that react is installed and available._
+
+Next, wrap your entire application with the `WeldBtcProvider`:
+
+```tsx
+import { WeldBtcProvider } from "@ada-anvil/weld/btc/react";
+import { App } from "./app";
+
+export function Index() {
+  return (
+    <WeldBtcProvider>
+      <App />
+    </WeldBtcProvider>
+  );
+}
+```
+
+You can now interact with the library using custom hooks from anywhere in your application.
+
+```tsx
+import { useBtcWallet, useBtcExtensions } from "@ada-anvil/weld/btc/react";
+```
+
+_Note: For a full list of supported features, refer to the Bitcoin [examples folder](/documentation/examples/i-btc-vanilla-js/)._
+
+To use Weld's bitcoin stores outside of React, use the `weldBtc` instance the same way as the `weld` instance.
+
+```tsx
+import { weldBtc } from "@ada-anvil/weld/btc";
+weldBtc.wallet.subscribeWithSelector(
+  s => s.isConnected,
+  isConnected => {
+    if (isConnected) {
+      console.log("Btc wallet is connected");
+    }
+  }
+);
+```
+
+For advanced use cases, Weld exposes the raw extension [provider API](https://docs.unisat.io/dev/unisat-developer-center/unisat-wallet) for the connected wallet.   
+
+> :warning: APIs may vary between wallets, so make sure functions exist before using them.
+
+```typescript
+import { useBtcWallet } from "./lib/btc-react";
+
+const wallet = useBtcWallet();
+
+if (wallet.isConnected) {
+  wallet.adapter.request("runes_mint", { /** mint input **/ });
+
+  if (
+    typeof wallet.api === "object" &&
+    wallet.api !== null &&
+    "request" in wallet.api &&
+    typeof wallet.api.request === "function"
+  ) {
+    wallet.api.request("something_special");
+  }
+}
+```
+
 
 ## Cross-Framework Support
 

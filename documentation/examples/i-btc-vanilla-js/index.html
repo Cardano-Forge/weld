@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <link rel="stylesheet" href="/documentation/base.css" />
+  <title>Bitcoin | Anvil Weld</title>
+</head>
+
+<body>
+  <main>
+    BTC Vanilla JS example
+    <div>
+      Connecting: <span id="connecting">-</span>
+    </div>
+    <div>
+      Wallet: <span id="name">-</span>
+    </div>
+    <div>
+      Balance: <span id="balance">-</span>
+    </div>
+    <div>
+      Address: <span id="address">-</span>
+    </div>
+    <div>
+      Public Key: <span id="pk">-</span>
+    </div>
+    <div>
+      Inscriptions: <span id="inscriptions">-</span>
+    </div>
+
+    <form id="sign-message">
+      <label>Message <input name="message" value="Hello, world!" /></label>
+      <button>Sign message</button>
+    </form>
+
+    <form id="sign-psbt">
+      <label>Psbt <input name="psbt"
+          value="70736274ff01009a020000000258e87a21b56daf0c23be8e7070456c336f7cbaa5c8757924f545887bb2abdd750000000000ffffffff838d0427d0ec650a68aa46bb0b098aea4422c071b2ca78352a077959d07cea1d0100000000ffffffff0270aaf00800000000160014d85c2b71d0060b09c9886aeb815e50991dda124d00e1f5050000000016001400aea9a2e5f0f876a588df5546e8742d1d87008f000000000000000000" /></label>
+      <button>Sign psbt</button>
+    </form>
+
+    <form id="send-bitcoin">
+      <label>To <input name="toAddress" value="" /></label>
+      <label>Satoshis <input name="satoshis" type="number" value="" /></label>
+      <button>Send</button>
+    </form>
+
+
+    <form id="send-inscription">
+      <label>To <input name="toAddress" value="tb1qtpz4dkmjyum40yru3mwyw4cvafpwyg7pqs7p96" /></label>
+      <label>Id <input name="inscriptionId"
+          value="a11ace65a7af41aba8599e71abefb26dfe8bad497bcee4e2cdf52e438b2512d6i0" /></label>
+      <button>Send</button>
+    </form>
+
+
+    <form id="wallet-selector">
+      <select name="wallet-key" value="" style="min-width: 100px;">
+        <option value="">
+          Loading...
+        </option>
+      </select>
+      <button type="submit">
+        Connect
+      </button>
+    </form>
+
+    <button id="disconnect">Disconnect</button>
+  </main>
+  <script type="module" src="/documentation/examples/i-btc-vanilla-js/index.ts"></script>
+</body>
+
+</html>

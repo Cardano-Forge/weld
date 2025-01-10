@@ -93,15 +93,14 @@ describe("WalletStoreManager.connect", () => {
     const createConnection = vi.fn<ConnectionFct>(() => ({
       updateState: () => set(connectedState),
     }));
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
-    );
+    });
     expect(mngr.connect(key)).resolves.toStrictEqual(connectedState);
   });
 
@@ -117,15 +116,14 @@ describe("WalletStoreManager.connect", () => {
     const createConnection = vi.fn<ConnectionFct>(() => ({
       updateState: () => set(connectedState),
     }));
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
-    );
+    });
     await expect(() => mngr.connect(key)).rejects.toThrow("Connection failed");
   });
 
@@ -136,15 +134,14 @@ describe("WalletStoreManager.connect", () => {
     const createConnection = vi.fn<ConnectionFct>(() => ({
       updateState: () => set({ isConnected: true }),
     }));
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
-    );
+    });
     await mngr.connect("testkey");
     expect(subs.has(oldSub)).toBe(false);
     expect(oldSub).toHaveBeenCalledOnce();
@@ -159,15 +156,14 @@ describe("WalletStoreManager.connect", () => {
       await new Promise((r) => setTimeout(r, timeout * ++createCount));
       return { updateState: () => set({ isConnected: true, key }) };
     });
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
-    );
+    });
     const promise = Promise.allSettled([
       mngr.connect("key1"),
       mngr.connect("key2"),
@@ -187,15 +183,14 @@ describe("WalletStoreManager.connect", () => {
       expect(get().isConnecting).toBe(true);
       return { updateState: () => set({ isConnected: true }) };
     });
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
-    );
+    });
     await mngr.connect(key);
   });
 
@@ -211,15 +206,14 @@ describe("WalletStoreManager.connect", () => {
       vi.advanceTimersByTime(connectTimeout);
       return { updateState: () => set({ isConnected: true }) };
     });
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
-    );
+    });
     await expect(() => {
       return mngr.connect(key, {
         configOverrides: { connectTimeout },
@@ -243,15 +237,14 @@ describe("WalletStoreManager.connect", () => {
         },
       };
     });
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
-    );
+    });
     await expect(() => mngr.connect(key)).rejects.toThrow(updateError);
   });
 
@@ -263,15 +256,14 @@ describe("WalletStoreManager.connect", () => {
       signal.aborted = true;
       return { updateState: () => set({ isConnected: true }) };
     });
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
-    );
+    });
     await expect(() => mngr.connect(key, { signal })).rejects.toThrow(WalletConnectionAbortedError);
   });
 
@@ -282,15 +274,15 @@ describe("WalletStoreManager.connect", () => {
       return { updateState: () => set({ isConnected: true }) };
     });
     const config = createConfigStore();
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      config,
+      walletStorageKey: "connectedWallet",
+      configStore: config,
       lifecycle,
-    );
+    });
     const configOverrides: Partial<WalletConfig> = { updateOnWindowFocus: false };
     await mngr.connect(key, { configOverrides });
     expect(setupAutoUpdateSpy).toHaveBeenCalledOnce();
@@ -318,15 +310,15 @@ describe("WalletStoreManager.connect", () => {
     };
     config.update({ storage, enablePersistence: true });
     const storageKey: keyof typeof STORAGE_KEYS = "connectedWallet";
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      storageKey,
-      config,
+      walletStorageKey: storageKey,
+      configStore: config,
       lifecycle,
-    );
+    });
     await mngr.connect(key);
     expect(storage.set).toHaveBeenCalledOnce();
     expect(storage.set).toHaveBeenLastCalledWith(STORAGE_KEYS[storageKey], key);
@@ -348,15 +340,15 @@ describe("WalletStoreManager.connect", () => {
     };
     config.update({ storage, enablePersistence: true });
     const storageKey: keyof typeof STORAGE_KEYS = "connectedWallet";
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      storageKey,
-      config,
+      walletStorageKey: storageKey,
+      configStore: config,
       lifecycle,
-    );
+    });
     await expect(() => mngr.connect(key)).rejects.toThrow();
     expect(storage.set).not.toHaveBeenCalled();
     expect(cookies.get(STORAGE_KEYS[storageKey])).toBeUndefined();
@@ -377,15 +369,15 @@ describe("WalletStoreManager.connect", () => {
     };
     config.update({ storage, enablePersistence: false });
     const storageKey: keyof typeof STORAGE_KEYS = "connectedWallet";
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      storageKey,
-      config,
+      walletStorageKey: storageKey,
+      configStore: config,
       lifecycle,
-    );
+    });
     await mngr.connect(key);
     expect(storage.set).not.toHaveBeenCalled();
     expect(cookies.get(STORAGE_KEYS[storageKey])).toBeUndefined();
@@ -398,15 +390,14 @@ describe("WalletStoreManager.connect", () => {
     const createConnection = vi.fn<ConnectionFct>(() => {
       return { updateState: () => set({ isConnected: true, key }) };
     });
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
-    );
+    });
     expect(inFlight.has(signal)).toBe(true);
     await mngr.connect(key, { signal });
     expect(inFlight.has(signal)).toBe(false);
@@ -419,15 +410,14 @@ describe("WalletStoreManager.connect", () => {
     const createConnection = vi.fn<ConnectionFct>(() => {
       return { updateState: () => set({ isConnected: false, key }) };
     });
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
-    );
+    });
     expect(inFlight.has(signal)).toBe(true);
     await expect(() => mngr.connect(key, { signal })).rejects.toThrow();
     expect(inFlight.has(signal)).toBe(false);
@@ -439,15 +429,14 @@ describe("WalletStoreManager.connect", () => {
     const createConnection = vi.fn<ConnectionFct>(() => {
       throw new WalletDisconnectAccountError();
     });
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
-    );
+    });
     vi.spyOn(mngr, "disconnect");
     await expect(() => mngr.connect(key)).rejects.toThrow();
     expect(mngr.disconnect).toHaveBeenCalledOnce();
@@ -461,15 +450,14 @@ describe("WalletStoreManager.connect", () => {
       return { updateState: () => set({ isConnected: true }) };
     });
     const signal = lifecycle.inFlight.add();
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
-    );
+    });
     const connectTimeout = 5000;
     expect(signal.aborted).toBe(false);
     await mngr.connect(key, { signal, configOverrides: { connectTimeout } });
@@ -486,15 +474,14 @@ describe("WalletStoreManager.connect", () => {
       return { updateState };
     });
     const signal = lifecycle.inFlight.add();
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
-    );
+    });
     expect(signal.aborted).toBe(false);
     await mngr.connect(key, { signal });
     expect(updateState).toHaveBeenCalledOnce();
@@ -523,15 +510,14 @@ describe("WalletStoreManager.connect", () => {
       return { updateState };
     });
     const signal = lifecycle.inFlight.add();
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
-    );
+    });
     vi.spyOn(mngr, "disconnect");
     await mngr.connect(key, { signal });
     expect(mngr.disconnect).not.toHaveBeenCalled();
@@ -555,15 +541,14 @@ describe("WalletStoreManager.connect", () => {
       return { updateState };
     });
     const signal = lifecycle.inFlight.add();
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
-    );
+    });
     vi.spyOn(mngr, "handleUpdateError");
     await mngr.connect(key, { signal });
     expect(mngr.handleUpdateError).not.toHaveBeenCalled();
@@ -581,16 +566,15 @@ describe("WalletStoreManager.on", () => {
     const createConnection = vi.fn<ConnectionFct>(() => {
       return { updateState: () => set({ isConnected: true }) };
     });
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
       subscriptions,
-    );
+    });
     const onUpdateError1 = () => {};
     mngr.on("updateError", onUpdateError1);
     const onUpdateError2 = () => {};
@@ -629,15 +613,15 @@ describe("WalletStoreManager.handleUpdateError", () => {
       onUpdateError,
       wallet: { onUpdateError: onWalletUpdateError },
     });
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      config,
+      walletStorageKey: "connectedWallet",
+      configStore: config,
       lifecycle,
-    );
+    });
     const error = new Error();
     expect(onUpdateError).not.toHaveBeenCalled();
     expect(onWalletUpdateError).not.toHaveBeenCalled();
@@ -654,15 +638,14 @@ describe("WalletStoreManager.handleUpdateError", () => {
     });
     const onUpdateError1 = vi.fn();
     const onUpdateError2 = vi.fn();
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
-    )
+    })
       .on("updateError", onUpdateError1)
       .on("updateError", onUpdateError2);
     const error = new Error();
@@ -682,15 +665,14 @@ describe("WalletStoreManager.cleanup", () => {
     const createConnection = vi.fn<ConnectionFct>(() => {
       return { updateState };
     });
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
-    );
+    });
     expect(lifecycle.cleanup).not.toHaveBeenCalled();
     mngr.cleanup();
     expect(lifecycle.cleanup).toHaveBeenCalledOnce();
@@ -712,15 +694,15 @@ describe("WalletStoreManager.persist", () => {
     };
     config.update({ storage, enablePersistence: true });
     const storageKey: keyof typeof STORAGE_KEYS = "connectedWallet";
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      storageKey,
-      config,
+      walletStorageKey: storageKey,
+      configStore: config,
       lifecycle,
-    );
+    });
     const initialState = newState();
     mngr.persist({ initialState }, { tryToReconnectTo: undefined });
     expect(initialState.isConnectingTo).toBeUndefined();
@@ -745,15 +727,15 @@ describe("WalletStoreManager.persist", () => {
     };
     config.update({ storage, enablePersistence: true });
     const storageKey: keyof typeof STORAGE_KEYS = "connectedWallet";
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      storageKey,
-      config,
+      walletStorageKey: storageKey,
+      configStore: config,
       lifecycle,
-    );
+    });
     const initialState = newState();
     mngr.persist({ initialState }, { tryToReconnectTo: undefined });
     expect(get().isConnectingTo).toBeUndefined();
@@ -779,15 +761,15 @@ describe("WalletStoreManager.persist", () => {
       remove: vi.fn((k) => cookies.delete(k)),
     };
     config.update({ storage, enablePersistence: true });
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      storageKey,
-      config,
+      walletStorageKey: storageKey,
+      configStore: config,
       lifecycle,
-    );
+    });
     const windowObj = window;
     // biome-ignore lint/suspicious/noGlobalAssign: For testing purposes
     window = undefined as unknown as typeof window;
@@ -825,15 +807,14 @@ describe("WalletStoreManager.init", () => {
     const createConnection = vi.fn<ConnectionFct>(() => ({
       updateState: () => set(connectedState),
     }));
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
-    );
+    });
     expect(get()).toStrictEqual(newState());
     await mngr.init({ initialState: newState() });
     expect(get()).toStrictEqual(newState());
@@ -852,15 +833,14 @@ describe("WalletStoreManager.init", () => {
     const createConnection = vi.fn<ConnectionFct>(() => {
       throw new Error("connection failed");
     });
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
-    );
+    });
     expect(get()).toStrictEqual(newState());
     expect(mngr.init({ initialState: newState() })).resolves.not.toThrow();
     expect(get()).toStrictEqual(newState());
@@ -881,15 +861,14 @@ describe("WalletStoreManager.disconnect", () => {
     const createConnection = vi.fn<ConnectionFct>(() => {
       return { updateState };
     });
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
-    );
+    });
     expect(lifecycle.cleanup).not.toHaveBeenCalled();
     mngr.cleanup();
     expect(lifecycle.cleanup).toHaveBeenCalledOnce();
@@ -909,15 +888,14 @@ describe("WalletStoreManager.disconnect", () => {
     const createConnection = vi.fn<ConnectionFct>(() => {
       return { updateState };
     });
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
-    );
+    });
     expect(get()).toStrictEqual(updatedState);
     await mngr.disconnect();
     expect(get()).toStrictEqual(newState());
@@ -932,15 +910,14 @@ describe("WalletStoreManager.disconnect", () => {
     });
     const onBeforeDisconnect = vi.fn();
     const onAfterDisconnect = vi.fn();
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      "connectedWallet",
-      undefined,
+      walletStorageKey: "connectedWallet",
       lifecycle,
-    )
+    })
       .on("beforeDisconnect", onBeforeDisconnect)
       .on("afterDisconnect", onAfterDisconnect);
     expect(onBeforeDisconnect).not.toHaveBeenCalled();
@@ -966,15 +943,15 @@ describe("WalletStoreManager.disconnect", () => {
       remove: vi.fn((k) => cookies.delete(k)),
     };
     config.update({ storage, enablePersistence: true });
-    const mngr = new WalletStoreManager<State>(
-      set,
-      get,
+    const mngr = new WalletStoreManager<State>({
+      setState: set,
+      getState: get,
       newState,
       createConnection,
-      storageKey,
-      config,
+      walletStorageKey: storageKey,
+      configStore: config,
       lifecycle,
-    );
+    });
     expect(cookies.get(STORAGE_KEYS[storageKey])).toBe(key);
     await mngr.disconnect();
     expect(cookies.get(STORAGE_KEYS[storageKey])).toBeUndefined();

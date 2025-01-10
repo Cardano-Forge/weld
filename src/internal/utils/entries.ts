@@ -1,3 +1,3 @@
-export function entries<T extends Record<string, unknown>>(obj: T) {
-  return Object.entries(obj) as [keyof T, T[keyof T]][];
+export function entries<TKey extends string | number | symbol, TVal>(obj: Record<TKey, TVal>) {
+  return Object.entries(obj) as [TKey, TVal][];
 }
