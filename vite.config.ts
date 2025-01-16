@@ -62,7 +62,9 @@ export default defineConfig({
     rollupOptions: {
       external: [
         "react",
+        /^react\/.*/,
         "react-dom",
+        /react-dom\/.*/,
         "@types/react",
         "@types/react-dom",
         "@solana/web3.js",
