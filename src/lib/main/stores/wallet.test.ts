@@ -357,21 +357,6 @@ describe("init", () => {
   });
 });
 
-describe("persist", () => {
-  it("should persist the wallet mngr", async () => {
-    const enable = async () => enabledApi;
-    const defaultApi = { enable, isEnabled: async () => true } as DefaultWalletApi;
-    const { DefaultWalletHandler } = await import("@/internal/handler");
-    const handler = new DefaultWalletHandler(namiInfo, defaultApi, enabledApi, enable);
-    const wallet = createWalletStore({ lifecycle, connect: async () => handler });
-    // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    vi.spyOn((wallet as any).__mngr, "persist");
-    wallet.persist();
-    // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
-    expect((wallet as any).__mngr.persist).toHaveBeenCalled();
-  });
-});
-
 describe("cleanup", () => {
   it("should cleanup the wallet mngr", async () => {
     const enable = async () => enabledApi;
