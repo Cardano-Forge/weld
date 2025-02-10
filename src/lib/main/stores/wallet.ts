@@ -208,8 +208,11 @@ export const createWalletStore = createStoreFactory<
           }
 
           const balanceLovelace = await handler.getBalanceLovelace();
+          const changeAddressHex = await handler.getChangeAddressHex();
+
           const prevState = getState();
           const hasBalanceChanged = balanceLovelace !== prevState.balanceLovelace;
+          const hasAccountChanged = changeAddressHex !== prevState.changeAddressHex;
 
           const newState: Partial<ConnectedWalletState> = {
             isConnected: true,
@@ -219,7 +222,7 @@ export const createWalletStore = createStoreFactory<
             balanceLovelace,
             balanceAda: lovelaceToAda(balanceLovelace),
             networkId: await handler.getNetworkId(),
-            changeAddressHex: await handler.getChangeAddressHex(),
+            changeAddressHex,
             changeAddressBech32: await handler.getChangeAddressBech32(),
             stakeAddressHex: await handler.getStakeAddressHex(),
             stakeAddressBech32: await handler.getStakeAddressBech32(),
@@ -228,6 +231,10 @@ export const createWalletStore = createStoreFactory<
 
           if (opts.signal.aborted) {
             return;
+          }
+
+          if (hasAccountChanged) {
+            updateCookieState(newState);
           }
 
           if (hasBalanceChanged) {
@@ -255,23 +262,29 @@ export const createWalletStore = createStoreFactory<
         }
         getState().handler?.disconnect();
       })
-      .on("afterDisconnect", () => {
-        if (config.enablePersistence) {
-          config.storage.remove(STORAGE_KEYS.connectedWallet);
-          config.storage.remove(STORAGE_KEYS.connectedChangeAddressHex);
-          config.storage.remove(STORAGE_KEYS.connectedChangeAddressBech32);
-        }
-      })
-      .on("afterConnect", ({ newState }) => {
-        if (config.enablePersistence) {
-          config.storage.set(STORAGE_KEYS.connectedWallet, newState.key);
-          config.storage.set(STORAGE_KEYS.connectedChangeAddressHex, newState.changeAddressHex);
-          config.storage.set(
-            STORAGE_KEYS.connectedChangeAddressBech32,
-            newState.changeAddressBech32,
-          );
-        }
-      });
+      .on("afterDisconnect", () => updateCookieState(newWalletState()))
+      .on("afterConnect", ({ newState }) => updateCookieState(newState));
+
+    const updateCookieState = (newState: Partial<WalletState>) => {
+      if (!config.enablePersistence) {
+        return;
+      }
+      if (newState.key) {
+        config.storage.set(STORAGE_KEYS.connectedWallet, newState.key);
+      } else {
+        config.storage.remove(STORAGE_KEYS.connectedWallet);
+      }
+      if (newState.changeAddressHex) {
+        config.storage.set(STORAGE_KEYS.connectedChangeAddressHex, newState.changeAddressHex);
+      } else {
+        config.storage.remove(STORAGE_KEYS.connectedChangeAddressHex);
+      }
+      if (newState.changeAddressBech32) {
+        config.storage.set(STORAGE_KEYS.connectedChangeAddressBech32, newState.changeAddressBech32);
+      } else {
+        config.storage.remove(STORAGE_KEYS.connectedChangeAddressBech32);
+      }
+    };
 
     const connectAsync: WalletApi["connectAsync"] = async (key, configOverrides) => {
       await walletManager.disconnect();
