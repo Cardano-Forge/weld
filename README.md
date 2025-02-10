@@ -871,6 +871,39 @@ export default function RootLayout({ children }) {
 
 This setup ensures that the correct wallet connection state is available when the application first renders.
 
+### Persisting the Change Address
+
+You can optionally track both the wallet identifier and address by providing an object to `tryToReconnectTo`:
+
+```tsx
+import { STORAGE_KEYS } from "@ada-anvil/weld/server";
+import { cookies } from "next/headers";
+import { WeldProvider } from "@ada-anvil/weld/react";
+
+export default function RootLayout({ children }) {
+  const wallet = cookies().get(STORAGE_KEYS.connectedWallet)?.value;
+  const changeAddressHex = cookies().get(
+    STORAGE_KEYS.connectedChangeAddressHex,
+  )?.value;
+  const changeAddressBech32 = cookies().get(
+    STORAGE_KEYS.connectedChangeAddressBech32,
+  )?.value;
+  return (
+    <WeldProvider
+      wallet={{
+        tryToReconnectTo: wallet
+          ? { wallet, changeAddressHex, changeAddressBech32 }
+          : undefined,
+      }}
+    >
+      {children}
+    </WeldProvider>
+  );
+}
+```
+
+This can be useful to optimistically preload wallet dependant data on the server.
+
 > <small>Note: This approach works only if you use cookies to store persisted data, as they are accessible on both the client and server— unlike window.localStorage, for example, which is only available in the browser.</small>
 
 ---
