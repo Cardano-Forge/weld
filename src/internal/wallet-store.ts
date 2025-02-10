@@ -31,28 +31,39 @@ export type WalletStorePersistData = {
   tryToReconnectTo?: string;
 };
 
-type Events = {
+type Events<TProps> = {
   beforeDisconnect: undefined;
   afterDisconnect: undefined;
+  beforeConnect: { key: string };
+  afterConnect: { newState: Extract<TProps, { isConnected: true }> };
   updateError: unknown;
 };
 
-type EventsWithParams = {
-  [TEvent in keyof Events as Events[TEvent] extends undefined ? never : TEvent]: Events[TEvent];
+type EventsWithParams<TProps> = {
+  [TEvent in keyof Events<TProps> as Events<TProps>[TEvent] extends undefined
+    ? never
+    : TEvent]: Events<TProps>[TEvent];
 };
-type EventsWithoutParams = Omit<Events, keyof EventsWithParams>;
+type EventsWithoutParams<TProps> = Omit<Events<TProps>, keyof EventsWithParams<TProps>>;
 
-type EventHandler<TEvent extends keyof Events> = Events[TEvent] extends undefined
+type EventHandler<
+  TProps,
+  TEvent extends keyof Events<TProps>,
+> = Events<TProps>[TEvent] extends undefined
   ? () => MaybePromise<void>
-  : (params: Events[TEvent]) => MaybePromise<void>;
+  : (params: Events<TProps>[TEvent]) => MaybePromise<void>;
 
-export type WalletStoreManagerSubscriptions = {
-  [TEvent in keyof Events]: Set<EventHandler<TEvent>>;
+export type WalletStoreManagerSubscriptions<TProps> = {
+  [TEvent in keyof Events<TProps>]: Set<EventHandler<TProps, TEvent>>;
 };
-export function newWalletStoreManagerSubscriptions(): WalletStoreManagerSubscriptions {
+export function newWalletStoreManagerSubscriptions<
+  TProps,
+>(): WalletStoreManagerSubscriptions<TProps> {
   return {
     beforeDisconnect: new Set(),
     afterDisconnect: new Set(),
+    beforeConnect: new Set(),
+    afterConnect: new Set(),
     updateError: new Set(),
   };
 }
@@ -68,7 +79,7 @@ type WalletStoreManagerCtx<TProps extends DefaultWalletStoreState> = {
   walletStorageKey: keyof typeof STORAGE_KEYS;
   configStore?: ConfigStore | ConfigStore<Omit<WeldConfig, "customWallets">>;
   lifecycle?: LifeCycleManager;
-  subscriptions?: WalletStoreManagerSubscriptions;
+  subscriptions?: WalletStoreManagerSubscriptions<TProps>;
 };
 
 export class WalletStoreManager<TProps extends DefaultWalletStoreState = DefaultWalletStoreState> {
@@ -83,7 +94,7 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
     this._ctx = { configStore, lifecycle, subscriptions, ...rest };
   }
 
-  on<TEvent extends keyof Events>(event: TEvent, handler: EventHandler<TEvent>) {
+  on<TEvent extends keyof Events<TProps>>(event: TEvent, handler: EventHandler<TProps, TEvent>) {
     this._ctx.subscriptions[event].add(handler);
     return this;
   }
@@ -106,6 +117,7 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
     }: Partial<WalletStoreManagerConnectOpts> = {},
   ) {
     try {
+      this._runSubscriptions("beforeConnect", { key });
       this._ctx.lifecycle.subscriptions.clearAll();
 
       this._ctx.setState({ isConnectingTo: key, isConnecting: true } as Partial<TProps>);
@@ -162,7 +174,11 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
         clearTimeout(abortTimeout);
       }
 
-      return newState as Extract<TProps, { isConnected: true }>;
+      const res = newState as Extract<TProps, { isConnected: true }>;
+
+      this._runSubscriptions("afterConnect", { newState: res });
+
+      return res;
     } catch (error) {
       if (!(error instanceof WalletConnectionAbortedError)) {
         await this.disconnect();
@@ -212,19 +228,19 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
     await this._runSubscriptions("updateError", error);
   }
 
-  private async _runSubscriptions<TEvent extends keyof EventsWithParams>(
+  private async _runSubscriptions<TEvent extends keyof EventsWithParams<TProps>>(
     event: TEvent,
-    params: EventsWithParams[TEvent],
+    params: EventsWithParams<TProps>[TEvent],
   ): Promise<void>;
-  private async _runSubscriptions<TEvent extends keyof EventsWithoutParams>(
+  private async _runSubscriptions<TEvent extends keyof EventsWithoutParams<TProps>>(
     event: TEvent,
   ): Promise<void>;
-  private async _runSubscriptions<TEvent extends keyof Events>(
+  private async _runSubscriptions<TEvent extends keyof Events<TProps>>(
     event: TEvent,
-    params?: Events[TEvent],
+    params?: Events<TProps>[TEvent],
   ) {
     for (const handler of this._ctx.subscriptions[event]) {
-      await handler(params);
+      await handler(params as NonNullable<typeof params>);
     }
   }
 }

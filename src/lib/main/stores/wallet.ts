@@ -6,11 +6,7 @@ import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/inte
 import { getFailureReason } from "@/internal/utils/errors";
 import type { PartialWithDiscriminant } from "@/internal/utils/types";
 import { UtxosUpdateManager } from "@/internal/utxos-update";
-import {
-  type DefaultWalletStoreProps,
-  WalletStoreManager,
-  type WalletStorePersistData,
-} from "@/internal/wallet-store";
+import { type DefaultWalletStoreProps, WalletStoreManager } from "@/internal/wallet-store";
 import {
   type NetworkId,
   WalletConnectionAbortedError,
@@ -22,6 +18,7 @@ import {
 } from "@/lib/main";
 import { connect as weldConnect } from "@/lib/main/connect";
 import type { ConfigStore, WalletConfig } from "@/lib/main/stores/config";
+import { STORAGE_KEYS } from "@/lib/server";
 
 export type WalletProps = DefaultWalletStoreProps &
   WalletInfo & {
@@ -85,7 +82,15 @@ export type WalletStoreState<
   [TKey in Extract<TKeys, keyof WalletApi>]: WalletApi[TKey];
 };
 
-export type { WalletStorePersistData };
+export type WalletStorePersistData = {
+  tryToReconnectTo?:
+    | string
+    | {
+        wallet: string;
+        changeAddressHex?: string;
+        changeAddressBech32?: string;
+      };
+};
 
 export type WalletStore = Store<WalletStoreState, WalletStorePersistData> & WalletStoreState;
 
@@ -242,13 +247,31 @@ export const createWalletStore = createStoreFactory<
       walletStorageKey: "connectedWallet",
       configStore: config,
       lifecycle,
-    }).on("beforeDisconnect", () => {
-      if (utxosUpdate.runningUpdate) {
-        utxosUpdate.runningUpdate.signal.aborted = true;
-        utxosUpdate.runningUpdate.resolve([]);
-      }
-      getState().handler?.disconnect();
-    });
+    })
+      .on("beforeDisconnect", () => {
+        if (utxosUpdate.runningUpdate) {
+          utxosUpdate.runningUpdate.signal.aborted = true;
+          utxosUpdate.runningUpdate.resolve([]);
+        }
+        getState().handler?.disconnect();
+      })
+      .on("afterDisconnect", () => {
+        if (config.enablePersistence) {
+          config.storage.remove(STORAGE_KEYS.connectedWallet);
+          config.storage.remove(STORAGE_KEYS.connectedChangeAddressHex);
+          config.storage.remove(STORAGE_KEYS.connectedChangeAddressBech32);
+        }
+      })
+      .on("afterConnect", ({ newState }) => {
+        if (config.enablePersistence) {
+          config.storage.set(STORAGE_KEYS.connectedWallet, newState.key);
+          config.storage.set(STORAGE_KEYS.connectedChangeAddressHex, newState.changeAddressHex);
+          config.storage.set(
+            STORAGE_KEYS.connectedChangeAddressBech32,
+            newState.changeAddressBech32,
+          );
+        }
+      });
 
     const connectAsync: WalletApi["connectAsync"] = async (key, configOverrides) => {
       await walletManager.disconnect();
@@ -274,7 +297,47 @@ export const createWalletStore = createStoreFactory<
     };
 
     const __persist = (data?: WalletStorePersistData) => {
-      walletManager.persist({ initialState }, data);
+      let wallet: string | undefined = undefined;
+      let changeAddressHex: string | undefined = undefined;
+      let changeAddressBech32: string | undefined = undefined;
+
+      if (typeof data?.tryToReconnectTo === "string") {
+        wallet = data.tryToReconnectTo;
+      } else if (data?.tryToReconnectTo) {
+        wallet = data.tryToReconnectTo.wallet;
+        changeAddressHex = data.tryToReconnectTo.changeAddressHex;
+        changeAddressBech32 = data.tryToReconnectTo.changeAddressBech32;
+      }
+
+      const canPersistFromCookies = typeof window !== "undefined" && config.enablePersistence;
+      if (canPersistFromCookies) {
+        if (!wallet) {
+          wallet = config.getPersistedValue(STORAGE_KEYS.connectedWallet);
+        }
+        if (!changeAddressHex) {
+          changeAddressHex = config.getPersistedValue(STORAGE_KEYS.connectedChangeAddressHex);
+        }
+        if (!changeAddressBech32) {
+          changeAddressBech32 = config.getPersistedValue(STORAGE_KEYS.connectedChangeAddressBech32);
+        }
+      }
+
+      if (!wallet) {
+        changeAddressHex = undefined;
+        changeAddressBech32 = undefined;
+      }
+
+      setState({
+        isConnectingTo: wallet,
+        isConnecting: !!wallet,
+        changeAddressHex,
+        changeAddressBech32,
+      } as Partial<WalletState>);
+
+      initialState.isConnectingTo = wallet;
+      initialState.isConnecting = !!wallet;
+      initialState.changeAddressHex = changeAddressHex;
+      initialState.changeAddressBech32 = changeAddressBech32;
     };
 
     const __cleanup = () => {
