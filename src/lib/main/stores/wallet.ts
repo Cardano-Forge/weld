@@ -6,11 +6,7 @@ import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/inte
 import { getFailureReason } from "@/internal/utils/errors";
 import type { PartialWithDiscriminant } from "@/internal/utils/types";
 import { UtxosUpdateManager } from "@/internal/utxos-update";
-import {
-  type DefaultWalletStoreProps,
-  WalletStoreManager,
-  type WalletStorePersistData,
-} from "@/internal/wallet-store";
+import { type DefaultWalletStoreProps, WalletStoreManager } from "@/internal/wallet-store";
 import {
   type NetworkId,
   WalletConnectionAbortedError,
@@ -22,6 +18,7 @@ import {
 } from "@/lib/main";
 import { connect as weldConnect } from "@/lib/main/connect";
 import type { ConfigStore, WalletConfig } from "@/lib/main/stores/config";
+import { STORAGE_KEYS } from "@/lib/server";
 
 export type WalletProps = DefaultWalletStoreProps &
   WalletInfo & {
@@ -85,7 +82,15 @@ export type WalletStoreState<
   [TKey in Extract<TKeys, keyof WalletApi>]: WalletApi[TKey];
 };
 
-export type { WalletStorePersistData };
+export type WalletStorePersistData = {
+  tryToReconnectTo?:
+    | string
+    | {
+        wallet: string;
+        changeAddressHex?: string;
+        changeAddressBech32?: string;
+      };
+};
 
 export type WalletStore = Store<WalletStoreState, WalletStorePersistData> & WalletStoreState;
 
@@ -203,8 +208,11 @@ export const createWalletStore = createStoreFactory<
           }
 
           const balanceLovelace = await handler.getBalanceLovelace();
+          const changeAddressHex = await handler.getChangeAddressHex();
+
           const prevState = getState();
           const hasBalanceChanged = balanceLovelace !== prevState.balanceLovelace;
+          const hasAccountChanged = changeAddressHex !== prevState.changeAddressHex;
 
           const newState: Partial<ConnectedWalletState> = {
             isConnected: true,
@@ -214,7 +222,7 @@ export const createWalletStore = createStoreFactory<
             balanceLovelace,
             balanceAda: lovelaceToAda(balanceLovelace),
             networkId: await handler.getNetworkId(),
-            changeAddressHex: await handler.getChangeAddressHex(),
+            changeAddressHex,
             changeAddressBech32: await handler.getChangeAddressBech32(),
             stakeAddressHex: await handler.getStakeAddressHex(),
             stakeAddressBech32: await handler.getStakeAddressBech32(),
@@ -223,6 +231,10 @@ export const createWalletStore = createStoreFactory<
 
           if (opts.signal.aborted) {
             return;
+          }
+
+          if (hasAccountChanged) {
+            updateCookieState(newState);
           }
 
           if (hasBalanceChanged) {
@@ -242,13 +254,37 @@ export const createWalletStore = createStoreFactory<
       walletStorageKey: "connectedWallet",
       configStore: config,
       lifecycle,
-    }).on("beforeDisconnect", () => {
-      if (utxosUpdate.runningUpdate) {
-        utxosUpdate.runningUpdate.signal.aborted = true;
-        utxosUpdate.runningUpdate.resolve([]);
+    })
+      .on("beforeDisconnect", () => {
+        if (utxosUpdate.runningUpdate) {
+          utxosUpdate.runningUpdate.signal.aborted = true;
+          utxosUpdate.runningUpdate.resolve([]);
+        }
+        getState().handler?.disconnect();
+      })
+      .on("afterDisconnect", () => updateCookieState(newWalletState()))
+      .on("afterConnect", ({ newState }) => updateCookieState(newState));
+
+    const updateCookieState = (newState: Partial<WalletState>) => {
+      if (!config.enablePersistence) {
+        return;
       }
-      getState().handler?.disconnect();
-    });
+      if (newState.key) {
+        config.storage.set(STORAGE_KEYS.connectedWallet, newState.key);
+      } else {
+        config.storage.remove(STORAGE_KEYS.connectedWallet);
+      }
+      if (newState.changeAddressHex) {
+        config.storage.set(STORAGE_KEYS.connectedChangeAddressHex, newState.changeAddressHex);
+      } else {
+        config.storage.remove(STORAGE_KEYS.connectedChangeAddressHex);
+      }
+      if (newState.changeAddressBech32) {
+        config.storage.set(STORAGE_KEYS.connectedChangeAddressBech32, newState.changeAddressBech32);
+      } else {
+        config.storage.remove(STORAGE_KEYS.connectedChangeAddressBech32);
+      }
+    };
 
     const connectAsync: WalletApi["connectAsync"] = async (key, configOverrides) => {
       await walletManager.disconnect();
@@ -274,7 +310,48 @@ export const createWalletStore = createStoreFactory<
     };
 
     const __persist = (data?: WalletStorePersistData) => {
-      walletManager.persist({ initialState }, data);
+      let wallet: string | undefined = undefined;
+      let changeAddressHex: string | undefined = undefined;
+      let changeAddressBech32: string | undefined = undefined;
+
+      const canPersistFromCookies = typeof window !== "undefined" && config.enablePersistence;
+
+      if (typeof data?.tryToReconnectTo === "string") {
+        wallet = data.tryToReconnectTo;
+      } else if (data?.tryToReconnectTo) {
+        wallet = data.tryToReconnectTo.wallet;
+        changeAddressHex = data.tryToReconnectTo.changeAddressHex;
+        changeAddressBech32 = data.tryToReconnectTo.changeAddressBech32;
+        // Only persist address from cookies when persist data is an object to prevent
+        // hydration errors on sites that only track wallet cookies on the server
+        if (!changeAddressHex && canPersistFromCookies) {
+          changeAddressHex = config.getPersistedValue(STORAGE_KEYS.connectedChangeAddressHex);
+        }
+        if (!changeAddressBech32 && canPersistFromCookies) {
+          changeAddressBech32 = config.getPersistedValue(STORAGE_KEYS.connectedChangeAddressBech32);
+        }
+      }
+
+      if (!wallet && canPersistFromCookies) {
+        wallet = config.getPersistedValue(STORAGE_KEYS.connectedWallet);
+      }
+
+      if (!wallet) {
+        changeAddressHex = undefined;
+        changeAddressBech32 = undefined;
+      }
+
+      setState({
+        isConnectingTo: wallet,
+        isConnecting: !!wallet,
+        changeAddressHex,
+        changeAddressBech32,
+      } as Partial<WalletState>);
+
+      initialState.isConnectingTo = wallet;
+      initialState.isConnecting = !!wallet;
+      initialState.changeAddressHex = changeAddressHex;
+      initialState.changeAddressBech32 = changeAddressBech32;
     };
 
     const __cleanup = () => {

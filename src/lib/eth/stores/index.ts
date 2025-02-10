@@ -40,7 +40,11 @@ export function createWeldEthInstance() {
     },
     persist(config?: Partial<WeldConfig>) {
       this.config.persist();
-      this.wallet.persist({ tryToReconnectTo: config?.wallet?.tryToReconnectTo });
+      const tryToReconnectTo =
+        typeof config?.wallet?.tryToReconnectTo === "string"
+          ? config?.wallet?.tryToReconnectTo
+          : config?.wallet?.tryToReconnectTo?.wallet;
+      this.wallet.persist({ tryToReconnectTo });
       this.extensions.persist();
     },
     init({ persist = true }: { persist?: boolean | Partial<WeldConfig> } = {}) {
