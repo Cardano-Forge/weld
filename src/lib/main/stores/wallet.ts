@@ -301,25 +301,26 @@ export const createWalletStore = createStoreFactory<
       let changeAddressHex: string | undefined = undefined;
       let changeAddressBech32: string | undefined = undefined;
 
+      const canPersistFromCookies = typeof window !== "undefined" && config.enablePersistence;
+
       if (typeof data?.tryToReconnectTo === "string") {
         wallet = data.tryToReconnectTo;
       } else if (data?.tryToReconnectTo) {
         wallet = data.tryToReconnectTo.wallet;
         changeAddressHex = data.tryToReconnectTo.changeAddressHex;
         changeAddressBech32 = data.tryToReconnectTo.changeAddressBech32;
-      }
-
-      const canPersistFromCookies = typeof window !== "undefined" && config.enablePersistence;
-      if (canPersistFromCookies) {
-        if (!wallet) {
-          wallet = config.getPersistedValue(STORAGE_KEYS.connectedWallet);
-        }
-        if (!changeAddressHex) {
+        // Only persist address from cookies when persist data is an object to prevent
+        // hydration errors on sites that only track wallet cookies on the server
+        if (!changeAddressHex && canPersistFromCookies) {
           changeAddressHex = config.getPersistedValue(STORAGE_KEYS.connectedChangeAddressHex);
         }
-        if (!changeAddressBech32) {
+        if (!changeAddressBech32 && canPersistFromCookies) {
           changeAddressBech32 = config.getPersistedValue(STORAGE_KEYS.connectedChangeAddressBech32);
         }
+      }
+
+      if (!wallet && canPersistFromCookies) {
+        wallet = config.getPersistedValue(STORAGE_KEYS.connectedWallet);
       }
 
       if (!wallet) {
