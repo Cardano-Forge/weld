@@ -20,13 +20,13 @@ export function createWeldInstance() {
     },
     get wallet() {
       if (!walletStore) {
-        walletStore = createWalletStore();
+        walletStore = createWalletStore({ config: this.config });
       }
       return walletStore;
     },
     get extensions() {
       if (!extensionsStore) {
-        extensionsStore = createExtensionsStore();
+        extensionsStore = createExtensionsStore({ config: this.config });
       }
       return extensionsStore;
     },
