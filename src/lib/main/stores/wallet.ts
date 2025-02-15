@@ -21,7 +21,7 @@ import {
 } from "@/lib/main";
 import { connect as weldConnect } from "@/lib/main/connect";
 import type { ConfigStore, WalletConfig } from "@/lib/main/stores/config";
-import { STORAGE_KEYS } from "@/lib/server";
+import { type ChangeAddressHex, STORAGE_KEYS, isChangeAddressHex } from "@/lib/server";
 
 export type WalletProps = DefaultWalletStoreProps &
   WalletInfo & {
@@ -308,7 +308,7 @@ export const createWalletStore = createStoreFactory<
 
     const __persist = (data?: WalletStorePersistData) => {
       let wallet: string | undefined = undefined;
-      let changeAddressHex: StakeAddressHex | undefined = undefined;
+      let changeAddressHex: ChangeAddressHex | undefined = undefined;
       let stakeAddressHex: StakeAddressHex | undefined = undefined;
 
       const canPersistFromCookies = typeof window !== "undefined" && config.enablePersistence;
@@ -324,7 +324,7 @@ export const createWalletStore = createStoreFactory<
         if (!change && canPersistFromCookies) {
           change = config.getPersistedValue(STORAGE_KEYS.connectedChange);
         }
-        if (isStakeAddressHex(change)) {
+        if (isChangeAddressHex(change)) {
           changeAddressHex = change;
         }
 
