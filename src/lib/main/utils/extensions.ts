@@ -11,12 +11,20 @@ const changeAddressHexLength = 116;
 const changeAddressHexPrefixes = ["00", "01"] as const;
 type ChangeAddressHexPrefix = (typeof changeAddressHexPrefixes)[number];
 
-export function isStakeAddressHex(input: string): input is StakeAddressHex {
-  return input.length === stakeAddressHexLength && startsWithAny(input, stakeAddressHexPrefixes);
+export function isStakeAddressHex(input?: string): input is StakeAddressHex {
+  return (
+    !!input &&
+    input.length === stakeAddressHexLength &&
+    startsWithAny(input, stakeAddressHexPrefixes)
+  );
 }
 
-export function isChangeAddressHex(input: string): input is ChangeAddressHex {
-  return input.length === changeAddressHexLength && startsWithAny(input, changeAddressHexPrefixes);
+export function isChangeAddressHex(input?: string): input is ChangeAddressHex {
+  return (
+    !!input &&
+    input.length === changeAddressHexLength &&
+    startsWithAny(input, changeAddressHexPrefixes)
+  );
 }
 
 export type AddressHex = `${ChangeAddressHexPrefix | StakeAddressHexPrefix}${string}`;

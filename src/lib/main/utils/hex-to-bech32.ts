@@ -34,7 +34,13 @@ function getBech32Prefix(input: AddressHex): StakeAddressBech32Prefix | ChangeAd
 
 export function hexToBech32(input: StakeAddressHex): StakeAddressBech32;
 export function hexToBech32(input: ChangeAddressHex): ChangeAddressBech32;
-export function hexToBech32(input: AddressHex): AddressBech32 {
+export function hexToBech32(input?: StakeAddressHex): StakeAddressBech32 | undefined;
+export function hexToBech32(input?: ChangeAddressHex): ChangeAddressBech32 | undefined;
+export function hexToBech32(input?: AddressHex): AddressBech32 | undefined {
+  if (!input) {
+    return undefined;
+  }
+
   if (isBech32Address(input)) {
     return input;
   }

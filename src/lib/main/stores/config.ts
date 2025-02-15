@@ -16,15 +16,7 @@ export type UpdateConfig = {
 
 export type WalletConfig = UpdateConfig & {
   connectTimeout: number | false;
-  tryToReconnectTo:
-    | string
-    | {
-        wallet: string;
-        /** Only used for cardano stores */
-        changeAddressHex?: string;
-        /** Only used for cardano stores */
-        changeAddressBech32?: string;
-      };
+  tryToReconnectTo: string | { wallet: string; change?: string; stake?: string };
   onUpdateError(error: unknown): void;
 };
 
