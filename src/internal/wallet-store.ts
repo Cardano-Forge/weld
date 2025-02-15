@@ -7,7 +7,7 @@ import {
   type WeldConfig,
   createConfigStore,
 } from "@/lib/main/stores/config";
-import { WalletConnectionAbortedError } from "@/lib/main/utils/errors";
+import { WalletConnectionAbortedError } from "@/lib/main/utils";
 import { STORAGE_KEYS } from "@/lib/server";
 
 export type DefaultWalletStoreProps = {

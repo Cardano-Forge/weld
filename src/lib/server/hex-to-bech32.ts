@@ -9,7 +9,7 @@ import {
   type StakeAddressBech32Prefix,
   type StakeAddressHex,
   isStakeAddressHex,
-} from "./extensions";
+} from "./address";
 
 // Convert hex string to Uint8Array
 function hexToUint8Array(hex: string): Uint8Array {

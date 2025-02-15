@@ -1,4 +1,4 @@
-import { WalletDisconnectAccountError } from "@/lib/main/utils/errors";
+import { WalletDisconnectAccountError } from "@/lib/main/utils";
 import { describe, expect, it, vi } from "vitest";
 import { handleAccountChangeErrors } from "./account-change";
 

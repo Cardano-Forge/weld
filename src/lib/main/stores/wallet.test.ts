@@ -2,16 +2,14 @@ import { LifeCycleManager } from "@/internal/lifecycle";
 import { deferredPromise } from "@/internal/utils/deferred-promise";
 import { keys } from "@/internal/utils/keys";
 import { UtxosUpdateManager } from "@/internal/utxos-update";
-import { WalletConnectionAbortedError } from "@/lib/main/utils/errors";
+import { WalletConnectionAbortedError, hexToBech32, supportedWalletsMap } from "@/lib/main/utils";
 import type {
   ChangeAddressHex,
   DefaultWalletApi,
   EnabledWalletApi,
   NetworkId,
   StakeAddressHex,
-} from "@/lib/main/utils/extensions";
-import { hexToBech32 } from "@/lib/main/utils/hex-to-bech32";
-import { supportedWalletsMap } from "@/lib/main/utils/wallets";
+} from "@/lib/main/utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createWalletStore } from "./wallet";
 

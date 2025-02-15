@@ -1,4 +1,4 @@
-import { isChangeAddressHex, isStakeAddressHex } from "./extensions";
+import { isChangeAddressHex, isStakeAddressHex } from "./address";
 
 export function stripAddressPrefix(input: string): string;
 export function stripAddressPrefix(input?: string | null): string | undefined;
