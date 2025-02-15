@@ -19,13 +19,13 @@ export function createWeldSolInstance() {
     },
     get wallet() {
       if (!walletStore) {
-        walletStore = createSolWalletStore();
+        walletStore = createSolWalletStore({ config: this.config });
       }
       return walletStore;
     },
     get extensions() {
       if (!extensionsStore) {
-        extensionsStore = createSolExtensionsStore();
+        extensionsStore = createSolExtensionsStore({ config: this.config });
       }
       return extensionsStore;
     },
