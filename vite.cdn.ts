@@ -1,13 +1,8 @@
-import { resolve } from "node:path";
 import { defineConfig } from "vite";
+import { pathAliases } from "./build.utils";
 
 export default defineConfig({
-  resolve: {
-    alias: {
-      "@/documentation": resolve(__dirname, "documentation"),
-      "@": resolve(__dirname, "src"),
-    },
-  },
+  resolve: { alias: pathAliases },
   build: {
     minify: true,
     emptyOutDir: false,
