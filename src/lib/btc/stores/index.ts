@@ -18,13 +18,13 @@ export function createWeldBtcInstance() {
     },
     get wallet() {
       if (!walletStore) {
-        walletStore = createBtcWalletStore();
+        walletStore = createBtcWalletStore({ config: this.config });
       }
       return walletStore;
     },
     get extensions() {
       if (!extensionsStore) {
-        extensionsStore = createBtcExtensionsStore();
+        extensionsStore = createBtcExtensionsStore({ config: this.config });
       }
       return extensionsStore;
     },
