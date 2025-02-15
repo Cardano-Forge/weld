@@ -65,8 +65,10 @@
   },
   "files": ["**"],
   "scripts": {
-    "build": "tsc && vite build && vite build --config ./cdn.config.ts",
-    "build:cdn": "tsc && vite build --config ./cdn.config.ts",
+    "build:client": "vite build --config ./vite.client.ts",
+    "build:server": "vite build --config ./vite.server.ts",
+    "build:cdn": "vite build --config ./vite.cdn.ts",
+    "build": "tsc && npm run build:client && npm run build:server && npm run build:cdn",
     "check": "biome check --write .",
     "dev": "vite",
     "format": "biome format --write .",

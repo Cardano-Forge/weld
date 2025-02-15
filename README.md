@@ -882,23 +882,10 @@ import { WeldProvider } from "@ada-anvil/weld/react";
 
 export default function RootLayout({ children }) {
   const wallet = cookies().get(STORAGE_KEYS.connectedWallet)?.value;
-  const changeAddressHex = cookies().get(
-    STORAGE_KEYS.connectedChangeAddressHex,
-  )?.value;
-  const changeAddressBech32 = cookies().get(
-    STORAGE_KEYS.connectedChangeAddressBech32,
-  )?.value;
-  return (
-    <WeldProvider
-      wallet={{
-        tryToReconnectTo: wallet
-          ? { wallet, changeAddressHex, changeAddressBech32 }
-          : undefined,
-      }}
-    >
-      {children}
-    </WeldProvider>
-  );
+  const change = cookies().get(STORAGE_KEYS.connectedChange)?.value;
+  const stake = cookies().get(STORAGE_KEYS.connectedStake)?.value;
+  const tryToReconnectTo = wallet ? { wallet, change, stake } : undefined;
+  return <WeldProvider wallet={{ tryToReconnectTo }}>{children}</WeldProvider>;
 }
 ```
 

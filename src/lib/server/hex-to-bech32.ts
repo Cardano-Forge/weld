@@ -9,7 +9,7 @@ import {
   type StakeAddressBech32Prefix,
   type StakeAddressHex,
   isStakeAddressHex,
-} from "./extensions";
+} from "./address";
 
 // Convert hex string to Uint8Array
 function hexToUint8Array(hex: string): Uint8Array {
@@ -34,7 +34,13 @@ function getBech32Prefix(input: AddressHex): StakeAddressBech32Prefix | ChangeAd
 
 export function hexToBech32(input: StakeAddressHex): StakeAddressBech32;
 export function hexToBech32(input: ChangeAddressHex): ChangeAddressBech32;
-export function hexToBech32(input: AddressHex): AddressBech32 {
+export function hexToBech32(input?: StakeAddressHex): StakeAddressBech32 | undefined;
+export function hexToBech32(input?: ChangeAddressHex): ChangeAddressBech32 | undefined;
+export function hexToBech32(input?: AddressHex): AddressBech32 | undefined {
+  if (!input) {
+    return undefined;
+  }
+
   if (isBech32Address(input)) {
     return input;
   }
