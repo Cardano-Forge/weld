@@ -17,6 +17,7 @@ import {
   hexToBech32,
   isStakeAddressHex,
   lovelaceToAda,
+  parseBalance,
   weld,
 } from "@/lib/main";
 import { connect as weldConnect } from "@/lib/main/connect";
@@ -26,6 +27,7 @@ import { type ChangeAddressHex, STORAGE_KEYS, isChangeAddressHex } from "@/lib/s
 export type WalletProps = DefaultWalletStoreProps &
   WalletInfo & {
     handler: WalletHandler;
+    balanceCbor: string;
     balanceLovelace: number;
     balanceAda: number;
     changeAddressHex: string;
@@ -43,6 +45,7 @@ function newWalletState(): WalletState {
     isConnecting: false,
     isConnectingTo: undefined,
     handler: undefined,
+    balanceCbor: undefined,
     balanceLovelace: undefined,
     balanceAda: undefined,
     changeAddressHex: undefined,
@@ -204,11 +207,13 @@ export const createWalletStore = createStoreFactory<
             return;
           }
 
-          const balanceLovelace = await handler.getBalanceLovelace();
+          const balanceCbor = await handler.getBalance();
+          const balanceLovelace = parseBalance(balanceCbor, "lovelace");
+
           const changeAddressHex = await handler.getChangeAddressHex();
 
           const prevState = getState();
-          const hasBalanceChanged = balanceLovelace !== prevState.balanceLovelace;
+          const hasBalanceChanged = balanceCbor !== prevState.balanceCbor;
           const hasAccountChanged = changeAddressHex !== prevState.changeAddressHex;
 
           const newState: Partial<ConnectedWalletState> = {
@@ -216,6 +221,7 @@ export const createWalletStore = createStoreFactory<
             isConnecting: false,
             isConnectingTo: undefined,
             handler,
+            balanceCbor,
             balanceLovelace,
             balanceAda: lovelaceToAda(balanceLovelace),
             networkId: await handler.getNetworkId(),

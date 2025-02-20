@@ -1,26 +1,19 @@
-import { decodeBalance } from "@/internal/utils/decode-balance";
-import { hexToView } from "@/internal/utils/hex-to-view";
-import { viewToString } from "@/internal/utils/view-to-string";
 import {
   type AddressBech32,
   type AddressHex,
-  type BalanceByPolicies,
   type Cbor,
   type ChangeAddressBech32,
   type ChangeAddressHex,
   type DefaultWalletApi,
   type EnabledWalletApi,
-  type Lovelace,
   type NetworkId,
   type Signature,
   type StakeAddressBech32,
   type StakeAddressHex,
-  WalletBalanceDecodeError,
   type WalletInfo,
   type WalletKey,
   hexToBech32,
 } from "@/lib/main";
-import cbor from "cbor-js";
 
 export type WalletHandler = {
   info: WalletInfo;
@@ -33,8 +26,6 @@ export type WalletHandler = {
   getStakeAddressBech32(): Promise<AddressBech32>;
   getNetworkId(): Promise<NetworkId>;
   getBalance(): Promise<Cbor>;
-  getBalanceLovelace(): Promise<Lovelace>;
-  getBalanceAssets(): Promise<BalanceByPolicies>;
   getDefaultApi(): DefaultWalletApi;
   isConnected(): Promise<boolean>;
   isConnectedTo(wallet: WalletKey): Promise<boolean>;
@@ -116,65 +107,6 @@ export class DefaultWalletHandler implements WalletHandler {
    */
   async getBalance(): Promise<Cbor> {
     return this._enabledApi.getBalance();
-  }
-
-  /**
-   * Gets the balance for the wallet in Lovelace.
-   * @returns The balance in Lovelace.
-   * @throws {WalletBalanceDecodeError} If the balance cannot be decoded.
-   */
-  async getBalanceLovelace(): Promise<Lovelace> {
-    const balanceCbor = await this.getBalance();
-    const balanceLovelace = decodeBalance(balanceCbor);
-
-    if (typeof balanceLovelace !== "number") {
-      throw new WalletBalanceDecodeError(
-        `Could not retrieve the ${this.info.displayName} wallet's lovelace balance from cbor`,
-      );
-    }
-
-    return balanceLovelace;
-  }
-
-  /**
-   * Gets the balance of assets for the wallet.
-   * @returns The balance by policies.
-   */
-  async getBalanceAssets(): Promise<BalanceByPolicies> {
-    const balance = await this.getBalance();
-    const obj: BalanceByPolicies = { cardano: { lovelace: 0 } };
-
-    if (balance) {
-      const decoded = cbor.decode(hexToView(balance).buffer);
-      if (typeof decoded === "number") {
-        obj.cardano = { lovelace: decoded };
-        return obj;
-      }
-
-      const [lovelace, assets] = decoded;
-      obj.cardano = { lovelace };
-
-      for (const policy of Object.keys(assets)) {
-        const policyString = viewToString(
-          new Uint8Array(policy.split(",").map((p) => Number(p))),
-          "hex",
-        );
-
-        obj[policyString] = {};
-
-        const assetNames = Object.keys(assets[policy]);
-
-        for (const assetName of assetNames) {
-          const nameString = viewToString(
-            new Uint8Array(assetName.split(",").map((p) => Number(p))),
-          );
-          const quantity = assets[policy][assetName];
-          obj[policyString][nameString] = quantity;
-        }
-      }
-    }
-
-    return obj;
   }
 
   /**
