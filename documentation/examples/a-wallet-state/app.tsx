@@ -7,10 +7,10 @@ export const App = () => {
   const wallet = useWallet();
 
   const fullBalance = useMemo(() => {
-    if (wallet.balanceCbor) {
-      return parseBalance(wallet.balanceCbor);
+    if (wallet.balanceDecoded) {
+      return parseBalance(wallet.balanceDecoded);
     }
-  }, [wallet.balanceCbor]) 
+  }, [wallet.balanceDecoded]);
 
   return (
     <ExampleContainer>
@@ -39,10 +39,6 @@ export const App = () => {
               <div>Lovelace:</div>
               <div className="py-2 px-4 text-xs bg-slate-100 rounded-md break-words">
                 {wallet.balanceAda.toFixed(2)}
-              </div>
-              <div>Encoded balance:</div>
-              <div className="py-2 px-4 text-xs bg-slate-100 rounded-md break-words">
-                {wallet.balanceCbor}
               </div>
               <div>Full balance:</div>
               <div className="py-2 px-4 text-xs bg-slate-100 rounded-md break-words">
