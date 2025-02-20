@@ -1,8 +1,16 @@
 import { ExampleContainer } from "@/documentation/commons/example-container";
+import { parseBalance } from "@/lib/main";
 import { useWallet } from "@/lib/react";
+import { useMemo } from "react";
 
 export const App = () => {
   const wallet = useWallet();
+
+  const fullBalance = useMemo(() => {
+    if (wallet.balanceDecoded) {
+      return parseBalance(wallet.balanceDecoded);
+    }
+  }, [wallet.balanceDecoded]);
 
   return (
     <ExampleContainer>
@@ -31,6 +39,10 @@ export const App = () => {
               <div>Lovelace:</div>
               <div className="py-2 px-4 text-xs bg-slate-100 rounded-md break-words">
                 {wallet.balanceAda.toFixed(2)}
+              </div>
+              <div>Full balance:</div>
+              <div className="py-2 px-4 text-xs bg-slate-100 rounded-md break-words">
+                {JSON.stringify(fullBalance, null, 2)}
               </div>
             </>
           )}

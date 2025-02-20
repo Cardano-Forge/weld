@@ -14,9 +14,11 @@ import {
   WalletDisconnectAccountError,
   type WalletInfo,
   WalletUtxosUpdateError,
+  decodeBalance,
   hexToBech32,
   isStakeAddressHex,
   lovelaceToAda,
+  parseBalance,
   weld,
 } from "@/lib/main";
 import { connect as weldConnect } from "@/lib/main/connect";
@@ -28,6 +30,16 @@ export type WalletProps = DefaultWalletStoreProps &
     handler: WalletHandler;
     balanceLovelace: number;
     balanceAda: number;
+    /**
+     * Encoded cbor string
+     * _Same as calling `await handler.getBalance()`_
+     */
+    balanceEncoded: string;
+    /**
+     * Decoded cbor balance
+     * @see https://github.com/paroga/cbor-js
+     */
+    balanceDecoded: unknown;
     changeAddressHex: string;
     changeAddressBech32: string;
     stakeAddressHex: string;
@@ -43,6 +55,8 @@ function newWalletState(): WalletState {
     isConnecting: false,
     isConnectingTo: undefined,
     handler: undefined,
+    balanceEncoded: undefined,
+    balanceDecoded: undefined,
     balanceLovelace: undefined,
     balanceAda: undefined,
     changeAddressHex: undefined,
@@ -204,11 +218,14 @@ export const createWalletStore = createStoreFactory<
             return;
           }
 
-          const balanceLovelace = await handler.getBalanceLovelace();
+          const balanceEncoded = await handler.getBalance();
+          const balanceDecoded = decodeBalance(balanceEncoded);
+          const balanceLovelace = parseBalance(balanceDecoded, "lovelace");
+
           const changeAddressHex = await handler.getChangeAddressHex();
 
           const prevState = getState();
-          const hasBalanceChanged = balanceLovelace !== prevState.balanceLovelace;
+          const hasBalanceChanged = balanceEncoded !== prevState.balanceEncoded;
           const hasAccountChanged = changeAddressHex !== prevState.changeAddressHex;
 
           const newState: Partial<ConnectedWalletState> = {
@@ -216,6 +233,8 @@ export const createWalletStore = createStoreFactory<
             isConnecting: false,
             isConnectingTo: undefined,
             handler,
+            balanceEncoded,
+            balanceDecoded,
             balanceLovelace,
             balanceAda: lovelaceToAda(balanceLovelace),
             networkId: await handler.getNetworkId(),

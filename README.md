@@ -25,11 +25,12 @@
   - [Examples](#examples)
   - [Usage](#usage)
     - [Connecting a Wallet](#connecting-a-wallet)
-    - [Retrieve Connected Wallet Info](#retrieve-connected-wallet-info)
+    - [Retrieving Connected Wallet Info](#retrieving-connected-wallet-info)
     - [Interacting with the Wallet](#interacting-with-the-wallet)
     - [Disconnecting the Wallet](#disconnecting-the-wallet)
     - [Retrieving Wallet Extensions](#retrieving-wallet-extensions)
     - [Retrieving All Supported Wallet Extensions](#retrieving-all-supported-wallet-extensions)
+    - [Retrieving Asset Balance](#retrieving-asset-balance)
     - [Updating Wallet Extensions](#updating-wallet-extensions)
 - [Concepts](#concepts)
   - [Universal Reactive Stores](#universal-reactive-stores)
@@ -162,7 +163,7 @@ Weld has been thoroughly tested with the following wallet extensions:
 
 > **Tip:** Use the [extensions store](#retrieving-wallet-extensions) to dynamically retrieve all wallet extensions installed on the user’s machine.
 
-#### Retrieve Connected Wallet Info
+#### Retrieving Connected Wallet Info
 
 Info about the connection state and the currently connected wallet can be obtained from the `useWallet` hook:
 
@@ -259,6 +260,43 @@ export function WalletConnectionDialog() {
   );
 }
 ```
+
+
+#### Retrieving Asset Balance
+
+If you need to retrieve the connected wallet's assets, Weld provides a function to parse 
+the cbor balance that can be used in conjunction with the `balanceDecoded` reactive variable:
+
+```tsx
+import { parseBalance } from "@ada-anvil/weld";
+import { useWallet } from "@ada-anvil/weld/react";
+import { useMemo } from "react";
+
+export function useAssetBalance() {
+  const balanceDecoded = useWallet("balanceDecoded");
+  return useMemo(() => {
+    if (!balanceDecoded) {
+      return undefined;
+    }
+    const fullBalance = parseBalance(balanceDecoded); // { cardano: { lovelace: 12 }, "<policy>": { "<asset>": 1 } }
+    const lovelaceBalance = parseBalance(balanceDecoded, "lovelace"); // 12
+    const policyBalance = parseBalance(balanceDecoded, "<policy>"); // { "<asset>": 1 }
+    const assetBalance = parseBalance(balanceDecoded, {
+      policyId: "<policy>",
+      assetName: "<asset>",
+    }); // 1
+    return {
+      fullBalance,
+      lovelaceBalance,
+      policyBalance,
+      assetBalance,
+    };
+  }, [balanceDecoded]);
+}
+```
+
+_The wallet store also has a `balanceEncoded` property which is a reactive version of what you would get by calling `await wallet.handler.getBalance()`_
+
 
 #### Updating Wallet Extensions
 
