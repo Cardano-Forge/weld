@@ -70,7 +70,7 @@
     "build:cdn": "vite build --config ./vite.cdn.ts",
     "build": "tsc && npm run build:client && npm run build:server && npm run build:cdn",
     "check": "biome check --write .",
-    "dev": "vite",
+    "dev": "vite --config ./vite.client.ts",
     "format": "biome format --write .",
     "lint": "biome lint --write .",
     "pack": "cd dist && npm pack && mv *.tgz ..",
