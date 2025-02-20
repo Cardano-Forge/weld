@@ -43,7 +43,7 @@ Attach screenshots to explain the issue.
 
 ### 🏷️ Version
 
-- App Version: `x.x.x`
+- Weld Version: `x.x.x`
 - Browser Version: `x.x.x`
 
 ## 🔗 Additional Context

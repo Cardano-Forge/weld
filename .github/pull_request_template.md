@@ -5,18 +5,9 @@
 
 <!--List new dependencies (if any) and why they're needed:-->
 
-## 🔗 Related Issue
-
-<!--Link the Jira task here:-->
-
 ## 📷 Screenshots (if applicable)
 
 <!--Add screenshots to help explain the change, if applicable:-->
-
-## 📝 Rollback Plan
-
-<!--How can this change be reverted safely if needed?-->
-<!--Example: Steps to roll back the deployment or feature flag toggling.-->
 
 ## Additional Notes
 

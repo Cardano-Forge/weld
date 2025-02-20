@@ -15,11 +15,6 @@ assignees: ""
   - [ ] Incorrect Code Example
   - [ ] Other (please specify): \_\_\_
 
-## 📌 Affected Page / Section
-
-- **Link to the documentation page:** `[Paste URL here]`
-- **Section or heading affected (if applicable):** `[Specify the section]`
-
 ## 🛠 Suggested Fix
 
 - How should this be corrected? (Optional)
