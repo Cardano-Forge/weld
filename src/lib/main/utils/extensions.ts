@@ -3,8 +3,6 @@ import { deferredPromise } from "@/internal/utils/deferred-promise";
 import type { AddressHex, ChangeAddressHex, StakeAddressHex } from "@/lib/server/address";
 import type { WalletKey } from "./wallets";
 
-export type BalanceByPolicies = { [key: string]: { [key: string]: number } };
-
 export type Bytes = string;
 
 export type Cbor = string;
@@ -12,6 +10,7 @@ export type Cbor = string;
 export type Hash32 = string;
 
 export type PolicyId = string;
+export type AssetName = string;
 
 export type Signature = string | { key?: string; signature: string };
 
