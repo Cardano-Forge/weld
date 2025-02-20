@@ -1,7 +1,6 @@
 import { hexToArrayBuffer } from "@/internal/utils/hex-to-array-buffer";
 import { viewToString } from "@/internal/utils/view-to-string";
 import { decode as decodeCbor } from "cbor-js";
-import type { AssetName, PolicyId } from "./extensions";
 
 export function decodeBalance(balance: unknown): unknown {
   if (typeof balance === "string") {
@@ -9,6 +8,9 @@ export function decodeBalance(balance: unknown): unknown {
   }
   return balance;
 }
+
+export type PolicyId = string;
+export type AssetName = string;
 
 export type ParseBalanceFilter =
   | "lovelace"

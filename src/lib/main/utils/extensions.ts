@@ -9,9 +9,6 @@ export type Cbor = string;
 
 export type Hash32 = string;
 
-export type PolicyId = string;
-export type AssetName = string;
-
 export type Signature = string | { key?: string; signature: string };
 
 export type Lovelace = number;
