@@ -23,6 +23,7 @@ export type ParsedBalance = {
   };
 };
 
+/** @param balance encoded cbor string or decoded cbor value */
 export function parseBalance(balance: unknown, filter: "lovelace"): number;
 export function parseBalance(balance: unknown, filter: PolicyId): { [key: AssetName]: number };
 export function parseBalance(balance: unknown, filter: Extract<ParseBalanceFilter, object>): number;
