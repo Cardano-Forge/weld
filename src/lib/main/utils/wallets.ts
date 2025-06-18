@@ -98,6 +98,14 @@ export const SUPPORTED_WALLETS = [
     website: "https://www.vespr.xyz/",
     supportsTxChaining: false,
   },
+  {
+    supported: true,
+    key: "begin",
+    displayName: "Begin",
+    icon: "https://raw.githubusercontent.com/cardano-forge/weld/main/images/wallets/begin_wallet.svg",
+    website: "https://begin.is",
+    supportsTxChaining: false,
+  },
 ] as const satisfies readonly AbstractWalletInfo[];
 
 export type WalletKey = (typeof SUPPORTED_WALLETS)[number]["key"];
