@@ -864,7 +864,7 @@ Weld can be used without any framework. Here's an example of how you can leverag
       }
     </script>
 
-    <script onload="init()" src="https://unpkg.com/@ada-anvil/weld@0.5.0/cdn.min.js" defer></script>
+    <script onload="init()" src="https://unpkg.com/@ada-anvil/weld@0.5.1/cdn.min.js" defer></script>
   </body>
 </html>
 ```
