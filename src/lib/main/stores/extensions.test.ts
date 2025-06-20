@@ -35,15 +35,15 @@ afterEach(() => {
 describe("update", () => {
   it("should save valid extensions", async () => {
     window.cardano = {
-      nami: { apiVersion: "0.1.0" } as DefaultWalletApi,
+      lace: { apiVersion: "0.1.0" } as DefaultWalletApi,
       unsupported: { apiVersion: "0.1.0" },
       invalid: {},
     };
     const store = createExtensionsStore({ lifecycle });
     await store.update();
     expect(store.allArr.length).toBe(2);
-    expect(store.supportedMap.get("nami")?.defaultApi).not.toBeUndefined();
-    expect(store.supportedMap.get("nami")?.defaultApi).toBe(window.cardano.nami);
+    expect(store.supportedMap.get("lace")?.defaultApi).not.toBeUndefined();
+    expect(store.supportedMap.get("lace")?.defaultApi).toBe(window.cardano.lace);
     expect(store.unsupportedMap.get("unsupported")?.defaultApi).not.toBeUndefined();
     expect(store.unsupportedMap.get("unsupported")?.defaultApi).toBe(window.cardano.unsupported);
   });
@@ -94,7 +94,7 @@ describe("update", () => {
 describe("init", () => {
   it("should update extensions", async () => {
     window.cardano = {
-      nami: { apiVersion: "0.1.0" } as DefaultWalletApi,
+      lace: { apiVersion: "0.1.0" } as DefaultWalletApi,
       unsupported: { apiVersion: "0.1.0" },
       invalid: {},
     };

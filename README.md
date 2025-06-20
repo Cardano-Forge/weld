@@ -149,7 +149,6 @@ Weld has been thoroughly tested with the following wallet extensions:
 | key         | Name       | Website                                                                                          |
 | ----------- | ---------- | ------------------------------------------------------------------------------------------------ |
 | eternl      | Eternl     | https://chrome.google.com/webstore/detail/eternl/kmhcihpebfmpgmihbkipmjlmmioameka?hl=en-US       |
-| nami        | Nami       | https://chrome.google.com/webstore/detail/nami/lpfcbjknijpeeillifnkikgncikgfhdo?hl=en-US         |
 | tokeo       | Tokeo      | https://tokeopay.io                                                                              |
 | flint       | Flint      | https://chrome.google.com/webstore/detail/flint-wallet/hnhobjmcibchnmglfbldbfabcgaknlkj?hl=en-US |
 | gerowallet  | Gero       | https://chrome.google.com/webstore/detail/gerowallet/bgpipimickeadkjlklgciifhnalhdjhe/overview   |
@@ -814,7 +813,7 @@ Weld can be used without any framework. Here's an example of how you can leverag
         Connecting to <span id="connecting-to">-</span><br />
         Connected to <span id="connected-to">-</span><br />
         Balance <span id="balance">-</span><br />
-        <button onclick="window.Weld.wallet.connect('nami')">Connect nami</button>
+        <button onclick="window.Weld.wallet.connect('lace')">Connect lace</button>
       </section>
     </main>
 
