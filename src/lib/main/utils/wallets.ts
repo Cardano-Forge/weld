@@ -21,11 +21,19 @@ export const SUPPORTED_WALLETS = [
   },
   {
     supported: true,
-    key: "nami",
-    displayName: "Nami",
-    icon: "https://raw.githubusercontent.com/cardano-forge/weld/main/images/wallets/nami.svg",
+    key: "lace",
+    displayName: "Lace",
+    icon: "https://raw.githubusercontent.com/cardano-forge/weld/main/images/wallets/lace.svg",
     website:
-      "https://chrome.google.com/webstore/detail/nami/lpfcbjknijpeeillifnkikgncikgfhdo?hl=en-US",
+      "https://chrome.google.com/webstore/detail/lace/gafhhkghbfjjkeiendhlofajokpaflmk?hl=en-US",
+    supportsTxChaining: false,
+  },
+  {
+    supported: true,
+    key: "vespr",
+    displayName: "VESPR",
+    icon: "https://raw.githubusercontent.com/cardano-forge/weld/main/images/wallets/vespr.svg",
+    website: "https://www.vespr.xyz/",
     supportsTxChaining: false,
   },
   {
@@ -79,23 +87,6 @@ export const SUPPORTED_WALLETS = [
     icon: "https://raw.githubusercontent.com/cardano-forge/weld/main/images/wallets/nufi-snap.svg",
     website:
       "https://chrome.google.com/webstore/detail/nufi/gpnihlnnodeiiaakbikldcihojploeca?hl=en-US",
-    supportsTxChaining: false,
-  },
-  {
-    supported: true,
-    key: "lace",
-    displayName: "Lace",
-    icon: "https://raw.githubusercontent.com/cardano-forge/weld/main/images/wallets/lace.svg",
-    website:
-      "https://chrome.google.com/webstore/detail/lace/gafhhkghbfjjkeiendhlofajokpaflmk?hl=en-US",
-    supportsTxChaining: false,
-  },
-  {
-    supported: true,
-    key: "vespr",
-    displayName: "VESPR",
-    icon: "https://raw.githubusercontent.com/cardano-forge/weld/main/images/wallets/vespr.svg",
-    website: "https://www.vespr.xyz/",
     supportsTxChaining: false,
   },
   {
