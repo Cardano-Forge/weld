@@ -22,17 +22,17 @@ describe("getWindowCardano", () => {
   });
 
   it("should return the api specified key", async () => {
-    const cardano: WindowCardano = { nami: { apiVersion: "0.1.0" } as DefaultWalletApi };
+    const cardano: WindowCardano = { lace: { apiVersion: "0.1.0" } as DefaultWalletApi };
     window.cardano = cardano;
-    const res = await getWindowCardano({ key: "nami" });
+    const res = await getWindowCardano({ key: "lace" });
     expect(res).not.toBeUndefined();
-    expect(res).toBe(cardano.nami);
+    expect(res).toBe(cardano.lace);
   });
 
   it("should not return invalid apis", async () => {
-    const cardano: WindowCardano = { nami: {} as DefaultWalletApi };
+    const cardano: WindowCardano = { lace: {} as DefaultWalletApi };
     window.cardano = cardano;
-    const res = await getWindowCardano({ key: "nami", maxRetryCount: 0 });
+    const res = await getWindowCardano({ key: "lace", maxRetryCount: 0 });
     expect(res).toBeUndefined();
   });
 
@@ -72,13 +72,13 @@ describe("getWalletExtensions", () => {
   });
 
   it("should strip out blacklisted extensions", async () => {
-    window.cardano = { nami: { apiVersion: "0.1.0" } as DefaultWalletApi };
-    const extensions = await getWalletExtensions({ blacklist: ["nami"] });
+    window.cardano = { lace: { apiVersion: "0.1.0" } as DefaultWalletApi };
+    const extensions = await getWalletExtensions({ blacklist: ["lace"] });
     expect(extensions.length).toBe(0);
   });
 
   it("should strip out invalid extensions", async () => {
-    window.cardano = { nami: {} as DefaultWalletApi };
+    window.cardano = { lace: {} as DefaultWalletApi };
     const extensions = await getWalletExtensions();
     expect(extensions.length).toBe(0);
   });

@@ -5,10 +5,10 @@ import type { WalletExtension, WalletInfo, getWalletExtensions, getWalletInfo } 
 function newWalletExtensions(): WalletExtension[] {
   return [
     {
-      key: "nami",
+      key: "lace",
       defaultApi: {
-        name: "nami",
-        icon: "nami",
+        name: "lace",
+        icon: "lace",
         apiVersion: "0.1.0",
         enable() {
           throw new Error("Not implemented");
@@ -75,7 +75,7 @@ describe("getInstalledExtensions", () => {
 
   it("should classify extensions", async () => {
     const res = await getInstalledExtensions({
-      getWalletInfo: newGetWalletInfoMock(["nami"]),
+      getWalletInfo: newGetWalletInfoMock(["lace"]),
       getWalletExtensions: newGetWalletExtensionsMock(),
     });
     expect(res.allArr.length).toBe(walletExtensions.length);
@@ -86,8 +86,8 @@ describe("getInstalledExtensions", () => {
     expect(res.supportedMap.size).toBe(1);
     expect(res.unsupportedMap.get("eternl")?.info.key).toBe("eternl");
     expect(res.unsupportedArr.find((e) => e.info.key === "eternl")).not.toBeUndefined();
-    expect(res.supportedMap.get("nami")?.info.key).toBe("nami");
-    expect(res.supportedArr.find((e) => e.info.key === "nami")).not.toBeUndefined();
+    expect(res.supportedMap.get("lace")?.info.key).toBe("lace");
+    expect(res.supportedArr.find((e) => e.info.key === "lace")).not.toBeUndefined();
   });
 
   it("should retrieve the same objects when caching is enabled", async () => {
@@ -102,9 +102,9 @@ describe("getInstalledExtensions", () => {
       getWalletExtensions: newGetWalletExtensionsMock({ caching: true }),
       getWalletInfo: newGetWalletInfoMock(),
     });
-    const nami1 = res1.allMap.get("nami");
-    const nami2 = res2.allMap.get("nami");
-    expect(nami1).toBe(nami2);
+    const lace1 = res1.allMap.get("lace");
+    const lace2 = res2.allMap.get("lace");
+    expect(lace1).toBe(lace2);
   });
 
   it("should retrieve new objects when caching is disabled", async () => {
@@ -116,10 +116,10 @@ describe("getInstalledExtensions", () => {
       getWalletExtensions: newGetWalletExtensionsMock({ caching: true }),
       getWalletInfo: newGetWalletInfoMock(),
     });
-    const nami1 = res1.allMap.get("nami");
-    const nami2 = res2.allMap.get("nami");
-    expect(nami1).toStrictEqual(nami2);
-    expect(nami1).not.toBe(nami2);
+    const lace1 = res1.allMap.get("lace");
+    const lace2 = res2.allMap.get("lace");
+    expect(lace1).toStrictEqual(lace2);
+    expect(lace1).not.toBe(lace2);
   });
 
   it("should return new instances when the api changes", async () => {
@@ -134,10 +134,10 @@ describe("getInstalledExtensions", () => {
       getWalletExtensions: newGetWalletExtensionsMock({ caching: false }),
       getWalletInfo: newGetWalletInfoMock(),
     });
-    const nami1 = res1.allMap.get("nami");
-    const nami2 = res2.allMap.get("nami");
-    expect(nami1?.info).toStrictEqual(nami2?.info);
-    expect(nami1?.defaultApi).not.toStrictEqual(nami2?.defaultApi);
-    expect(nami1).not.toBe(nami2);
+    const lace1 = res1.allMap.get("lace");
+    const lace2 = res2.allMap.get("lace");
+    expect(lace1?.info).toStrictEqual(lace2?.info);
+    expect(lace1?.defaultApi).not.toStrictEqual(lace2?.defaultApi);
+    expect(lace1).not.toBe(lace2);
   });
 });
