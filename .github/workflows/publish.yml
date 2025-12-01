@@ -17,6 +17,7 @@ jobs:
     timeout-minutes: 15
     runs-on: ubuntu-latest
     permissions:
+      id-token: write
       packages: write
       contents: write
     steps:
@@ -24,9 +25,11 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 18.12.1
+          node-version: 20
           registry-url: https://registry.npmjs.org/
 
+      - name: Update npm
+        run: npm install -g npm@latest
       - run: npm install
 
       - name: Update versions
@@ -73,15 +76,11 @@ jobs:
         if: github.ref_name == 'main'
         run: npm publish
         working-directory: dist/
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to registry pre-release
         if: github.ref_name != 'main'
         run: npm publish --tag ${{ github.ref_name }}
         working-directory: dist/
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Release
         uses: softprops/action-gh-release@v2
