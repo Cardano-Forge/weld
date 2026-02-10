@@ -1,5 +1,4 @@
 import { hexToArrayBuffer } from "@/internal/utils/hex-to-array-buffer";
-import { viewToString } from "@/internal/utils/view-to-string";
 import { decode as decodeCbor } from "cbor-js";
 
 export function decodeBalance(balance: unknown): unknown {
@@ -62,7 +61,7 @@ export function parseBalance(
       if (typeof policyAssets !== "object" || policyAssets === null) {
         continue;
       }
-      const policyId = decodeKey(encodedPolicyId);
+      const policyId = cborKeyToHex(encodedPolicyId);
       if (policyId !== filter.policyId) {
         continue;
       }
@@ -70,7 +69,7 @@ export function parseBalance(
         if (typeof quantity !== "number") {
           continue;
         }
-        const assetName = decodeKey(encodedAssetName);
+        const assetName = cborKeyToHex(encodedAssetName);
         if (assetName === filter.assetName) {
           return quantity;
         }
@@ -84,7 +83,7 @@ export function parseBalance(
       if (typeof policyAssets !== "object" || policyAssets === null) {
         continue;
       }
-      const policyId = decodeKey(encodedPolicyId);
+      const policyId = cborKeyToHex(encodedPolicyId);
       if (policyId !== filter) {
         continue;
       }
@@ -93,7 +92,7 @@ export function parseBalance(
         if (typeof quantity !== "number") {
           continue;
         }
-        const assetName = decodeKey(encodedAssetName);
+        const assetName = cborKeyToHex(encodedAssetName);
         res[assetName] = quantity;
       }
       return res;
@@ -106,19 +105,22 @@ export function parseBalance(
     if (typeof policyAssets !== "object" || policyAssets === null) {
       continue;
     }
-    const policyId = decodeKey(encodedPolicyId);
+    const policyId = cborKeyToHex(encodedPolicyId);
     res[policyId] = {};
     for (const [encodedAssetName, quantity] of Object.entries(policyAssets)) {
       if (typeof quantity !== "number") {
         continue;
       }
-      const assetName = decodeKey(encodedAssetName);
+      const assetName = cborKeyToHex(encodedAssetName);
       res[policyId][assetName] = quantity;
     }
   }
   return res;
 }
 
-function decodeKey(key: string): string {
-  return viewToString(new Uint8Array(key.split(",").map((p) => Number(p))), "hex");
+function cborKeyToHex(cborKey: string): string {
+  return cborKey
+    .split(",")
+    .map((dec) => Number.parseInt(dec, 10).toString(16).padStart(2, "0"))
+    .join("");
 }
