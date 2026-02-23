@@ -1,6 +1,5 @@
 import type { WeldPlugin } from "@/internal/plugins/types";
 import { runOnce } from "@/internal/utils/run-once";
-import { initializeDAppConnectorBridgeAsync } from "./initialize-d-app-connector-bridge-async";
 
 export const eternlPlugin: WeldPlugin = {
   key: "eternl",
@@ -9,6 +8,9 @@ export const eternlPlugin: WeldPlugin = {
       if (typeof window === "undefined") {
         return false;
       }
+      const { initializeDAppConnectorBridgeAsync } = await import(
+        "./initialize-d-app-connector-bridge-async"
+      );
       const walletApi = await initializeDAppConnectorBridgeAsync();
       if (walletApi.name === "eternl") {
         window.cardano.eternl = walletApi;

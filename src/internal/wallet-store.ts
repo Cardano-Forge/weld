@@ -77,7 +77,7 @@ type WalletStoreManagerCtx<TProps extends DefaultWalletStoreState> = {
     opts: WalletStoreManagerConnectOpts,
   ) => MaybePromise<{ updateState: () => MaybePromise<void> }>;
   walletStorageKey: keyof typeof STORAGE_KEYS;
-  configStore?: ConfigStore | ConfigStore<Omit<WeldConfig, "customWallets">>;
+  configStore?: ConfigStore | ConfigStore<WeldConfig>;
   lifecycle?: LifeCycleManager;
   subscriptions?: WalletStoreManagerSubscriptions<TProps>;
 };

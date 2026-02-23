@@ -1,7 +1,6 @@
-import { type WalletKey, weld } from "@/lib/main";
+import { weld } from "@/lib/main";
 
 import { getDefaultWalletConnector } from "@/internal/connector";
-import { type WalletHandlerByKey, customWallets, hasCustomImplementation } from "@/internal/custom";
 import type { WalletHandler } from "@/internal/handler";
 import { UNSAFE_LIB_USAGE_ERROR, isBrowser } from "@/internal/utils/browser";
 
@@ -11,15 +10,14 @@ import { UNSAFE_LIB_USAGE_ERROR, isBrowser } from "@/internal/utils/browser";
  * @throws WalletConnectionError
  * @returns WalletHandler
  */
-export async function connect<T extends WalletKey>(key: T): Promise<WalletHandlerByKey[T]>;
-export async function connect(key: string): Promise<WalletHandler>;
 export async function connect(key: string): Promise<WalletHandler> {
   if (!isBrowser() && !weld.config.ignoreUnsafeUsageError) {
     console.error(UNSAFE_LIB_USAGE_ERROR);
   }
 
-  if (hasCustomImplementation(key)) {
-    return customWallets[key].connector(key);
+  const plugin = weld.config.getState().plugins?.find((p) => p.key === key);
+  if (plugin?.connector) {
+    return plugin.connector(key);
   }
 
   return getDefaultWalletConnector()(key);

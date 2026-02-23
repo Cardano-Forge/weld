@@ -1,5 +1,6 @@
-import type { CustomWalletKey } from "@/internal/custom";
+import type { WeldPlugin } from "@/internal/plugins/types";
 import { type Store, createStoreFactory } from "@/internal/store";
+import { builtinPlugins } from "@/lib/plugins";
 import type { StorageKeysType } from "@/lib/server";
 import { type WeldStorage, defaultStorage } from "../persistence";
 
@@ -35,7 +36,7 @@ export type WeldConfig = UpdateConfig &
     enablePersistence: boolean;
     storage: WeldStorage;
     onUpdateError?(context: string, error: unknown): void;
-    customWallets: boolean | { whitelist: CustomWalletKey[] } | { blacklist: CustomWalletKey[] };
+    plugins?: WeldPlugin[];
   };
 
 const initialConfigState: WeldConfig = {
@@ -45,27 +46,25 @@ const initialConfigState: WeldConfig = {
   ignoreUnsafeUsageError: false,
   enablePersistence: true,
   storage: defaultStorage,
-  customWallets: true,
+  plugins: [...builtinPlugins],
   wallet: {},
   extensions: {},
 };
 
-export type ConfigApi<TConfig extends Omit<WeldConfig, "customWallets"> = WeldConfig> = {
+export type ConfigApi<TConfig extends WeldConfig = WeldConfig> = {
   update(values: Partial<TConfig>): void;
   getPersistedValue(key: StorageKeysType): string | undefined;
 };
 
-export type ConfigStoreState<TConfig extends Omit<WeldConfig, "customWallets"> = WeldConfig> =
-  TConfig & ConfigApi<TConfig>;
+export type ConfigStoreState<TConfig extends WeldConfig = WeldConfig> = TConfig &
+  ConfigApi<TConfig>;
 
-export type ConfigStore<TConfig extends Omit<WeldConfig, "customWallets"> = WeldConfig> = Store<
+export type ConfigStore<TConfig extends WeldConfig = WeldConfig> = Store<
   ConfigStoreState<TConfig>
 > &
   ConfigStoreState<TConfig>;
 
-export const createConfigStore = <
-  TConfig extends Omit<WeldConfig, "customWallets"> = WeldConfig,
->() =>
+export const createConfigStore = <TConfig extends WeldConfig = WeldConfig>() =>
   createStoreFactory<ConfigStoreState<TConfig>>((setState, getState) => {
     const update: ConfigApi<TConfig>["update"] = (values) => {
       setState({

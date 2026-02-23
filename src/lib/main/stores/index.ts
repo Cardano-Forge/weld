@@ -2,7 +2,7 @@ export * from "./config";
 export * from "./extensions";
 export * from "./wallet";
 
-import { initCustomWallets } from "@/internal/custom/init";
+import { initPlugins } from "@/internal/plugins/init";
 import { type ConfigStore, type WeldConfig, createConfigStore } from "./config";
 import { type ExtensionsStore, createExtensionsStore } from "./extensions";
 import { type WalletStore, createWalletStore } from "./wallet";
@@ -36,7 +36,7 @@ export function createWeldInstance() {
       this.extensions.persist();
     },
     init({ persist = true }: { persist?: boolean | Partial<WeldConfig> } = {}) {
-      initCustomWallets(this.config.getState());
+      initPlugins(this.config.getState());
 
       if (typeof persist === "object") {
         this.persist(persist);
