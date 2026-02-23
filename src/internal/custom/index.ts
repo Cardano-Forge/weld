@@ -5,11 +5,9 @@ import type { WalletKey } from "@/lib/main";
 import type { CustomWallet } from "./type";
 
 import { eternl } from "./eternl";
-import { nufiSnap } from "./nufi-snap";
 
 export const customWallets = {
   eternl,
-  nufiSnap,
 } satisfies Partial<Record<WalletKey, CustomWallet>>;
 
 export type CustomWallets = typeof customWallets;

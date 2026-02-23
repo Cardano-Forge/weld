@@ -45,9 +45,7 @@ const initialConfigState: WeldConfig = {
   ignoreUnsafeUsageError: false,
   enablePersistence: true,
   storage: defaultStorage,
-  customWallets: {
-    blacklist: ["nufiSnap"],
-  },
+  customWallets: true,
   wallet: {},
   extensions: {},
 };

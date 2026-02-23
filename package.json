@@ -78,6 +78,7 @@
     "dev": "vite --config ./vite.client.ts",
     "format": "biome format --write .",
     "lint": "biome lint --write .",
+    "pre": "npm run check && npm run build && npm run test",
     "pack": "cd dist && npm pack && mv *.tgz ..",
     "test": "vitest --run",
     "test:coverage": "vitest run --coverage",
@@ -141,8 +142,6 @@
     }
   },
   "dependencies": {
-    "@nufi/dapp-client-cardano": "^0.3.5",
-    "@nufi/dapp-client-core": "^0.3.5",
     "bech32": "^2.0.0",
     "cbor-js": "^0.1.0",
     "use-sync-external-store": "^1.2.2"
