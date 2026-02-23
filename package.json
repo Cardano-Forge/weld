@@ -42,6 +42,11 @@
       "require": "./eth-react.cjs",
       "types": "./eth-react.d.ts"
     },
+    "./plugins": {
+      "import": "./plugins.js",
+      "require": "./plugins.cjs",
+      "types": "./plugins.d.ts"
+    },
     "./poly": {
       "import": "./poly.js",
       "require": "./poly.cjs",
