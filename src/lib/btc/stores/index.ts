@@ -1,12 +1,13 @@
 export * from "./extensions";
 export * from "./wallet";
 
-import { type ConfigStore, type WeldConfig, createConfigStore } from "@/lib/main/stores/config";
+import { type ConfigStore, createConfigStore } from "@/lib/main/stores/config";
+import type { BtcConfig } from "../types";
 import { type BtcExtensionsStore, createBtcExtensionsStore } from "./extensions";
 import { type BtcWalletStore, createBtcWalletStore } from "./wallet";
 
 export function createWeldBtcInstance() {
-  let configStore: ConfigStore;
+  let configStore: ConfigStore<BtcConfig>;
   let walletStore: BtcWalletStore;
   let extensionsStore: BtcExtensionsStore;
   return {
@@ -28,7 +29,7 @@ export function createWeldBtcInstance() {
       }
       return extensionsStore;
     },
-    persist(config?: Partial<WeldConfig>) {
+    persist(config?: Partial<BtcConfig>) {
       this.config.persist();
       const tryToReconnectTo =
         typeof config?.wallet?.tryToReconnectTo === "string"
@@ -37,7 +38,7 @@ export function createWeldBtcInstance() {
       this.wallet.persist({ tryToReconnectTo });
       this.extensions.persist();
     },
-    init({ persist = true }: { persist?: boolean | Partial<WeldConfig> } = {}) {
+    init({ persist = true }: { persist?: boolean | Partial<BtcConfig> } = {}) {
       if (typeof persist === "object") {
         this.persist(persist);
       } else if (persist) {

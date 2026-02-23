@@ -1,8 +1,8 @@
 import { handleAccountChangeErrors } from "@/internal/account-change";
-import { compare } from "@/internal/compare";
 import type { WalletHandler } from "@/internal/handler";
 import { LifeCycleManager } from "@/internal/lifecycle";
 import { type Store, type StoreSetupFunctions, createStoreFactory } from "@/internal/store";
+import { compare } from "@/internal/utils/compare";
 import { getFailureReason } from "@/internal/utils/errors";
 import type { PartialWithDiscriminant } from "@/internal/utils/types";
 import { UtxosUpdateManager } from "@/internal/utxos-update";

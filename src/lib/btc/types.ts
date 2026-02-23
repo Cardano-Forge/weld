@@ -1,5 +1,6 @@
 import type { UnsubscribeFct } from "@/internal/lifecycle";
 import type { MaybePromise } from "@/internal/utils/types";
+import type { WeldConfig } from "../main/stores/config";
 
 export type BtcExtensionInfo = {
   id: string;
@@ -93,3 +94,5 @@ export type BtcWalletDef = {
   info: BtcExtensionInfo;
   connect(): Promise<BtcWalletHandler>;
 };
+
+export type BtcConfig = Omit<WeldConfig, "plugins">;

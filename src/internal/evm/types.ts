@@ -29,4 +29,4 @@ export type EvmExtension = {
 
 export type EvmExtensionKey = EthExtensionKey | PolyExtensionKey;
 
-export type EvmConfig = WeldConfig;
+export type EvmConfig = Omit<WeldConfig, "plugins">;

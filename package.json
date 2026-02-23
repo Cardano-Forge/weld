@@ -12,6 +12,11 @@
       "require": "./main.cjs",
       "types": "./main.d.ts"
     },
+    "./core": {
+      "import": "./core.js",
+      "require": "./core.cjs",
+      "types": "./core.d.ts"
+    },
     "./react": {
       "import": "./react.js",
       "require": "./react.cjs",
@@ -68,7 +73,9 @@
       "types": "./btc-react.d.ts"
     }
   },
-  "files": ["**"],
+  "files": [
+    "**"
+  ],
   "scripts": {
     "build:client": "vite build --config ./vite.client.ts",
     "build:server": "vite build --config ./vite.server.ts",
