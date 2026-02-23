@@ -73,9 +73,7 @@
       "types": "./btc-react.d.ts"
     }
   },
-  "files": [
-    "**"
-  ],
+  "files": ["**"],
   "scripts": {
     "build:client": "vite build --config ./vite.client.ts",
     "build:server": "vite build --config ./vite.server.ts",
