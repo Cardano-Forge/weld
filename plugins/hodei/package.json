@@ -14,9 +14,15 @@
     "preview": "vite preview",
     "check": "tsc --noEmit",
     "lint": "biome check --write .",
-    "test:watch": "vitest",
-    "test": "vitest run",
+    "test:watch": "vitest --passWithNoTests",
+    "test": "vitest run --passWithNoTests",
     "pre": "bun run lint && bun run check && bun run build && bun run test"
   },
-  "type": "module"
+  "type": "module",
+  "peerDependencies": {
+    "@ada-anvil/weld": "../weld/ada-anvil-weld-0.6.0-plugin-system.2.tgz"
+  },
+  "dependencies": {
+    "hodei-client": "../hodei-client/hodei-client-0.0.0-test.2.tgz"
+  }
 }
