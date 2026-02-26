@@ -4,7 +4,7 @@ import { hodeiPlugin } from "./lib";
 
 weld.config.update({
   debug: true,
-  plugins: [...builtinPlugins, hodeiPlugin],
+  plugins: [...builtinPlugins, hodeiPlugin()],
   onUpdateError(context, error) {
     console.error(context, error);
   },
