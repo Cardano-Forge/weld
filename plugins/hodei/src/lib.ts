@@ -4,7 +4,7 @@ import {
   runOnce,
 } from "@ada-anvil/weld/core";
 import type { WeldPlugin } from "@ada-anvil/weld/plugins";
-import { initialize } from "hodei-client";
+import { type Config, initialize } from "hodei-client";
 
 class HodeiHandler extends DefaultWalletHandler {
   async disconnect(): Promise<void> {
@@ -17,15 +17,10 @@ class HodeiHandler extends DefaultWalletHandler {
   }
 }
 
-export const hodeiPlugin: WeldPlugin = {
-  key: "hodei",
-  connector: getDefaultWalletConnector(HodeiHandler),
-  initialize: runOnce(() => {
-    const wallet = initialize({
-      onError: (error) => console.error("error", error),
-      onClose: (state) => console.log("closed", state),
-    });
-    console.log("wallet", wallet);
-    return !!wallet;
-  }),
-};
+export function hodeiPlugin(config?: Partial<Config>): WeldPlugin {
+  return {
+    key: "hodei",
+    connector: getDefaultWalletConnector(HodeiHandler),
+    initialize: runOnce(() => !!initialize(config)),
+  };
+}
