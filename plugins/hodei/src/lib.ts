@@ -1,10 +1,10 @@
+import { type Config, initialize } from "@ada-anvil/hodei-client";
 import {
   DefaultWalletHandler,
   getDefaultWalletConnector,
   runOnce,
 } from "@ada-anvil/weld/core";
 import type { WeldPlugin } from "@ada-anvil/weld/plugins";
-import { type Config, initialize } from "hodei-client";
 
 class HodeiHandler extends DefaultWalletHandler {
   async disconnect(): Promise<void> {
