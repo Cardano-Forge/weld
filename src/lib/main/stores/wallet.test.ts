@@ -119,7 +119,7 @@ describe("connectAsync", () => {
         throw new Error();
       },
     });
-    expect(() => wallet.connectAsync("notinstalled")).rejects.toThrow();
+    await expect(() => wallet.connectAsync("notinstalled")).rejects.toThrow();
   });
 
   it("should fail connection when is aborted", async () => {
@@ -141,7 +141,7 @@ describe("connectAsync", () => {
     await connectReached.promise;
     lifecycle.cleanup();
     connectTrigger.resolve();
-    expect(async () => {
+    await expect(async () => {
       await promise;
     }).rejects.toThrow(WalletConnectionAbortedError);
   });
@@ -322,7 +322,7 @@ describe("connectAsync", () => {
 });
 
 describe("connect", () => {
-  it("should have the same behavior as connectAsync but execute callbacks instead of returning or throwing", () => {});
+  it("should have the same behavior as connectAsync but execute callbacks instead of returning or throwing", () => { });
 });
 
 describe("disconnect", () => {

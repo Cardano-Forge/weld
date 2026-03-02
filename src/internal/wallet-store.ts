@@ -41,8 +41,8 @@ type Events<TProps> = {
 
 type EventsWithParams<TProps> = {
   [TEvent in keyof Events<TProps> as Events<TProps>[TEvent] extends undefined
-    ? never
-    : TEvent]: Events<TProps>[TEvent];
+  ? never
+  : TEvent]: Events<TProps>[TEvent];
 };
 type EventsWithoutParams<TProps> = Omit<Events<TProps>, keyof EventsWithParams<TProps>>;
 
@@ -131,7 +131,6 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
           this._ctx.setState({ isConnectingTo: undefined, isConnecting: false } as Partial<TProps>);
         }, connectTimeout);
       }
-
       const connection = await this._ctx.createConnection(key, { signal, configOverrides });
 
       const safeUpdateState = async (stopUpdates?: () => void) => {

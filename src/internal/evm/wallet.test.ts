@@ -152,7 +152,7 @@ function newTestStores() {
   return { extensions, config, wallet };
 }
 
-describe("connectAsync", () => {
+describe("connectAsync", async () => {
   it("should connect to valid installed wallets successfully", async () => {
     const { wallet } = newTestStores();
     const connected = await wallet.connectAsync(walletKey);
@@ -164,7 +164,7 @@ describe("connectAsync", () => {
     expect(connected.balance).toBe(balanceEth);
     expect(connected.address).toBe(address);
     expect(connected.provider).toBeInstanceOf(BrowserProvider);
-    expect(connected.signer.getAddress()).resolves.toBe(address);
+    await expect(connected.signer.getAddress()).resolves.toBe(address);
     expect(connected.isConnected).toBe(true);
     expect(connected.isConnecting).toBe(false);
     expect(connected.isConnectingTo).toBeUndefined();
@@ -207,12 +207,12 @@ describe("connectAsync", () => {
   });
 });
 
-describe("connect", () => {
-  it("should connect to valid installed wallets successfully", () =>
+describe("connect", async () => {
+  it("should connect to valid installed wallets successfully", async () =>
     new Promise<void>((done) => {
       const { wallet } = newTestStores();
       wallet.connect(walletKey, {
-        onSuccess(connected) {
+        async onSuccess(connected) {
           expect(connected.key).toBe(supportedExtension.key);
           expect(connected.displayName).toBe(supportedExtension.displayName);
           expect(connected.path).toBe(supportedExtension.path);
@@ -221,7 +221,7 @@ describe("connect", () => {
           expect(connected.balance).toBe(balanceEth);
           expect(connected.address).toBe(address);
           expect(connected.provider).toBeInstanceOf(BrowserProvider);
-          expect(connected.signer.getAddress()).resolves.toBe(address);
+          await expect(connected.signer.getAddress()).resolves.toBe(address);
           expect(connected.isConnected).toBe(true);
           expect(connected.isConnecting).toBe(false);
           expect(connected.isConnectingTo).toBeUndefined();
@@ -301,19 +301,19 @@ describe("connect", () => {
   });
 });
 
-describe("getTokenBalance", () => {
+describe("getTokenBalance", async () => {
   it("should fail when signer is not initialized", async () => {
     const { wallet } = newTestStores();
     await wallet.connectAsync(walletKey);
     wallet.setState({ signer: undefined });
-    expect(() => wallet.getTokenBalance(ethTokenAddress)).rejects.toThrow("Signer");
+    await expect(() => wallet.getTokenBalance(ethTokenAddress)).rejects.toThrow("Signer");
   });
 
   it("should fail when provider is not initialized", async () => {
     const { wallet } = newTestStores();
     await wallet.connectAsync(walletKey);
     wallet.setState({ provider: undefined });
-    expect(() => wallet.getTokenBalance(ethTokenAddress)).rejects.toThrow("Provider");
+    await expect(() => wallet.getTokenBalance(ethTokenAddress)).rejects.toThrow("Provider");
   });
 
   it("should switch network to provided chain id", async () => {
@@ -340,19 +340,21 @@ describe("getTokenBalance", () => {
   });
 });
 
-describe("send", () => {
+describe("send", async () => {
   it("should fail when signer is not initialized", async () => {
     const { wallet } = newTestStores();
     await wallet.connectAsync(walletKey);
     wallet.setState({ signer: undefined });
-    expect(() => wallet.send({ to: ethTokenAddress, amount: "2" })).rejects.toThrow("Signer");
+    await expect(() => wallet.send({ to: ethTokenAddress, amount: "2" })).rejects.toThrow("Signer");
   });
 
   it("should fail when provider is not initialized", async () => {
     const { wallet } = newTestStores();
     await wallet.connectAsync(walletKey);
     wallet.setState({ provider: undefined });
-    expect(() => wallet.send({ to: ethTokenAddress, amount: "2" })).rejects.toThrow("Provider");
+    await expect(() => wallet.send({ to: ethTokenAddress, amount: "2" })).rejects.toThrow(
+      "Provider",
+    );
   });
 
   it("should switch network to provided chain id", async () => {
@@ -379,7 +381,7 @@ describe("send", () => {
   });
 });
 
-describe("disconnect", () => {
+describe("disconnect", async () => {
   it("should disconnect the wallet mngr", async () => {
     const { wallet } = newTestStores();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
@@ -390,7 +392,7 @@ describe("disconnect", () => {
   });
 });
 
-describe("init", () => {
+describe("init", async () => {
   it("should init the wallet mngr", async () => {
     const { wallet } = newTestStores();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
@@ -401,7 +403,7 @@ describe("init", () => {
   });
 });
 
-describe("persist", () => {
+describe("persist", async () => {
   it("should persist the wallet mngr", async () => {
     const { wallet } = newTestStores();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
@@ -412,7 +414,7 @@ describe("persist", () => {
   });
 });
 
-describe("cleanup", () => {
+describe("cleanup", async () => {
   it("should cleanup the wallet mngr", async () => {
     const { wallet } = newTestStores();
     // biome-ignore lint/suspicious/noExplicitAny: For testing purposes

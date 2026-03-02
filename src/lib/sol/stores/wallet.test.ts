@@ -1,11 +1,39 @@
 import { LifeCycleManager } from "@/internal/lifecycle";
 import { WalletConnectionAbortedError } from "@/lib/main";
 import { createConfigStore } from "@/lib/main/stores/config";
-import { LAMPORTS_PER_SOL, clusterApiUrl } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SolConfig, SolExtensionInfo } from "../types";
 import { createSolExtensionsStore } from "./extensions";
 import { createSolWalletStore } from "./wallet";
+
+const mockGetBalance = vi.fn();
+const mockGetParsedTokenAccountsByOwner = vi.fn();
+const mockGetLatestBlockhash = vi.fn();
+const mockGetAccountInfo = vi.fn();
+
+vi.mock("@solana/web3.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@solana/web3.js")>();
+  class MockConnection {
+    getBalance = mockGetBalance;
+    getParsedTokenAccountsByOwner = mockGetParsedTokenAccountsByOwner;
+    getLatestBlockhash = mockGetLatestBlockhash;
+    getAccountInfo = mockGetAccountInfo;
+  }
+  return {
+    ...actual,
+    Connection: MockConnection,
+  };
+});
+
+const mockGetAssociatedTokenAddress = vi.fn();
+vi.mock("@solana/spl-token", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@solana/spl-token")>();
+  return {
+    ...actual,
+    getAssociatedTokenAddress: (...args: unknown[]) => mockGetAssociatedTokenAddress(...args),
+  };
+});
 
 const lifecycle = new LifeCycleManager();
 
@@ -18,16 +46,41 @@ const supportedExtension: SolExtensionInfo = {
 
 const secondWalletAddress = "DmrsbqsvqhN2nrDsvcC5doXENCvggsxTxw5GvYvvpd7t";
 const weldTestTokenAddress = "HhRSKz8cQruqoC4MfPjwrd57DVudshPhx8RXa5NVVf67";
+const mockBalanceLamports = 5_000_000_000; // 5 SOL in lamports
 const tokenBalanceLamports = 1000000000000000000n;
 const tokenBalanceSol = tokenBalanceLamports / BigInt(LAMPORTS_PER_SOL);
+const tokenDecimals = 9;
 const signature = "a_signature";
+const mockBlockhash = "mock_blockhash_value";
 
 const publicKeyBytes = Uint8Array.from([
-  27, 245, 253, 95, 185, 95, 232, 136, 100, 224, 148, 51, 194, 98, 149, 47, 221, 73, 24, 156, 127,
-  46, 65, 230, 189, 44, 146, 206, 218, 188, 212, 169,
+  27, 245, 253, 95, 185, 95, 232, 136, 100, 224, 148, 51, 194, 98, 149, 47, 221, 73, 24, 156,
+  127, 46, 65, 230, 189, 44, 146, 206, 218, 188, 212, 169,
 ]);
 
 const signAndSendTransactionSpy = vi.fn();
+
+const mockTokenAccount = {
+  value: [
+    {
+      account: {
+        data: {
+          parsed: {
+            info: {
+              tokenAmount: {
+                amount: tokenBalanceLamports.toString(),
+                uiAmount: Number(tokenBalanceLamports),
+                decimals: tokenDecimals,
+              },
+              mint: weldTestTokenAddress,
+            },
+          },
+        },
+      },
+      pubkey: new PublicKey(publicKeyBytes),
+    },
+  ],
+};
 
 beforeEach(() => {
   // biome-ignore lint/suspicious/noExplicitAny: For testing purposes
@@ -42,7 +95,12 @@ beforeEach(() => {
     },
   };
   signAndSendTransactionSpy.mockReset();
-  vi.resetAllMocks();
+
+  mockGetBalance.mockResolvedValue(mockBalanceLamports);
+  mockGetParsedTokenAccountsByOwner.mockResolvedValue(mockTokenAccount);
+  mockGetLatestBlockhash.mockResolvedValue({ blockhash: mockBlockhash });
+  mockGetAccountInfo.mockResolvedValue(null);
+  mockGetAssociatedTokenAddress.mockResolvedValue(new PublicKey(publicKeyBytes));
 });
 
 afterEach(() => {
@@ -66,7 +124,7 @@ function newTestStores() {
     lifecycle,
   });
   const config = createConfigStore<SolConfig>();
-  config.update({ connectionEndpoint: clusterApiUrl("devnet") });
+  config.update({ connectionEndpoint: "https://mock-endpoint.test" });
   const wallet = createSolWalletStore({
     extensions,
     lifecycle,
@@ -79,7 +137,8 @@ describe("connectAsync", () => {
   it("should connect to valid installed wallets successfully", async () => {
     const { wallet } = newTestStores();
     const connected = await wallet.connectAsync(walletKey);
-    expect(connected.balanceSol).toBeGreaterThan(0);
+    expect(connected.balanceLamports).toBe(BigInt(mockBalanceLamports));
+    expect(connected.balanceSol).toBe(BigInt(mockBalanceLamports) / BigInt(LAMPORTS_PER_SOL));
   });
 
   it("should fail connection when is aborted", async () => {

@@ -8,64 +8,62 @@
   "types": "./main.d.ts",
   "exports": {
     ".": {
+      "types": "./main.d.ts",
       "import": "./main.js",
-      "require": "./main.cjs",
-      "types": "./main.d.ts"
+      "require": "./main.cjs"
     },
     "./react": {
+      "types": "./react.d.ts",
       "import": "./react.js",
-      "require": "./react.cjs",
-      "types": "./react.d.ts"
+      "require": "./react.cjs"
     },
     "./server": {
+      "types": "./server.d.ts",
       "import": "./server.js",
-      "require": "./server.cjs",
-      "types": "./server.d.ts"
+      "require": "./server.cjs"
     },
     "./sol": {
+      "types": "./sol.d.ts",
       "import": "./sol.js",
-      "require": "./sol.cjs",
-      "types": "./sol.d.ts"
+      "require": "./sol.cjs"
     },
     "./sol/react": {
+      "types": "./sol-react.d.ts",
       "import": "./sol-react.js",
-      "require": "./sol-react.cjs",
-      "types": "./sol-react.d.ts"
+      "require": "./sol-react.cjs"
     },
     "./eth": {
+      "types": "./eth.d.ts",
       "import": "./eth.js",
-      "require": "./eth.cjs",
-      "types": "./eth.d.ts"
+      "require": "./eth.cjs"
     },
     "./eth/react": {
+      "types": "./eth-react.d.ts",
       "import": "./eth-react.js",
-      "require": "./eth-react.cjs",
-      "types": "./eth-react.d.ts"
+      "require": "./eth-react.cjs"
     },
     "./poly": {
+      "types": "./poly.d.ts",
       "import": "./poly.js",
-      "require": "./poly.cjs",
-      "types": "./poly.d.ts"
+      "require": "./poly.cjs"
     },
     "./poly/react": {
+      "types": "./poly-react.d.ts",
       "import": "./poly-react.js",
-      "require": "./poly-react.cjs",
-      "types": "./poly-react.d.ts"
+      "require": "./poly-react.cjs"
     },
     "./btc": {
+      "types": "./btc.d.ts",
       "import": "./btc.js",
-      "require": "./btc.cjs",
-      "types": "./btc.d.ts"
+      "require": "./btc.cjs"
     },
     "./btc/react": {
+      "types": "./btc-react.d.ts",
       "import": "./btc-react.js",
-      "require": "./btc-react.cjs",
-      "types": "./btc-react.d.ts"
+      "require": "./btc-react.cjs"
     }
   },
-  "files": [
-    "**"
-  ],
+  "files": ["**"],
   "scripts": {
     "build:client": "vite build --config ./vite.client.ts",
     "build:server": "vite build --config ./vite.server.ts",
