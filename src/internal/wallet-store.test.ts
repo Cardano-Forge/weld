@@ -128,7 +128,7 @@ describe("WalletStoreManager.connect", () => {
   });
 
   it("should clear existing lifecycle subscriptions", async () => {
-    const oldSub = vi.fn(() => { });
+    const oldSub = vi.fn(() => {});
     lifecycle.subscriptions.add(oldSub);
     const { set, get } = newMockStore();
     const createConnection = vi.fn<ConnectionFct>(() => ({
@@ -575,17 +575,17 @@ describe("WalletStoreManager.on", () => {
       lifecycle,
       subscriptions,
     });
-    const onUpdateError1 = () => { };
+    const onUpdateError1 = () => {};
     mngr.on("updateError", onUpdateError1);
-    const onUpdateError2 = () => { };
+    const onUpdateError2 = () => {};
     mngr.on("updateError", onUpdateError2);
-    const onBeforeDisconnect1 = () => { };
+    const onBeforeDisconnect1 = () => {};
     mngr.on("beforeDisconnect", onBeforeDisconnect1);
-    const onBeforeDisconnect2 = () => { };
+    const onBeforeDisconnect2 = () => {};
     mngr.on("beforeDisconnect", onBeforeDisconnect2);
-    const onAfterDisconnect1 = () => { };
+    const onAfterDisconnect1 = () => {};
     mngr.on("afterDisconnect", onAfterDisconnect1);
-    const onAfterDisconnect2 = () => { };
+    const onAfterDisconnect2 = () => {};
     mngr.on("afterDisconnect", onAfterDisconnect2);
     expect(subscriptions.updateError.size).toBe(2);
     expect(subscriptions.updateError.has(onUpdateError1)).toBe(true);

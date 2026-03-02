@@ -54,8 +54,8 @@ const signature = "a_signature";
 const mockBlockhash = "mock_blockhash_value";
 
 const publicKeyBytes = Uint8Array.from([
-  27, 245, 253, 95, 185, 95, 232, 136, 100, 224, 148, 51, 194, 98, 149, 47, 221, 73, 24, 156,
-  127, 46, 65, 230, 189, 44, 146, 206, 218, 188, 212, 169,
+  27, 245, 253, 95, 185, 95, 232, 136, 100, 224, 148, 51, 194, 98, 149, 47, 221, 73, 24, 156, 127,
+  46, 65, 230, 189, 44, 146, 206, 218, 188, 212, 169,
 ]);
 
 const signAndSendTransactionSpy = vi.fn();

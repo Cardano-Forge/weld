@@ -41,8 +41,8 @@ type Events<TProps> = {
 
 type EventsWithParams<TProps> = {
   [TEvent in keyof Events<TProps> as Events<TProps>[TEvent] extends undefined
-  ? never
-  : TEvent]: Events<TProps>[TEvent];
+    ? never
+    : TEvent]: Events<TProps>[TEvent];
 };
 type EventsWithoutParams<TProps> = Omit<Events<TProps>, keyof EventsWithParams<TProps>>;
 

@@ -322,7 +322,7 @@ describe("connectAsync", () => {
 });
 
 describe("connect", () => {
-  it("should have the same behavior as connectAsync but execute callbacks instead of returning or throwing", () => { });
+  it("should have the same behavior as connectAsync but execute callbacks instead of returning or throwing", () => {});
 });
 
 describe("disconnect", () => {
