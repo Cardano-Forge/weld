@@ -6,12 +6,13 @@ import pkg from "./package.json" with { type: "json" };
 export default defineConfig({
   build: {
     rollupOptions: {
-      external: [/@ada-anvil\/weld/, "hodei-client"],
+      external: [/@ada-anvil\/weld/, /@ada-anvil\/hodei-client/],
     },
     lib: {
       entry: "src/lib.ts",
       name: "weld-plugin-hodei",
       fileName: "lib",
+      formats: ["es"],
     },
   },
   plugins: [
@@ -38,9 +39,16 @@ function copyPackageJson(): PluginOption {
             {
               ...pkg,
               files: ["**"],
-              main: "./lib.umd.cjs",
+              type: "module",
+              main: "./lib.js",
               module: "./lib.js",
               types: "./lib.d.ts",
+              exports: {
+                ".": {
+                  types: "./lib.d.ts",
+                  import: "./lib.js",
+                },
+              },
             },
             null,
             2,
