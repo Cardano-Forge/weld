@@ -142,7 +142,7 @@ export const createWalletStore = createStoreFactory<
       newState: newWalletState,
       createConnection: async (key, opts) => {
         const handler: WalletHandler = handleAccountChangeErrors(
-          await connectFct(key),
+          await connectFct(key, { config: config.getState() }),
           async () => {
             const isEnabled = await handler.reenable();
             if (!isEnabled) {
