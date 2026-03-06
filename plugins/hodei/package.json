@@ -1,6 +1,6 @@
 {
   "name": "@ada-anvil/weld-plugin-hodei",
-  "version": "0.0.1-alpha.0",
+  "version": "0.0.1-alpha.1",
   "devDependencies": {
     "@ada-anvil/weld": "^0.6.0-plugin-system.0",
     "@biomejs/biome": "2.4.4",
@@ -25,6 +25,6 @@
     "@ada-anvil/weld": "^0.6.0-plugin-system.0"
   },
   "dependencies": {
-    "@ada-anvil/hodei-client": "^0.0.1-alpha.2"
+    "@ada-anvil/hodei-client": "^0.0.1-alpha.4"
   }
 }
