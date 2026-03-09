@@ -32,6 +32,12 @@
     - [Retrieving All Supported Wallet Extensions](#retrieving-all-supported-wallet-extensions)
     - [Retrieving Asset Balance](#retrieving-asset-balance)
     - [Updating Wallet Extensions](#updating-wallet-extensions)
+  - [Plugins](#plugins)
+    - [Builtin Plugins](#builtin-plugins)
+    - [Available Plugins](#available-plugins)
+    - [Using Plugins](#using-plugins)
+    - [Creating a Plugin](#creating-a-plugin)
+    - [Plugin Author Utilities](#plugin-author-utilities)
 - [Concepts](#concepts)
   - [Universal Reactive Stores](#universal-reactive-stores)
   - [Error handling](#error-handling)
@@ -154,7 +160,6 @@ Weld has been thoroughly tested with the following wallet extensions:
 | gerowallet  | Gero       | https://chrome.google.com/webstore/detail/gerowallet/bgpipimickeadkjlklgciifhnalhdjhe/overview   |
 | typhoncip30 | Typhon     | https://chrome.google.com/webstore/detail/typhon-wallet/kfdniefadaanbjodldohaedphafoffoh         |
 | nufi        | NuFi       | https://chrome.google.com/webstore/detail/nufi/gpnihlnnodeiiaakbikldcihojploeca?hl=en-US         |
-| nufiSnap    | MetaMask   | https://chrome.google.com/webstore/detail/nufi/gpnihlnnodeiiaakbikldcihojploeca?hl=en-US         |
 | lace        | Lace       | https://chrome.google.com/webstore/detail/lace/gafhhkghbfjjkeiendhlofajokpaflmk?hl=en-US         |
 | vespr       | VESPR      | https://www.vespr.xyz/                                                                           |
 
@@ -321,6 +326,123 @@ You can also trigger an update manually through the store's API:
 ```tsx
 const updateExtensions = useExtensions("update");
 const onWalletPickerOpen = () => updateExtensions();
+```
+
+### Plugins
+
+Weld uses a plugin system to extend wallet connectivity. Plugins can inject custom wallet APIs, override the default connection flow, or run initialization logic at startup.
+
+#### Builtin Plugins
+
+Weld ships with the following builtin plugins, registered by default:
+
+| Plugin | Key | Description |
+|---|---|---|
+| `eternl` | `eternl` | Sets up a DApp Connector Bridge for the Eternl wallet, enabling cross-iframe communication between the wallet extension and your dapp. Without this plugin, Eternl connections may fail in certain environments (e.g. iframes, embedded browsers). |
+
+#### Available Plugins
+
+| Plugin | Package | Description | Link |
+|---|---|---|---|
+| Hodei | `@ada-anvil/hodei-client` | Hodei wallet integration | [GitHub](https://github.com/cardano-forge/weld-plugin-hodei) |
+
+#### Using Plugins
+
+Pass plugins through the config when initializing Weld.
+
+**Important:** When adding third-party plugins, you must spread `builtinPlugins` to preserve default behavior. Omitting them disables builtin plugin functionality (e.g. the Eternl bridge).
+
+```tsx
+import { WeldProvider } from "@ada-anvil/weld/react";
+import { builtinPlugins } from "@ada-anvil/weld/plugins";
+import { hodeiPlugin } from "@ada-anvil/hodei-client";
+
+// Append to built-in plugins (recommended)
+<WeldProvider plugins={[...builtinPlugins, hodeiPlugin({ /* options */ })]}>
+  {children}
+</WeldProvider>
+
+// Replace all plugins (disables builtins)
+<WeldProvider plugins={[hodeiPlugin({ /* options */ })]}>
+  {children}
+</WeldProvider>
+```
+
+Without React:
+
+```typescript
+import { weld } from "@ada-anvil/weld";
+import { builtinPlugins } from "@ada-anvil/weld/plugins";
+import { hodeiPlugin } from "@ada-anvil/hodei-client";
+
+weld.config.update({
+  plugins: [...builtinPlugins, hodeiPlugin({ /* options */ })],
+});
+weld.init();
+```
+
+When `weld.init()` is called, every plugin's `initialize` function runs in parallel. During `connect(key)`, Weld checks if any plugin matches the requested key and delegates to its `connector` if present, otherwise falls back to the default `window.cardano[key]` flow.
+
+#### Creating a Plugin
+
+A plugin is an object conforming to the `WeldPlugin` type:
+
+```typescript
+import type { WeldPlugin } from "@ada-anvil/weld/plugins";
+
+export const myPlugin: WeldPlugin = {
+  key: "my-wallet",
+  initialize() {
+    // Optional: runs once during weld.init()
+    // Use this to inject APIs, load scripts, etc.
+  },
+  connector(key) {
+    // Optional: custom connection logic
+    // Return a WalletHandler instance
+  },
+};
+```
+
+| Field | Required | Description |
+|---|---|---|
+| `key` | yes | Unique identifier matching the wallet's `window.cardano` key |
+| `initialize` | no | Async function called during `weld.init()`. Failures are caught and logged (when `debug: true`) without blocking other plugins |
+| `connector` | no | Custom connection function returning a `WalletHandler`. When omitted, the default connector is used |
+
+#### Plugin Author Utilities
+
+`@ada-anvil/weld/core` exports utilities for building plugins:
+
+```typescript
+import {
+  getDefaultWalletConnector,
+  DefaultWalletHandler,
+  runOnce,
+} from "@ada-anvil/weld/core";
+```
+
+| Export | Description |
+|---|---|
+| `getDefaultWalletConnector()` | Returns the standard connector that retrieves and enables a wallet from `window.cardano[key]`. Accepts an optional `DefaultWalletHandler` subclass to customize handler behavior |
+| `DefaultWalletHandler` | Base handler class implementing `WalletHandler`. Extend it to add custom methods or override defaults |
+| `runOnce(fn)` | Wraps a function so it only executes once. Subsequent calls return immediately. Useful for idempotent initialization logic |
+
+Example using these utilities:
+
+```typescript
+import type { WeldPlugin } from "@ada-anvil/weld/plugins";
+import { getDefaultWalletConnector, runOnce } from "@ada-anvil/weld/core";
+
+export const myPlugin: WeldPlugin = {
+  key: "my-wallet",
+  initialize: runOnce(async () => {
+    // Load external script, inject wallet API, etc.
+    const api = await loadMyWalletBridge();
+    window.cardano["my-wallet"] = api;
+  }),
+  // Use the default connector after initialization has injected the API
+  connector: getDefaultWalletConnector(),
+};
 ```
 
 ## Concepts

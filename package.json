@@ -1,7 +1,7 @@
 {
   "name": "@ada-anvil/weld",
   "private": false,
-  "version": "0.6.0",
+  "version": "0.7.0",
   "type": "module",
   "main": "./main.cjs",
   "module": "./main.js",
@@ -11,6 +11,11 @@
       "import": "./main.js",
       "require": "./main.cjs",
       "types": "./main.d.ts"
+    },
+    "./core": {
+      "import": "./core.js",
+      "require": "./core.cjs",
+      "types": "./core.d.ts"
     },
     "./react": {
       "import": "./react.js",
@@ -41,6 +46,11 @@
       "import": "./eth-react.js",
       "require": "./eth-react.cjs",
       "types": "./eth-react.d.ts"
+    },
+    "./plugins": {
+      "import": "./plugins.js",
+      "require": "./plugins.cjs",
+      "types": "./plugins.d.ts"
     },
     "./poly": {
       "import": "./poly.js",
@@ -73,6 +83,7 @@
     "dev": "vite --config ./vite.client.ts",
     "format": "biome format --write .",
     "lint": "biome lint --write .",
+    "pre": "npm run check && npm run build && npm run test",
     "pack": "cd dist && npm pack && mv *.tgz ..",
     "test": "vitest --run",
     "test:coverage": "vitest run --coverage",
@@ -136,8 +147,6 @@
     }
   },
   "dependencies": {
-    "@nufi/dapp-client-cardano": "^0.3.5",
-    "@nufi/dapp-client-core": "^0.3.5",
     "bech32": "^2.0.0",
     "cbor-js": "^0.1.0",
     "use-sync-external-store": "^1.2.2"

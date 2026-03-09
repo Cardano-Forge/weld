@@ -19,7 +19,7 @@ function mergeConfigs<TKey extends keyof UpdateConfig>(
 export function setupAutoUpdate(
   fn: (stop: () => void) => unknown,
   lifecycle: LifeCycleManager,
-  configStore: ConfigStore | ConfigStore<Omit<WeldConfig, "customWallets">>,
+  configStore: ConfigStore | ConfigStore<WeldConfig>,
   store?: keyof StoreConfig,
   ...overrides: (Partial<UpdateConfig> | undefined)[]
 ): { stop: () => void } {

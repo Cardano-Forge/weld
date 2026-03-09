@@ -1,6 +1,6 @@
 // adapted from https://github.com/pmndrs/zustand/blob/main/src/react/shallow.ts
 
-import { compare } from "@/internal/compare";
+import { compare } from "@/internal/utils/compare";
 import { useRef } from "react";
 
 export function useCompare<S, U>(selector: (state: S) => U): (state: S) => U {
