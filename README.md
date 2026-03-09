@@ -33,6 +33,8 @@
     - [Retrieving Asset Balance](#retrieving-asset-balance)
     - [Updating Wallet Extensions](#updating-wallet-extensions)
   - [Plugins](#plugins)
+    - [Builtin Plugins](#builtin-plugins)
+    - [Available Plugins](#available-plugins)
     - [Using Plugins](#using-plugins)
     - [Creating a Plugin](#creating-a-plugin)
     - [Plugin Author Utilities](#plugin-author-utilities)
@@ -330,24 +332,38 @@ const onWalletPickerOpen = () => updateExtensions();
 
 Weld uses a plugin system to extend wallet connectivity. Plugins can inject custom wallet APIs, override the default connection flow, or run initialization logic at startup.
 
-Built-in plugins (like `eternl`) are registered by default. You can add your own or replace the defaults entirely.
+#### Builtin Plugins
+
+Weld ships with the following builtin plugins, registered by default:
+
+| Plugin | Key | Description |
+|---|---|---|
+| `eternl` | `eternl` | Sets up a DApp Connector Bridge for the Eternl wallet, enabling cross-iframe communication between the wallet extension and your dapp. Without this plugin, Eternl connections may fail in certain environments (e.g. iframes, embedded browsers). |
+
+#### Available Plugins
+
+| Plugin | Package | Description | Link |
+|---|---|---|---|
+| Hodei | `@ada-anvil/hodei-client` | Hodei wallet integration | [GitHub](https://github.com/cardano-forge/weld-plugin-hodei) |
 
 #### Using Plugins
 
-Pass plugins through the config when initializing Weld:
+Pass plugins through the config when initializing Weld.
+
+**Important:** When adding third-party plugins, you must spread `builtinPlugins` to preserve default behavior. Omitting them disables builtin plugin functionality (e.g. the Eternl bridge).
 
 ```tsx
 import { WeldProvider } from "@ada-anvil/weld/react";
 import { builtinPlugins } from "@ada-anvil/weld/plugins";
-import { myPlugin } from "./my-plugin";
+import { hodeiPlugin } from "@ada-anvil/hodei-client";
 
-// Append to built-in plugins
-<WeldProvider plugins={[...builtinPlugins, myPlugin]}>
+// Append to built-in plugins (recommended)
+<WeldProvider plugins={[...builtinPlugins, hodeiPlugin({ /* options */ })]}>
   {children}
 </WeldProvider>
 
-// Or replace all plugins
-<WeldProvider plugins={[myPlugin]}>
+// Replace all plugins (disables builtins)
+<WeldProvider plugins={[hodeiPlugin({ /* options */ })]}>
   {children}
 </WeldProvider>
 ```
@@ -357,10 +373,10 @@ Without React:
 ```typescript
 import { weld } from "@ada-anvil/weld";
 import { builtinPlugins } from "@ada-anvil/weld/plugins";
-import { myPlugin } from "./my-plugin";
+import { hodeiPlugin } from "@ada-anvil/hodei-client";
 
 weld.config.update({
-  plugins: [...builtinPlugins, myPlugin],
+  plugins: [...builtinPlugins, hodeiPlugin({ /* options */ })],
 });
 weld.init();
 ```
