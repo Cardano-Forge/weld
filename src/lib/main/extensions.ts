@@ -4,6 +4,7 @@ import {
   type WalletKey,
   getWalletExtensions as defaultGetWalletExtensions,
   getWalletInfo as defaultGetWalletInfo,
+  supportedWalletsMap,
 } from "@/lib/main";
 
 export type InstalledExtension = {
@@ -41,16 +42,18 @@ export async function getInstalledExtensions({
   cache,
   getWalletInfo = defaultGetWalletInfo,
   getWalletExtensions = defaultGetWalletExtensions,
+  registeredWallets = supportedWalletsMap,
 }: {
   cache?: ExtensionCache;
   getWalletInfo?: typeof defaultGetWalletInfo;
   getWalletExtensions?: typeof defaultGetWalletExtensions;
+  registeredWallets?: Map<string, WalletInfo>;
 } = {}): Promise<InstalledExtensions> {
   const walletExtensions = await getWalletExtensions();
   const res = newInstalledExtensions();
 
   for (const extension of walletExtensions) {
-    const info = getWalletInfo(extension);
+    const info = getWalletInfo(extension, registeredWallets);
 
     let api: InstalledExtension;
     api = cache?.get(extension.defaultApi) ?? { info, defaultApi: extension.defaultApi };

@@ -125,8 +125,11 @@ export function isWalletKey(str: string): str is WalletKey {
   return supportedWalletsMap.has(str as WalletKey);
 }
 
-export function getWalletInfo(extension: WalletExtension): WalletInfo {
-  const info = supportedWalletsMap.get(extension.key as WalletKey);
+export function getWalletInfo(
+  extension: WalletExtension,
+  registeredWallets: Map<string, WalletInfo> = supportedWalletsMap,
+): WalletInfo {
+  const info = registeredWallets.get(extension.key as WalletKey);
   if (info) {
     return info;
   }
