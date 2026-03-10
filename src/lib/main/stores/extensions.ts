@@ -35,13 +35,13 @@ export const createExtensionsStore = createStoreFactory<
   undefined,
   | []
   | [
-      {
-        config?: ConfigStore;
-        lifecycle?: LifeCycleManager;
-        cache?: ExtensionCache;
-        getInstalledExtensions?: typeof defaultGetInstalledExtensions;
-      },
-    ]
+    {
+      config?: ConfigStore;
+      lifecycle?: LifeCycleManager;
+      cache?: ExtensionCache;
+      getInstalledExtensions?: typeof defaultGetInstalledExtensions;
+    },
+  ]
 >(
   (
     setState,
@@ -59,7 +59,8 @@ export const createExtensionsStore = createStoreFactory<
     };
 
     const registerWallets: ExtensionsApi["registerWallets"] = (wallets) => {
-      const { registeredMap, registeredArr } = getState();
+      const registeredArr = [...getState().registeredArr];
+      const registeredMap = new Map(getState().registeredMap);
       let shouldSetState = false;
       for (const wallet of wallets) {
         if (!registeredMap.has(wallet.key)) {
