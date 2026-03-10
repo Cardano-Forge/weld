@@ -1,6 +1,8 @@
-import { type WalletStoreState, weld } from "@ada-anvil/weld";
+import { createWeldInstance, type WalletStoreState } from "@ada-anvil/weld";
 import { builtinPlugins } from "@ada-anvil/weld/plugins";
 import { hodeiPlugin } from "./lib";
+
+const weld = createWeldInstance();
 
 weld.config.update({
   debug: true,
@@ -19,10 +21,31 @@ weld.wallet.subscribe((wallet) => {
   if (balanceEl) balanceEl.textContent = (wallet.balanceAda ?? "-").toString();
 });
 
+weld.extensions.subscribeWithSelector(
+  (extensions) => extensions.registeredArr,
+  (registeredArr) => {
+    console.log("registered wallets:", registeredArr.length);
+    const placeholder = document.createElement("option");
+    placeholder.innerText = "select wallet";
+    placeholder.value = "";
+    document.querySelector("select")?.replaceChildren(
+      placeholder,
+      ...registeredArr.map((wallet) => {
+        const option = document.createElement("option");
+        option.innerText = wallet.displayName;
+        option.value = wallet.key;
+        return option;
+      }),
+    );
+  },
+  { fireImmediately: true },
+);
+
 document.querySelector("#connect")?.addEventListener("click", async () => {
-  weld.wallet.connect("hodei", {
-    onError: console.error,
-  });
+  const selectEl = document.querySelector("select");
+  if (selectEl instanceof HTMLSelectElement && selectEl.value.length > 0) {
+    weld.wallet.connect(selectEl.value, { onError: console.error });
+  }
 });
 
 document.querySelector("#disconnect")?.addEventListener("click", async () => {
