@@ -24,7 +24,6 @@ weld.wallet.subscribe((wallet) => {
 weld.extensions.subscribeWithSelector(
   (extensions) => extensions.registeredArr,
   (registeredArr) => {
-    console.log("registered wallets:", registeredArr.length);
     const placeholder = document.createElement("option");
     placeholder.innerText = "select wallet";
     placeholder.value = "";
