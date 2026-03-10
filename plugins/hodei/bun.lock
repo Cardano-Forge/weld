@@ -5,26 +5,27 @@
     "": {
       "name": "weld-plugin-hodei",
       "dependencies": {
-        "@ada-anvil/hodei-client": "^0.0.1-alpha.4",
+        "@ada-anvil/hodei-client": "^0.0.1-alpha.5",
       },
       "devDependencies": {
-        "@ada-anvil/weld": "^0.6.0-plugin-system.0",
+        "@ada-anvil/weld": "^0.6.0-plugin-system.2",
         "@biomejs/biome": "2.4.4",
         "@microsoft/api-extractor": "^7.57.4",
+        "@types/node": "^25.4.0",
         "typescript": "~5.9.3",
         "unplugin-dts": "^1.0.0-beta.6",
         "vite": "^7.3.1",
         "vitest": "^4.0.18",
       },
       "peerDependencies": {
-        "@ada-anvil/weld": "^0.6.0-plugin-system.0",
+        "@ada-anvil/weld": "^0.6.0",
       },
     },
   },
   "packages": {
-    "@ada-anvil/hodei-client": ["@ada-anvil/hodei-client@0.0.1-alpha.4", "", {}, "sha512-U2R17u0XycKlAPN/C1YBAmwZhdxI0hlol9wg5ZmAjLdJfuZYfsQMNZoR16Car57z/U29GFQjbEDPklj6qVuf8w=="],
+    "@ada-anvil/hodei-client": ["@ada-anvil/hodei-client@0.0.1", "", {}, "sha512-litrxfV39eKtotQGMOMNJ5qqJ8lnmK/mYSmM9xWHVkAj6Jwacow83TdKbGI/AQGI4nu7mwptharzKnXLGPt0VA=="],
 
-    "@ada-anvil/weld": ["@ada-anvil/weld@0.6.0-plugin-system.0", "", { "dependencies": { "bech32": "^2.0.0", "cbor-js": "^0.1.0", "use-sync-external-store": "^1.2.2" }, "peerDependencies": { "@solana/spl-token": ">=0.4.8", "@solana/web3.js": ">=1.95.2", "@types/react": ">=17.0.0", "ethers": "^6.13.4", "react": ">=17.0.0" }, "optionalPeers": ["@solana/spl-token", "@solana/web3.js", "@types/react", "ethers", "react"] }, "sha512-uDGhPjM4hjbuRwmJ6vYB5+DjYO+y7pPEyW54zsGxYa5gSfkP5K6GTjw8qi95w/chzYU2otWWeR5m1m7RodsMEA=="],
+    "@ada-anvil/weld": ["@ada-anvil/weld@0.6.0-plugin-system.2", "", { "dependencies": { "bech32": "^2.0.0", "cbor-js": "^0.1.0", "use-sync-external-store": "^1.2.2" }, "peerDependencies": { "@solana/spl-token": ">=0.4.8", "@solana/web3.js": ">=1.95.2", "@types/react": ">=17.0.0", "ethers": "^6.13.4", "react": ">=17.0.0" }, "optionalPeers": ["@solana/spl-token", "@solana/web3.js", "@types/react", "ethers", "react"] }, "sha512-iKgvwqsRMidnaq0yaAkxGqMcMROk1fAHlKu0oj/U8GLV+Il2U9m7FdgtsA+9sgW/T3zL18oTO30I7vOWS19L3w=="],
 
     "@biomejs/biome": ["@biomejs/biome@2.4.4", "", { "optionalDependencies": { "@biomejs/cli-darwin-arm64": "2.4.4", "@biomejs/cli-darwin-x64": "2.4.4", "@biomejs/cli-linux-arm64": "2.4.4", "@biomejs/cli-linux-arm64-musl": "2.4.4", "@biomejs/cli-linux-x64": "2.4.4", "@biomejs/cli-linux-x64-musl": "2.4.4", "@biomejs/cli-win32-arm64": "2.4.4", "@biomejs/cli-win32-x64": "2.4.4" }, "bin": { "biome": "bin/biome" } }, "sha512-tigwWS5KfJf0cABVd52NVaXyAVv4qpUXOWJ1rxFL8xF1RVoeS2q/LK+FHgYoKMclJCuRoCWAPy1IXaN9/mS61Q=="],
 
@@ -185,6 +186,8 @@
     "@types/deep-eql": ["@types/deep-eql@4.0.2", "", {}, "sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw=="],
 
     "@types/estree": ["@types/estree@1.0.8", "", {}, "sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w=="],
+
+    "@types/node": ["@types/node@25.4.0", "", { "dependencies": { "undici-types": "~7.18.0" } }, "sha512-9wLpoeWuBlcbBpOY3XmzSTG3oscB6xjBEEtn+pYXTfhyXhIxC5FsBer2KTopBlvKEiW9l13po9fq+SJY/5lkhw=="],
 
     "@vitest/expect": ["@vitest/expect@4.0.18", "", { "dependencies": { "@standard-schema/spec": "^1.0.0", "@types/chai": "^5.2.2", "@vitest/spy": "4.0.18", "@vitest/utils": "4.0.18", "chai": "^6.2.1", "tinyrainbow": "^3.0.3" } }, "sha512-8sCWUyckXXYvx4opfzVY03EOiYVxyNrHS5QxX3DAIi5dpJAAkyJezHCP77VMX4HKA2LDT/Jpfo8i2r5BE3GnQQ=="],
 
@@ -351,6 +354,8 @@
     "typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
 
     "ufo": ["ufo@1.6.3", "", {}, "sha512-yDJTmhydvl5lJzBmy/hyOAA0d+aqCBuwl818haVdYCRrWV84o7YyeVm4QlVHStqNrrJSTb6jKuFAVqAFsr+K3Q=="],
+
+    "undici-types": ["undici-types@7.18.2", "", {}, "sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w=="],
 
     "universalify": ["universalify@2.0.1", "", {}, "sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw=="],
 

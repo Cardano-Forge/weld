@@ -1,8 +1,8 @@
 {
   "name": "@ada-anvil/weld-plugin-hodei",
-  "version": "0.0.1-alpha.2",
+  "version": "0.0.1-alpha.3",
   "devDependencies": {
-    "@ada-anvil/weld": "^0.6.0-plugin-system.0",
+    "@ada-anvil/weld": "^0.6.0-plugin-system.2",
     "@biomejs/biome": "2.4.4",
     "@microsoft/api-extractor": "^7.57.4",
     "@types/node": "^25.4.0",
@@ -25,9 +25,9 @@
   },
   "type": "module",
   "peerDependencies": {
-    "@ada-anvil/weld": "^0.6.0-plugin-system.0"
+    "@ada-anvil/weld": "^0.6.0-plugin-system.2"
   },
   "dependencies": {
-    "@ada-anvil/hodei-client": "^0.0.1-alpha.4"
+    "@ada-anvil/hodei-client": "^0.0.1-alpha.5"
   }
 }
