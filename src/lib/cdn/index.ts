@@ -1,5 +1,5 @@
-import { weld } from "@/lib/main";
 import * as core from "@/lib/core";
+import { weld } from "@/lib/main";
 import * as plugins from "@/lib/plugins";
 
 declare global {
