@@ -12,7 +12,7 @@ export default defineConfig({
       entry: "src/lib.ts",
       name: "weld-plugin-hodei",
       fileName: "lib",
-      formats: ["es"],
+      formats: ["es", "cjs"],
     },
   },
   plugins: [
@@ -40,13 +40,14 @@ function copyPackageJson(): PluginOption {
               ...pkg,
               files: ["**"],
               type: "module",
-              main: "./lib.js",
+              main: "./lib.cjs",
               module: "./lib.js",
               types: "./lib.d.ts",
               exports: {
                 ".": {
                   types: "./lib.d.ts",
                   import: "./lib.js",
+                  require: "./lib.cjs",
                 },
               },
             },
