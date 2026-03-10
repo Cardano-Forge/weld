@@ -12,14 +12,6 @@ export type AbstractWalletInfo = {
 export const SUPPORTED_WALLETS = [
   {
     supported: true,
-    key: "hodei",
-    displayName: "Hodei",
-    icon: "https://raw.githubusercontent.com/cardano-forge/weld/main/images/wallets/hodei.png",
-    website: "https://github.com/cardano-forge/hodei-client",
-    supportsTxChaining: false,
-  },
-  {
-    supported: true,
     key: "eternl",
     displayName: "Eternl",
     icon: "https://raw.githubusercontent.com/cardano-forge/weld/main/images/wallets/eternl.svg",
