@@ -13,6 +13,9 @@ export const eternlPlugin: WeldPlugin = {
       );
       const walletApi = await initializeDAppConnectorBridgeAsync();
       if (walletApi.name === "eternl") {
+        if (typeof window.cardano === "undefined") {
+          window.cardano = {};
+        }
         window.cardano.eternl = walletApi;
         return true;
       }

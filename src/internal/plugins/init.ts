@@ -1,19 +1,19 @@
-import type { WeldConfig } from "@/lib/main/stores/config";
+import type { WeldInstance } from "@/lib/main";
 import { getFailureReason } from "../utils/errors";
 
-export async function initPlugins(config: Partial<WeldConfig>): Promise<void> {
+export async function initPlugins(weld: WeldInstance): Promise<void> {
   await Promise.all(
-    config.plugins?.map(async (plugin) => {
+    weld.config.plugins?.map(async (plugin) => {
       try {
-        if (config.debug) {
+        if (weld.config.debug) {
           console.info("[WELD] Initializing", plugin.key, "plugin...");
         }
-        await plugin.initialize?.();
-        if (config.debug) {
+        await plugin.initialize?.(weld);
+        if (weld.config.debug) {
           console.info("[WELD] Initialization of", plugin.key, "plugin succeeded");
         }
       } catch (error) {
-        if (config.debug) {
+        if (weld.config.debug) {
           console.warn(
             "[WELD] Initialization of",
             plugin.key,

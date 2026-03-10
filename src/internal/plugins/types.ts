@@ -1,7 +1,8 @@
+import type { WeldInstance } from "@/lib/main";
 import type { WalletConnector } from "../connector";
 
 export type WeldPlugin = {
   key: string;
   connector?: WalletConnector;
-  initialize?(): void | Promise<void>;
+  initialize?(weld: WeldInstance): void | Promise<void>;
 };

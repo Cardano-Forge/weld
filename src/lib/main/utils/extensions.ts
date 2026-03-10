@@ -58,7 +58,7 @@ export type WindowCardano = {
 
 declare global {
   interface Window {
-    cardano: WindowCardano;
+    cardano?: WindowCardano;
   }
 }
 
