@@ -35,13 +35,13 @@ export const createExtensionsStore = createStoreFactory<
   undefined,
   | []
   | [
-    {
-      config?: ConfigStore;
-      lifecycle?: LifeCycleManager;
-      cache?: ExtensionCache;
-      getInstalledExtensions?: typeof defaultGetInstalledExtensions;
-    },
-  ]
+      {
+        config?: ConfigStore;
+        lifecycle?: LifeCycleManager;
+        cache?: ExtensionCache;
+        getInstalledExtensions?: typeof defaultGetInstalledExtensions;
+      },
+    ]
 >(
   (
     setState,

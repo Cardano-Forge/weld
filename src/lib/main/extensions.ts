@@ -1,7 +1,6 @@
 import {
   type DefaultWalletApi,
   type WalletInfo,
-  type WalletKey,
   getWalletExtensions as defaultGetWalletExtensions,
   getWalletInfo as defaultGetWalletInfo,
   supportedWalletsMap,
@@ -13,7 +12,7 @@ export type InstalledExtension = {
 };
 
 export type InstalledExtensions = {
-  supportedMap: Map<WalletKey, InstalledExtension>;
+  supportedMap: Map<string, InstalledExtension>;
   unsupportedMap: Map<string, InstalledExtension>;
   allMap: Map<string, InstalledExtension>;
   supportedArr: InstalledExtension[];
@@ -23,7 +22,7 @@ export type InstalledExtensions = {
 
 export function newInstalledExtensions(): InstalledExtensions {
   return {
-    supportedMap: new Map<WalletKey, InstalledExtension>(),
+    supportedMap: new Map<string, InstalledExtension>(),
     unsupportedMap: new Map<string, InstalledExtension>(),
     allMap: new Map<string, InstalledExtension>(),
     supportedArr: [],
