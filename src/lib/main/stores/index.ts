@@ -7,11 +7,11 @@ import { type ConfigStore, type WeldConfig, createConfigStore } from "./config";
 import { type ExtensionsStore, createExtensionsStore } from "./extensions";
 import { type WalletStore, createWalletStore } from "./wallet";
 
-export function createWeldInstance() {
+export function createWeldInstance(initConfig?: Partial<WeldConfig>) {
   let configStore: ConfigStore;
   let walletStore: WalletStore;
   let extensionsStore: ExtensionsStore;
-  return {
+  const instance = {
     get config() {
       if (!configStore) {
         configStore = createConfigStore();
@@ -54,6 +54,10 @@ export function createWeldInstance() {
       this.extensions.cleanup();
     },
   };
+  if (initConfig) {
+    instance.config.update(initConfig);
+  }
+  return instance;
 }
 
 export const weld = createWeldInstance();
