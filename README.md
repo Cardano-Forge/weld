@@ -54,6 +54,7 @@
 - [Cross-Framework Support](#cross-framework-support)
     - [Usage with Svelte](#usage-with-svelte)
     - [Usage with Vanilla JavaScript](#usage-with-vanilla-javascript)
+    - [Using plugins through CDN install](#using-plugins-through-cdn-install)
 - [Server-Side Rendering](#server-side-rendering)
 
 ## About
@@ -154,6 +155,7 @@ Weld has been thoroughly tested with the following wallet extensions:
 
 | key         | Name       | Website                                                                                          |
 | ----------- | ---------- | ------------------------------------------------------------------------------------------------ |
+| hodei (via plugin) | Hodei      | https://github.com/cardano-forge/weld-plugin-hodei |
 | eternl      | Eternl     | https://chrome.google.com/webstore/detail/eternl/kmhcihpebfmpgmihbkipmjlmmioameka?hl=en-US       |
 | tokeo       | Tokeo      | https://tokeopay.io                                                                              |
 | flint       | Flint      | https://chrome.google.com/webstore/detail/flint-wallet/hnhobjmcibchnmglfbldbfabcgaknlkj?hl=en-US |
@@ -986,8 +988,54 @@ Weld can be used without any framework. Here's an example of how you can leverag
       }
     </script>
 
-    <script onload="init()" src="https://unpkg.com/@ada-anvil/weld@0.5.1/cdn.min.js" defer></script>
+    <script onload="init()" src="https://unpkg.com/@ada-anvil/weld@0.7.0/cdn.min.js" defer></script>
   </body>
+</html>
+```
+
+#### Using plugins through CDN install
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=3.0" />
+  <title>Weld x Hodei x Vanilla JavaScript</title>
+</head>
+
+<body>
+  <main>
+    <section>
+      <h2>Wallets</h2>
+      <ul id="wallets"></ul>
+    </section>
+    <section>
+      <h2>Connection</h2>
+      Connecting to <span id="connecting-to">-</span><br />
+      Connected to <span id="connected-to">-</span><br />
+      Balance <span id="balance">-</span><br />
+      <button onclick="window.Weld.wallet.connect('hodei')">Connect hodei</button>
+    </section>
+  </main>
+
+  <script>
+    function init() {
+      window.Weld.config.update({
+        debug: true,
+        plugins: [
+          ...window.WeldPlugins.builtinPlugins,
+          window.HodeiPlugin.hodeiPlugin(),
+        ]
+      });
+    }
+  </script>
+
+  <script src="https://unpkg.com/@ada-anvil/weld@0.7.0" defer></script>
+  <script onload="init()" src="https://unpkg.com/@ada-anvil/weld-plugin-hodei@0.0.1" defer></script>
+</body>
+
 </html>
 ```
 
