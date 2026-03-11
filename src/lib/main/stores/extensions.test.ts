@@ -36,8 +36,8 @@ describe("update", () => {
   it("should save valid extensions", async () => {
     window.cardano = {
       lace: { apiVersion: "0.1.0" } as DefaultWalletApi,
-      unsupported: { apiVersion: "0.1.0" },
-      invalid: {},
+      unsupported: { apiVersion: "0.1.0" } as DefaultWalletApi,
+      invalid: {} as DefaultWalletApi,
     };
     const store = createExtensionsStore({ lifecycle });
     await store.update();
@@ -95,8 +95,8 @@ describe("init", () => {
   it("should update extensions", async () => {
     window.cardano = {
       lace: { apiVersion: "0.1.0" } as DefaultWalletApi,
-      unsupported: { apiVersion: "0.1.0" },
-      invalid: {},
+      unsupported: { apiVersion: "0.1.0" } as DefaultWalletApi,
+      invalid: {} as DefaultWalletApi,
     };
     const store = createExtensionsStore({ lifecycle });
     await store.init();

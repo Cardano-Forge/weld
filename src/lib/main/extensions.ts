@@ -1,9 +1,9 @@
 import {
   type DefaultWalletApi,
   type WalletInfo,
-  type WalletKey,
   getWalletExtensions as defaultGetWalletExtensions,
   getWalletInfo as defaultGetWalletInfo,
+  supportedWalletsMap,
 } from "@/lib/main";
 
 export type InstalledExtension = {
@@ -12,7 +12,7 @@ export type InstalledExtension = {
 };
 
 export type InstalledExtensions = {
-  supportedMap: Map<WalletKey, InstalledExtension>;
+  supportedMap: Map<string, InstalledExtension>;
   unsupportedMap: Map<string, InstalledExtension>;
   allMap: Map<string, InstalledExtension>;
   supportedArr: InstalledExtension[];
@@ -22,7 +22,7 @@ export type InstalledExtensions = {
 
 export function newInstalledExtensions(): InstalledExtensions {
   return {
-    supportedMap: new Map<WalletKey, InstalledExtension>(),
+    supportedMap: new Map<string, InstalledExtension>(),
     unsupportedMap: new Map<string, InstalledExtension>(),
     allMap: new Map<string, InstalledExtension>(),
     supportedArr: [],
@@ -41,16 +41,18 @@ export async function getInstalledExtensions({
   cache,
   getWalletInfo = defaultGetWalletInfo,
   getWalletExtensions = defaultGetWalletExtensions,
+  registeredWallets = supportedWalletsMap,
 }: {
   cache?: ExtensionCache;
   getWalletInfo?: typeof defaultGetWalletInfo;
   getWalletExtensions?: typeof defaultGetWalletExtensions;
+  registeredWallets?: Map<string, WalletInfo>;
 } = {}): Promise<InstalledExtensions> {
   const walletExtensions = await getWalletExtensions();
   const res = newInstalledExtensions();
 
   for (const extension of walletExtensions) {
-    const info = getWalletInfo(extension);
+    const info = getWalletInfo(extension, registeredWallets);
 
     let api: InstalledExtension;
     api = cache?.get(extension.defaultApi) ?? { info, defaultApi: extension.defaultApi };

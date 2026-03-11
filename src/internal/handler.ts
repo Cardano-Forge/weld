@@ -11,7 +11,6 @@ import {
   type StakeAddressBech32,
   type StakeAddressHex,
   type WalletInfo,
-  type WalletKey,
   hexToBech32,
 } from "@/lib/main";
 
@@ -28,7 +27,7 @@ export type WalletHandler = {
   getBalance(): Promise<Cbor>;
   getDefaultApi(): DefaultWalletApi;
   isConnected(): Promise<boolean>;
-  isConnectedTo(wallet: WalletKey): Promise<boolean>;
+  isConnectedTo(wallet: string): Promise<boolean>;
   getUtxos(): Promise<string[] | undefined>;
   signTx(tx: string, partialSign?: boolean): Promise<string>;
   submitTx(tx: string): Promise<string>;
@@ -130,7 +129,7 @@ export class DefaultWalletHandler implements WalletHandler {
    * @param wallet - The wallet key to check.
    * @returns True if connected to the specified wallet key, otherwise false.
    */
-  async isConnectedTo(wallet: WalletKey): Promise<boolean> {
+  async isConnectedTo(wallet: string): Promise<boolean> {
     if (this.info.key !== wallet) return false;
     return this.isConnected();
   }

@@ -85,6 +85,7 @@ export type WalletApi = {
   connectAsync: (key: string, config?: Partial<WalletConfig>) => Promise<ConnectedWalletState>;
   disconnect(): Promise<void>;
   ensureUtxos(): Promise<string[]>;
+  updateState(): Promise<void>;
 };
 
 export type WalletState<TKeys extends keyof WalletProps = keyof WalletProps> =
@@ -321,6 +322,10 @@ export const createWalletStore = createStoreFactory<
       return walletManager.disconnect();
     };
 
+    const updateState: WalletApi["updateState"] = () => {
+      return walletManager.updateState();
+    };
+
     const __init = () => {
       walletManager.init({ initialState });
     };
@@ -396,6 +401,7 @@ export const createWalletStore = createStoreFactory<
         connectAsync,
         disconnect,
         ensureUtxos,
+        updateState,
         __init,
         __cleanup,
         __persist,

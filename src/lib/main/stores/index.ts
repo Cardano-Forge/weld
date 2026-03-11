@@ -36,7 +36,7 @@ export function createWeldInstance() {
       this.extensions.persist();
     },
     init({ persist = true }: { persist?: boolean | Partial<WeldConfig> } = {}) {
-      initPlugins(this.config.getState());
+      initPlugins(this);
 
       if (typeof persist === "object") {
         this.persist(persist);

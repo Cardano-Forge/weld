@@ -8,16 +8,20 @@ import {
   newExtensionCache,
   newInstalledExtensions,
 } from "@/lib/main/extensions";
+import { SUPPORTED_WALLETS, type WalletInfo } from "@/lib/main/utils/wallets";
 import { weld } from "..";
 import type { ConfigStore } from "./config";
 
 export type ExtensionsProps = InstalledExtensions & {
   isLoading: boolean;
   isFetching: boolean;
+  registeredArr: WalletInfo[];
+  registeredMap: Map<string, WalletInfo>;
 };
 
 export type ExtensionsApi = {
   update(): Promise<void>;
+  registerWallets(wallets: WalletInfo[]): void;
 };
 
 export type ExtensionsStoreState = ExtensionsProps & ExtensionsApi;
@@ -41,7 +45,7 @@ export const createExtensionsStore = createStoreFactory<
 >(
   (
     setState,
-    _getState,
+    getState,
     {
       config = weld.config,
       lifecycle = new LifeCycleManager(),
@@ -54,6 +58,22 @@ export const createExtensionsStore = createStoreFactory<
       config.extensions.onUpdateError?.(error);
     };
 
+    const registerWallets: ExtensionsApi["registerWallets"] = (wallets) => {
+      const registeredArr = [...getState().registeredArr];
+      const registeredMap = new Map(getState().registeredMap);
+      let shouldSetState = false;
+      for (const wallet of wallets) {
+        if (!registeredMap.has(wallet.key)) {
+          shouldSetState = true;
+          registeredMap.set(wallet.key, wallet);
+          registeredArr.push(wallet);
+        }
+      }
+      if (shouldSetState) {
+        setState({ registeredMap, registeredArr });
+      }
+    };
+
     const update = (async (signal?: InFlightSignal, stop?: () => void) => {
       if (config.debug) {
         console.log("[WELD] Extensions state update");
@@ -64,7 +84,10 @@ export const createExtensionsStore = createStoreFactory<
           return;
         }
         setState({ isFetching: true });
-        const res = await getInstalledExtensions({ cache });
+        const res = await getInstalledExtensions({
+          cache,
+          registeredWallets: getState().registeredMap,
+        });
         if (signal?.aborted) {
           stop?.();
           return;
@@ -108,7 +131,10 @@ export const createExtensionsStore = createStoreFactory<
       ...newInstalledExtensions(),
       isLoading: true,
       isFetching: false,
+      registeredArr: [...SUPPORTED_WALLETS],
+      registeredMap: new Map(SUPPORTED_WALLETS.map((wallet) => [wallet.key, wallet])),
       update,
+      registerWallets,
       __init,
       __cleanup,
     };

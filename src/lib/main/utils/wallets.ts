@@ -1,6 +1,6 @@
 import type { WalletExtension } from "./extensions";
 
-export type AbstractWalletInfo = {
+export type WalletInfo = {
   supported: boolean;
   key: string;
   icon: string;
@@ -9,7 +9,7 @@ export type AbstractWalletInfo = {
   supportsTxChaining: boolean;
 };
 
-export const SUPPORTED_WALLETS = [
+export const SUPPORTED_WALLETS: WalletInfo[] = [
   {
     supported: true,
     key: "eternl",
@@ -97,28 +97,17 @@ export const SUPPORTED_WALLETS = [
     website: "https://begin.is",
     supportsTxChaining: false,
   },
-] as const satisfies readonly AbstractWalletInfo[];
+];
 
-export type WalletKey = (typeof SUPPORTED_WALLETS)[number]["key"];
-
-export type WalletInfo =
-  | (Omit<AbstractWalletInfo, "key"> & {
-      key: WalletKey;
-    })
-  | (Omit<AbstractWalletInfo, "supported"> & {
-      supported: false;
-    });
-
-export const supportedWalletsMap = new Map<WalletKey, WalletInfo>(
+export const supportedWalletsMap = new Map<string, WalletInfo>(
   SUPPORTED_WALLETS.map((config) => [config.key, config]),
 );
 
-export function isWalletKey(str: string): str is WalletKey {
-  return supportedWalletsMap.has(str as WalletKey);
-}
-
-export function getWalletInfo(extension: WalletExtension): WalletInfo {
-  const info = supportedWalletsMap.get(extension.key as WalletKey);
+export function getWalletInfo(
+  extension: WalletExtension,
+  registeredWallets: Map<string, WalletInfo> = supportedWalletsMap,
+): WalletInfo {
+  const info = registeredWallets.get(extension.key);
   if (info) {
     return info;
   }

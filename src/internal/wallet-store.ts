@@ -84,6 +84,7 @@ type WalletStoreManagerCtx<TProps extends DefaultWalletStoreState> = {
 
 export class WalletStoreManager<TProps extends DefaultWalletStoreState = DefaultWalletStoreState> {
   private _ctx: Required<WalletStoreManagerCtx<TProps>>;
+  private _connection: { updateState: () => MaybePromise<void> } | undefined;
 
   constructor({
     configStore = createConfigStore(),
@@ -94,12 +95,17 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
     this._ctx = { configStore, lifecycle, subscriptions, ...rest };
   }
 
+  async updateState() {
+    await this._connection?.updateState();
+  }
+
   on<TEvent extends keyof Events<TProps>>(event: TEvent, handler: EventHandler<TProps, TEvent>) {
     this._ctx.subscriptions[event].add(handler);
     return this;
   }
 
   async disconnect() {
+    this._connection = undefined;
     this._ctx.lifecycle.cleanup();
     this._runSubscriptions("beforeDisconnect");
     this._ctx.setState(this._ctx.newState());
@@ -133,6 +139,7 @@ export class WalletStoreManager<TProps extends DefaultWalletStoreState = Default
       }
 
       const connection = await this._ctx.createConnection(key, { signal, configOverrides });
+      this._connection = connection;
 
       const safeUpdateState = async (stopUpdates?: () => void) => {
         if (signal.aborted) {

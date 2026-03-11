@@ -1,7 +1,6 @@
 import { deferredPromise } from "@/internal/utils/deferred-promise";
 
 import type { AddressHex, ChangeAddressHex, StakeAddressHex } from "@/lib/server/address";
-import type { WalletKey } from "./wallets";
 
 export type Bytes = string;
 
@@ -51,14 +50,12 @@ export function isDefaultWalletApi(obj: unknown): obj is DefaultWalletApi {
 }
 
 export type WindowCardano = {
-  [TWalletKey in WalletKey]?: DefaultWalletApi;
-} & {
-  [key: string]: unknown;
+  [key: string]: DefaultWalletApi;
 };
 
 declare global {
   interface Window {
-    cardano: WindowCardano;
+    cardano?: WindowCardano;
   }
 }
 
@@ -89,7 +86,7 @@ export async function getWindowCardano({
 }: { key?: string } & GetWindowCardanoOpts = {}): Promise<
   DefaultWalletApi | WindowCardano | undefined
 > {
-  const { promise, resolve } = deferredPromise<WindowCardano | undefined>();
+  const { promise, resolve } = deferredPromise<DefaultWalletApi | WindowCardano | undefined>();
 
   let retryCount = 0;
 
