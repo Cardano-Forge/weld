@@ -985,6 +985,8 @@ Weld can be used without any framework. Here's an example of how you can leverag
         window.addEventListener("unload", () => {
           window.Weld.cleanup();
         });
+
+        window.Weld.init();
       }
     </script>
 
@@ -1029,6 +1031,7 @@ Weld can be used without any framework. Here's an example of how you can leverag
           window.HodeiPlugin.hodeiPlugin(),
         ]
       });
+      window.Weld.init();
     }
   </script>
 
