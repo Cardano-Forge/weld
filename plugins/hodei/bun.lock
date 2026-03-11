@@ -5,10 +5,10 @@
     "": {
       "name": "weld-plugin-hodei",
       "dependencies": {
-        "@ada-anvil/hodei-client": "^0.0.1-alpha.5",
+        "@ada-anvil/hodei-client": "^0.0.2",
       },
       "devDependencies": {
-        "@ada-anvil/weld": "^0.6.0-plugin-system.2",
+        "@ada-anvil/weld": "^0.7.0",
         "@biomejs/biome": "2.4.4",
         "@microsoft/api-extractor": "^7.57.4",
         "@types/node": "^25.4.0",
@@ -18,14 +18,14 @@
         "vitest": "^4.0.18",
       },
       "peerDependencies": {
-        "@ada-anvil/weld": "^0.6.0",
+        "@ada-anvil/weld": ">=0.7.0",
       },
     },
   },
   "packages": {
-    "@ada-anvil/hodei-client": ["@ada-anvil/hodei-client@0.0.1", "", {}, "sha512-litrxfV39eKtotQGMOMNJ5qqJ8lnmK/mYSmM9xWHVkAj6Jwacow83TdKbGI/AQGI4nu7mwptharzKnXLGPt0VA=="],
+    "@ada-anvil/hodei-client": ["@ada-anvil/hodei-client@0.0.2", "", {}, "sha512-CXDvqK8bF8UOmeHnxmR9Kz5iiupyE0s2LYamF8x2s6xd0P0ZJ793r2ogXrWjvActHkRqlV2frDx0IPoURfFvfA=="],
 
-    "@ada-anvil/weld": ["@ada-anvil/weld@0.6.0-plugin-system.2", "", { "dependencies": { "bech32": "^2.0.0", "cbor-js": "^0.1.0", "use-sync-external-store": "^1.2.2" }, "peerDependencies": { "@solana/spl-token": ">=0.4.8", "@solana/web3.js": ">=1.95.2", "@types/react": ">=17.0.0", "ethers": "^6.13.4", "react": ">=17.0.0" }, "optionalPeers": ["@solana/spl-token", "@solana/web3.js", "@types/react", "ethers", "react"] }, "sha512-iKgvwqsRMidnaq0yaAkxGqMcMROk1fAHlKu0oj/U8GLV+Il2U9m7FdgtsA+9sgW/T3zL18oTO30I7vOWS19L3w=="],
+    "@ada-anvil/weld": ["@ada-anvil/weld@0.7.0", "", { "dependencies": { "bech32": "^2.0.0", "cbor-js": "^0.1.0", "use-sync-external-store": "^1.2.2" }, "peerDependencies": { "@solana/spl-token": ">=0.4.8", "@solana/web3.js": ">=1.95.2", "@types/react": ">=17.0.0", "ethers": "^6.13.4", "react": ">=17.0.0" }, "optionalPeers": ["@solana/spl-token", "@solana/web3.js", "@types/react", "ethers", "react"] }, "sha512-sETutEMh2npLEZibeEZT4/DU08O4IqAdbhL6eIlqlpiRFiwokQw/Pll9kwf27Vzl5MQ/woHbuU1kJnvecQlNAQ=="],
 
     "@biomejs/biome": ["@biomejs/biome@2.4.4", "", { "optionalDependencies": { "@biomejs/cli-darwin-arm64": "2.4.4", "@biomejs/cli-darwin-x64": "2.4.4", "@biomejs/cli-linux-arm64": "2.4.4", "@biomejs/cli-linux-arm64-musl": "2.4.4", "@biomejs/cli-linux-x64": "2.4.4", "@biomejs/cli-linux-x64-musl": "2.4.4", "@biomejs/cli-win32-arm64": "2.4.4", "@biomejs/cli-win32-x64": "2.4.4" }, "bin": { "biome": "bin/biome" } }, "sha512-tigwWS5KfJf0cABVd52NVaXyAVv4qpUXOWJ1rxFL8xF1RVoeS2q/LK+FHgYoKMclJCuRoCWAPy1IXaN9/mS61Q=="],
 
