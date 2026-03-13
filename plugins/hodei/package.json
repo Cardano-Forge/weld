@@ -1,6 +1,6 @@
 {
   "name": "@ada-anvil/weld-plugin-hodei",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "devDependencies": {
     "@ada-anvil/weld": "^0.7.0",
     "@biomejs/biome": "2.4.4",
