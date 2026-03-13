@@ -7,9 +7,12 @@
 		"dev": "vite",
 		"build": "vite build",
 		"lint": "biome lint --write .",
+    "format": "biome format --write .",
+    "pre": "npm run check && npm run build && npm run test",
 		"preview": "vite preview"
 	},
 	"dependencies": {
+    "@weld/utils": "*",
 		"@ada-anvil/weld": "*"
 	},
 	"devDependencies": {

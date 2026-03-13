@@ -1,5 +1,5 @@
+import type { MaybePromise } from "@weld/utils/types";
 import type { UnsubscribeFct } from "@/internal/lifecycle";
-import type { MaybePromise } from "@/internal/utils/types";
 import type { WeldConfig } from "../main/stores/config";
 
 export type BtcExtensionInfo = {

@@ -1,5 +1,5 @@
 import { weldEth } from "@ada-anvil/weld/eth";
-import { getFailureReason } from "@/utils/errors";
+import { getFailureReason } from "@weld/utils/errors";
 
 weldEth.wallet.subscribeWithSelector(
   (state) => state.displayName ?? "-",

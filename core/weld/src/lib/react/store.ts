@@ -1,6 +1,6 @@
+import { identity } from "@weld/utils/identity";
 import { useSyncExternalStoreWithSelector } from "use-sync-external-store/with-selector";
 import type { ExtractStoreState, ReadonlyStore } from "@/internal/store";
-import { identity } from "@/internal/utils/identity";
 
 // biome-ignore lint/suspicious/noExplicitAny: Allow any store for generics
 export function useStore<TStore extends ReadonlyStore<unknown, any>>(

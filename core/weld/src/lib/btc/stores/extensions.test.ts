@@ -1,6 +1,6 @@
+import { identity } from "@weld/utils/identity";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LifeCycleManager } from "@/internal/lifecycle";
-import { identity } from "@/internal/utils/identity";
 import { SUPPORTED_BTC_WALLETS } from "../handlers";
 import type { BtcWalletDef } from "../types";
 import { createBtcExtensionsStore } from "./extensions";

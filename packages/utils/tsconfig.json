@@ -1,0 +1,10 @@
+{
+  "extends": "@weld/tsconfig/base",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@weld/utils/*": ["./src/*"]
+    }
+  },
+  "include": ["src"]
+}

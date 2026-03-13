@@ -1,5 +1,5 @@
+import { runOnce } from "@weld/utils/run-once";
 import type { WeldPlugin } from "@/internal/plugins/types";
-import { runOnce } from "@/internal/utils/run-once";
 
 export const eternlPlugin: WeldPlugin = {
   key: "eternl",

@@ -1,7 +1,7 @@
+import { get } from "@weld/utils/get";
 import { setupAutoUpdate } from "@/internal/auto-update";
 import { LifeCycleManager } from "@/internal/lifecycle";
 import { createStoreFactory, type Store, type StoreSetupFunctions } from "@/internal/store";
-import { get } from "@/internal/utils/get";
 import {
   isSolApi,
   SOL_EXTENSIONS,

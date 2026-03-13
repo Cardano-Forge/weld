@@ -1,6 +1,6 @@
+import { identity } from "@weld/utils/identity";
 import { createContext, useContext } from "react";
 import type { ExtractStoreState, Store } from "@/internal/store";
-import { identity } from "@/internal/utils/identity";
 import { useCompare } from "./compare";
 import { useStore } from "./store";
 

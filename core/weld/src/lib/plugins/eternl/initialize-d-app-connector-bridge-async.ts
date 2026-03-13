@@ -1,4 +1,4 @@
-import { deferredPromise } from "@/internal/utils/deferred-promise";
+import { deferredPromise } from "@weld/utils/deferred-promise";
 import type { DefaultWalletApi } from "@/lib/main";
 import { initializeDAppConnectorBridge } from "./initialize-d-app-connector-bridge";
 

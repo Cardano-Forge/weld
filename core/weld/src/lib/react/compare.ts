@@ -1,7 +1,7 @@
 // adapted from https://github.com/pmndrs/zustand/blob/main/src/react/shallow.ts
 
+import { compare } from "@weld/utils/compare";
 import { useRef } from "react";
-import { compare } from "@/internal/utils/compare";
 
 export function useCompare<S, U>(selector: (state: S) => U): (state: S) => U {
   const prev = useRef<U>();

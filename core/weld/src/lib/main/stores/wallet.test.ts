@@ -1,7 +1,7 @@
+import { deferredPromise } from "@weld/utils/deferred-promise";
+import { keys } from "@weld/utils/keys";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LifeCycleManager } from "@/internal/lifecycle";
-import { deferredPromise } from "@/internal/utils/deferred-promise";
-import { keys } from "@/internal/utils/keys";
 import { UtxosUpdateManager } from "@/internal/utxos-update";
 import type {
   ChangeAddressHex,

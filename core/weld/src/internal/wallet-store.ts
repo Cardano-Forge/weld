@@ -1,6 +1,6 @@
+import type { MaybePromise, PartialWithDiscriminant } from "@weld/utils/types";
 import { setupAutoUpdate } from "@/internal/auto-update";
 import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
-import type { MaybePromise, PartialWithDiscriminant } from "@/internal/utils/types";
 import {
   type ConfigStore,
   createConfigStore,

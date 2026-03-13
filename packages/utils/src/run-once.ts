@@ -1,4 +1,4 @@
-import { deferredPromise } from "@weld/utils/deferred-promise";
+import { deferredPromise } from "@/internal/utils/deferred-promise";
 
 type State = { status: "idle" | "initialized" } | { status: "loading"; promise: Promise<void> };
 

@@ -1,6 +1,6 @@
+import { castArray } from "@weld/utils/cast-array";
+import { entries } from "@weld/utils/entries";
 import type { UnsubscribeFct } from "@/internal/lifecycle";
-import { castArray } from "@/internal/utils/cast-array";
-import { entries } from "@/internal/utils/entries";
 import type {
   BtcWalletDef,
   BtcWalletEvent,

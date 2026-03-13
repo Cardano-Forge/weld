@@ -1,6 +1,6 @@
+import { isBrowser, UNSAFE_LIB_USAGE_ERROR } from "@weld/utils/browser";
 import { getDefaultWalletConnector } from "@/internal/connector";
 import type { WalletHandler } from "@/internal/handler";
-import { isBrowser, UNSAFE_LIB_USAGE_ERROR } from "@/internal/utils/browser";
 import type { WeldConfig } from "@/lib/main";
 
 export type ConnectOpts = {

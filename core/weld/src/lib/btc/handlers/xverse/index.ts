@@ -1,10 +1,10 @@
+import { base64ToHex } from "@weld/utils/base64-to-hex";
+import { castArray } from "@weld/utils/cast-array";
+import { entries } from "@weld/utils/entries";
+import { get } from "@weld/utils/get";
+import { hexToBase64 } from "@weld/utils/hex-to-base64";
+import { noop } from "@weld/utils/noop";
 import type { UnsubscribeFct } from "@/internal/lifecycle";
-import { base64ToHex } from "@/internal/utils/base64-to-hex";
-import { castArray } from "@/internal/utils/cast-array";
-import { entries } from "@/internal/utils/entries";
-import { get } from "@/internal/utils/get";
-import { hexToBase64 } from "@/internal/utils/hex-to-base64";
-import { noop } from "@/internal/utils/noop";
 import type {
   BtcWalletDef,
   BtcWalletEvent,

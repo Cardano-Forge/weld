@@ -1,4 +1,4 @@
-import type { AnyFunction } from "@/internal/utils/types";
+import type { AnyFunction } from "@weld/utils/types";
 
 export type WalletType = "software" | "ledger";
 

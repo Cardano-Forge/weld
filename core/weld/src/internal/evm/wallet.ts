@@ -1,3 +1,4 @@
+import type { PartialWithDiscriminant } from "@weld/utils/types";
 import {
   type AddressLike,
   type BigNumberish,
@@ -18,7 +19,6 @@ import {
 } from "@/internal/evm/types";
 import { type InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
 import { createStoreFactory, type Store, type StoreSetupFunctions } from "@/internal/store";
-import type { PartialWithDiscriminant } from "@/internal/utils/types";
 import {
   type DefaultWalletStoreProps,
   WalletStoreManager,

@@ -1,5 +1,5 @@
+import { hexToArrayBuffer } from "@weld/utils/hex-to-array-buffer";
 import { decode as decodeCbor } from "cbor-js";
-import { hexToArrayBuffer } from "@/internal/utils/hex-to-array-buffer";
 
 export function decodeBalance(balance: unknown): unknown {
   if (typeof balance === "string") {

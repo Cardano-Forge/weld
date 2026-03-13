@@ -1,5 +1,5 @@
-import { getFailureReason } from "@/utils/errors";
 import { weld } from "@ada-anvil/weld";
+import { getFailureReason } from "@weld/utils/errors";
 
 weld.config.update({
   debug: true,

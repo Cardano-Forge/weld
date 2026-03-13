@@ -1,4 +1,4 @@
-import { identity } from "@weld/utils/identity";
+import { identity } from "@/internal/utils/identity";
 
 export function deferredPromise<T = void, R = unknown>() {
   let resolve: (value: T | PromiseLike<T>) => void = identity;

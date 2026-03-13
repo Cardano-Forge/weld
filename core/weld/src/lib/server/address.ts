@@ -1,4 +1,4 @@
-import { startsWithAny } from "@/internal/utils/starts-with-any";
+import { startsWithAny } from "@weld/utils/starts-with-any";
 
 const stakeAddressHexLength = 58;
 const stakeAddressHexPrefixes = ["e0", "e1"] as const;

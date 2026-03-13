@@ -1,5 +1,5 @@
+import { deferredPromise } from "@weld/utils/deferred-promise";
 import type { InFlightSignal, LifeCycleManager } from "@/internal/lifecycle";
-import { deferredPromise } from "@/internal/utils/deferred-promise";
 import { Debuggable } from "./utils/debuggable";
 
 export type RunningUtxosUpdate = {

@@ -1,10 +1,10 @@
+import { compare } from "@weld/utils/compare";
+import { getFailureReason } from "@weld/utils/errors";
+import type { PartialWithDiscriminant } from "@weld/utils/types";
 import { handleAccountChangeErrors } from "@/internal/account-change";
 import type { WalletHandler } from "@/internal/handler";
 import { LifeCycleManager } from "@/internal/lifecycle";
 import { createStoreFactory, type Store, type StoreSetupFunctions } from "@/internal/store";
-import { compare } from "@/internal/utils/compare";
-import { getFailureReason } from "@/internal/utils/errors";
-import type { PartialWithDiscriminant } from "@/internal/utils/types";
 import { UtxosUpdateManager } from "@/internal/utxos-update";
 import { type DefaultWalletStoreProps, WalletStoreManager } from "@/internal/wallet-store";
 import {

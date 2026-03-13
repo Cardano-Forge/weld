@@ -1,4 +1,4 @@
-import { getFailureReason } from "@/internal/utils/errors";
+import { getFailureReason } from "@weld/utils/errors";
 import { WalletDisconnectAccountError } from "@/lib/main";
 import type { MaybePromise } from "./utils/types";
 
