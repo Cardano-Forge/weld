@@ -11,7 +11,7 @@ import {
 import * as pkg from "./package.json";
 
 const entryPoints = Object.values(pkg.exports)
-  .map((exp) => exp.import.replace("./", "").split(".")[0])
+  .map((exp) => exp.import.replace("./dist/", "").split(".")[0])
   .filter(Boolean)
   .filter((name) => name !== "server");
 

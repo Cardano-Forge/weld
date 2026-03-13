@@ -1,21 +1,22 @@
 {
-  "name": "weld-monorepo",
-  "private": true,
-  "workspaces": [
-    "core/*",
-    "packages/*",
-    "plugins/*"
-  ],
-  "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "pre": "turbo run pre",
-    "test": "turbo run test",
-    "clean": "turbo run clean"
-  },
-  "devDependencies": {
-    "turbo": "latest"
-  },
-  "packageManager": "npm@10.9.2"
+	"name": "weld-monorepo",
+	"private": true,
+	"workspaces": [
+		"core/*",
+		"packages/*",
+		"plugins/*",
+		"apps/*"
+	],
+	"scripts": {
+		"build": "turbo run build",
+		"dev": "turbo run dev",
+		"lint": "turbo run lint",
+		"pre": "turbo run pre",
+		"test": "turbo run test",
+		"clean": "turbo run clean"
+	},
+	"devDependencies": {
+		"turbo": "latest"
+	},
+	"packageManager": "npm@10.9.2"
 }

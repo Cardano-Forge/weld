@@ -1,0 +1,6 @@
+{
+	"extends": ["@weld/biome/base"],
+	"files": {
+		"includes": ["**", "!!**/dist"]
+	}
+}

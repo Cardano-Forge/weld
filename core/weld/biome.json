@@ -4,7 +4,6 @@
     "includes": [
       "**",
       "!!**/dist",
-      "!!**/documentation",
       "!!**/initialize-d-app-connector-bridge.ts"
     ]
   }
