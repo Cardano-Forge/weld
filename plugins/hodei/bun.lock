@@ -5,7 +5,7 @@
     "": {
       "name": "weld-plugin-hodei",
       "dependencies": {
-        "@ada-anvil/hodei-client": "^0.0.2",
+        "@ada-anvil/hodei-client": "^0.0.3",
       },
       "devDependencies": {
         "@ada-anvil/weld": "^0.7.0",
@@ -23,7 +23,7 @@
     },
   },
   "packages": {
-    "@ada-anvil/hodei-client": ["@ada-anvil/hodei-client@0.0.2", "", {}, "sha512-CXDvqK8bF8UOmeHnxmR9Kz5iiupyE0s2LYamF8x2s6xd0P0ZJ793r2ogXrWjvActHkRqlV2frDx0IPoURfFvfA=="],
+    "@ada-anvil/hodei-client": ["@ada-anvil/hodei-client@0.0.3", "", {}, "sha512-5RKdplZaiaIr2vuEQF/gvCf6CDxxm2qtTCTAzIvyRQZD4GxwfFGugoCQt3WVkSsPxu961O0vgp9NwssssrXOhg=="],
 
     "@ada-anvil/weld": ["@ada-anvil/weld@0.7.0", "", { "dependencies": { "bech32": "^2.0.0", "cbor-js": "^0.1.0", "use-sync-external-store": "^1.2.2" }, "peerDependencies": { "@solana/spl-token": ">=0.4.8", "@solana/web3.js": ">=1.95.2", "@types/react": ">=17.0.0", "ethers": "^6.13.4", "react": ">=17.0.0" }, "optionalPeers": ["@solana/spl-token", "@solana/web3.js", "@types/react", "ethers", "react"] }, "sha512-sETutEMh2npLEZibeEZT4/DU08O4IqAdbhL6eIlqlpiRFiwokQw/Pll9kwf27Vzl5MQ/woHbuU1kJnvecQlNAQ=="],
 
