@@ -1,7 +1,7 @@
+import { globSync } from "node:fs";
 import { fileURLToPath, URL } from "node:url";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
-import { globSync } from "node:fs";
 
 const examples = Object.fromEntries(
 	globSync("src/examples/*/index.html").map((file) => [
@@ -11,22 +11,31 @@ const examples = Object.fromEntries(
 );
 
 export default defineConfig({
+  root: "src",
 	plugins: [react()],
-	resolve: {
-		preserveSymlinks: true,
-		alias: [
-			{
-				find: "@",
-				replacement: fileURLToPath(new URL("src", import.meta.url)),
-			},
-		],
-	},
-	build: {
-		rollupOptions: {
-			input: {
-				main: fileURLToPath(new URL("index.html", import.meta.url)),
-				...examples,
-			},
-		},
-	},
+  server: {
+    fs: {
+      allow: [
+        fileURLToPath(new URL("../..", import.meta.url)),
+      ],
+    },
+  },
+  resolve: {
+    preserveSymlinks: true,
+    alias: [
+      {
+        find: "@",
+        replacement: fileURLToPath(new URL("src", import.meta.url)),
+      },
+    ],
+  },
+  build: {
+    outDir: "../dist", // since root is now src/, output needs to go back up
+    rollupOptions: {
+      input: {
+        main: fileURLToPath(new URL("src/index.html", import.meta.url)),
+        ...examples,
+      },
+    },
+  },
 });

@@ -19,7 +19,7 @@ if (root) {
             <li>
               <a
                 className="card border p-4 hover:opacity-50 transition-opacity"
-                href="/src/examples/a-wallet-state/index.html"
+                href="/examples/a-wallet-state/index.html"
               >
                 Wallet states
               </a>
@@ -27,7 +27,7 @@ if (root) {
             <li>
               <a
                 className="card border p-4 hover:opacity-50 transition-opacity"
-                href="/src/examples/b-simple-wallet-connect/index.html"
+                href="/examples/b-simple-wallet-connect/index.html"
               >
                 Simple wallet connect
               </a>
@@ -35,7 +35,7 @@ if (root) {
             <li>
               <a
                 className="card border p-4 hover:opacity-50 transition-opacity"
-                href="/src/examples/c-full-connection-flow/index.html"
+                href="/examples/c-full-connection-flow/index.html"
               >
                 Full connection flow
               </a>
@@ -43,7 +43,7 @@ if (root) {
             <li>
               <a
                 className="card border p-4 hover:opacity-50 transition-opacity"
-                href="/src/examples/d-other-methods/index.html"
+                href="/examples/d-other-methods/index.html"
               >
                 Other methods
               </a>
@@ -51,7 +51,7 @@ if (root) {
             <li>
               <a
                 className="card border p-4 hover:opacity-50 transition-opacity"
-                href="/src/examples/e-vanilla-js/index.html"
+                href="/examples/e-vanilla-js/index.html"
               >
                 Vanilla JS
               </a>
@@ -59,7 +59,7 @@ if (root) {
             <li>
               <a
                 className="card border p-4 hover:opacity-50 transition-opacity"
-                href="/src/examples/f-sol-vanilla-js/index.html"
+                href="/examples/f-sol-vanilla-js/index.html"
               >
                 Solana Vanilla JS
               </a>
@@ -67,7 +67,7 @@ if (root) {
             <li>
               <a
                 className="card border p-4 hover:opacity-50 transition-opacity"
-                href="/src/examples/g-eth-vanilla-js/index.html"
+                href="/examples/g-eth-vanilla-js/index.html"
               >
                 Ethereum Vanilla JS
               </a>
@@ -75,7 +75,7 @@ if (root) {
             <li>
               <a
                 className="card border p-4 hover:opacity-50 transition-opacity"
-                href="/src/examples/h-poly-vanilla-js/index.html"
+                href="/examples/h-poly-vanilla-js/index.html"
               >
                 Polygon Vanilla JS
               </a>
