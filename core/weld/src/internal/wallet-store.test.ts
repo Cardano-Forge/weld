@@ -101,7 +101,7 @@ describe("WalletStoreManager.connect", () => {
       walletStorageKey: "connectedWallet",
       lifecycle,
     });
-    expect(mngr.connect(key)).resolves.toStrictEqual(connectedState);
+    await expect(mngr.connect(key)).resolves.toStrictEqual(connectedState);
   });
 
   it("should throw when isConnected is false", async () => {
@@ -842,7 +842,7 @@ describe("WalletStoreManager.init", () => {
       lifecycle,
     });
     expect(get()).toStrictEqual(newState());
-    expect(mngr.init({ initialState: newState() })).resolves.not.toThrow();
+    await expect(mngr.init({ initialState: newState() })).resolves.not.toThrow();
     expect(get()).toStrictEqual(newState());
   });
 });

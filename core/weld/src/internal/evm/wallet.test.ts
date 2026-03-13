@@ -164,7 +164,7 @@ describe("connectAsync", () => {
     expect(connected.balance).toBe(balanceEth);
     expect(connected.address).toBe(address);
     expect(connected.provider).toBeInstanceOf(BrowserProvider);
-    expect(connected.signer.getAddress()).resolves.toBe(address);
+    await expect(connected.signer.getAddress()).resolves.toBe(address);
     expect(connected.isConnected).toBe(true);
     expect(connected.isConnecting).toBe(false);
     expect(connected.isConnectingTo).toBeUndefined();
@@ -209,10 +209,11 @@ describe("connectAsync", () => {
 
 describe("connect", () => {
   it("should connect to valid installed wallets successfully", () =>
-    new Promise<void>((done) => {
+    new Promise<void>((resolve) => {
       const { wallet } = newTestStores();
+
       wallet.connect(walletKey, {
-        onSuccess(connected) {
+        async onSuccess(connected) {
           expect(connected.key).toBe(supportedExtension.key);
           expect(connected.displayName).toBe(supportedExtension.displayName);
           expect(connected.path).toBe(supportedExtension.path);
@@ -221,11 +222,14 @@ describe("connect", () => {
           expect(connected.balance).toBe(balanceEth);
           expect(connected.address).toBe(address);
           expect(connected.provider).toBeInstanceOf(BrowserProvider);
-          expect(connected.signer.getAddress()).resolves.toBe(address);
+
+          await expect(connected.signer.getAddress()).resolves.toBe(address);
+
           expect(connected.isConnected).toBe(true);
           expect(connected.isConnecting).toBe(false);
           expect(connected.isConnectingTo).toBeUndefined();
-          done();
+
+          resolve();
         },
       });
     }));
@@ -306,14 +310,14 @@ describe("getTokenBalance", () => {
     const { wallet } = newTestStores();
     await wallet.connectAsync(walletKey);
     wallet.setState({ signer: undefined });
-    expect(() => wallet.getTokenBalance(ethTokenAddress)).rejects.toThrow("Signer");
+    await expect(() => wallet.getTokenBalance(ethTokenAddress)).rejects.toThrow("Signer");
   });
 
   it("should fail when provider is not initialized", async () => {
     const { wallet } = newTestStores();
     await wallet.connectAsync(walletKey);
     wallet.setState({ provider: undefined });
-    expect(() => wallet.getTokenBalance(ethTokenAddress)).rejects.toThrow("Provider");
+    await expect(() => wallet.getTokenBalance(ethTokenAddress)).rejects.toThrow("Provider");
   });
 
   it("should switch network to provided chain id", async () => {
@@ -345,14 +349,16 @@ describe("send", () => {
     const { wallet } = newTestStores();
     await wallet.connectAsync(walletKey);
     wallet.setState({ signer: undefined });
-    expect(() => wallet.send({ to: ethTokenAddress, amount: "2" })).rejects.toThrow("Signer");
+    await expect(() => wallet.send({ to: ethTokenAddress, amount: "2" })).rejects.toThrow("Signer");
   });
 
   it("should fail when provider is not initialized", async () => {
     const { wallet } = newTestStores();
     await wallet.connectAsync(walletKey);
     wallet.setState({ provider: undefined });
-    expect(() => wallet.send({ to: ethTokenAddress, amount: "2" })).rejects.toThrow("Provider");
+    await expect(() => wallet.send({ to: ethTokenAddress, amount: "2" })).rejects.toThrow(
+      "Provider",
+    );
   });
 
   it("should switch network to provided chain id", async () => {

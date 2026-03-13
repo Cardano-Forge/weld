@@ -56,18 +56,18 @@ describe("handleAccountChangeErrors", () => {
     expect(wrappedApi.info).toBe(api.info);
   });
 
-  it("should call fct properties normally", () => {
+  it("should call fct properties normally", async () => {
     const api = newApi({ balance: 100, name: "jack" }, { throws: false });
     const updateApi = vi.fn(() => newApi({ balance: 100, name: "jack" }, { throws: false }));
     const isApiEnabled = vi.fn(() => true);
     const wrappedApi = handleAccountChangeErrors(api, updateApi, isApiEnabled);
     expect(wrappedApi.getBalance()).toBe(api.info.balance);
-    expect(wrappedApi.getBalanceAsync()).resolves.toBe(api.info.balance);
+    await expect(wrappedApi.getBalanceAsync()).resolves.toBe(api.info.balance);
     expect(api.getBalance).toHaveBeenCalledOnce();
     expect(api.getBalanceAsync).toHaveBeenCalledOnce();
   });
 
-  it("should try to update the api when account change error is thrown by an async fct", () => {
+  it("should try to update the api when account change error is thrown by an async fct", async () => {
     const api = newApi({ balance: 100, name: "jack" }, { throws: "account-change-error" });
     const updatedApi = newApi({ balance: 500, name: "john" }, { throws: false });
     const updateApi = vi.fn(() => updatedApi);
@@ -75,11 +75,11 @@ describe("handleAccountChangeErrors", () => {
     const wrappedApi = handleAccountChangeErrors(api, updateApi, isApiEnabled);
     expect(() => api.getBalance()).toThrow(TestAccountChangeError);
     expect(() => wrappedApi.getBalance()).toThrow(TestAccountChangeError);
-    expect(() => api.getBalanceAsync()).rejects.toThrow(TestAccountChangeError);
-    expect(wrappedApi.getBalanceAsync()).resolves.toBe(updatedApi.info.balance);
+    await expect(() => api.getBalanceAsync()).rejects.toThrow(TestAccountChangeError);
+    await expect(wrappedApi.getBalanceAsync()).resolves.toBe(updatedApi.info.balance);
   });
 
-  it("should only retry once", () => {
+  it("should only retry once", async () => {
     const api = newApi({ balance: 100, name: "jack" }, { throws: "account-change-error" });
     let updateCount = 0;
     const updateApi = vi.fn(() => {
@@ -92,11 +92,11 @@ describe("handleAccountChangeErrors", () => {
     const wrappedApi = handleAccountChangeErrors(api, updateApi, isApiEnabled);
     expect(() => api.getBalance()).toThrow(TestAccountChangeError);
     expect(() => wrappedApi.getBalance()).toThrow(TestAccountChangeError);
-    expect(() => api.getBalanceAsync()).rejects.toThrow(TestAccountChangeError);
-    expect(() => wrappedApi.getBalanceAsync()).rejects.toThrow(TestAccountChangeError);
+    await expect(() => api.getBalanceAsync()).rejects.toThrow(TestAccountChangeError);
+    await expect(() => wrappedApi.getBalanceAsync()).rejects.toThrow(TestAccountChangeError);
   });
 
-  it("should reflect other errors", () => {
+  it("should reflect other errors", async () => {
     const api = newApi({ balance: 100, name: "jack" }, { throws: "other-error" });
     const updateApi = vi.fn(() => {
       return newApi({ balance: 100, name: "jack" }, { throws: false });
@@ -105,11 +105,11 @@ describe("handleAccountChangeErrors", () => {
     const wrappedApi = handleAccountChangeErrors(api, updateApi, isApiEnabled);
     expect(() => api.getBalance()).toThrow("other error");
     expect(() => wrappedApi.getBalance()).toThrow("other error");
-    expect(() => api.getBalanceAsync()).rejects.toThrow("other error");
-    expect(() => wrappedApi.getBalanceAsync()).rejects.toThrow("other error");
+    await expect(() => api.getBalanceAsync()).rejects.toThrow("other error");
+    await expect(() => wrappedApi.getBalanceAsync()).rejects.toThrow("other error");
   });
 
-  it("should transform error into WalletDisconnectAccountError when and error other than account changed is thrown by an async fct and the api is not enabled", () => {
+  it("should transform error into WalletDisconnectAccountError when and error other than account changed is thrown by an async fct and the api is not enabled", async () => {
     const api = newApi({ balance: 100, name: "jack" }, { throws: "other-error" });
     const updateApi = vi.fn(() => {
       return newApi({ balance: 100, name: "jack" }, { throws: false });
@@ -118,7 +118,7 @@ describe("handleAccountChangeErrors", () => {
     const wrappedApi = handleAccountChangeErrors(api, updateApi, isApiEnabled);
     expect(() => api.getBalance()).toThrow("other error");
     expect(() => wrappedApi.getBalance()).toThrow("other error");
-    expect(() => api.getBalanceAsync()).rejects.toThrow("other error");
-    expect(() => wrappedApi.getBalanceAsync()).rejects.toThrow(WalletDisconnectAccountError);
+    await expect(() => api.getBalanceAsync()).rejects.toThrow("other error");
+    await expect(() => wrappedApi.getBalanceAsync()).rejects.toThrow(WalletDisconnectAccountError);
   });
 });
