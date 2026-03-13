@@ -86,7 +86,7 @@
 		"format": "biome format --write .",
 		"lint": "biome lint --write .",
 		"pre": "npm run check && npm run build && npm run test",
-		"pack": "cd dist && npm pack && mv *.tgz ..",
+		"pack": "node scripts/prepare-dist.mjs && cd dist && npm pack && mv *.tgz ..",
 		"test": "vitest --run",
 		"test:coverage": "vitest run --coverage",
 		"test:ui": "vitest --ui --coverage.enabled=true",
