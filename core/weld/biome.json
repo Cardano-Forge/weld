@@ -1,0 +1,11 @@
+{
+  "extends": ["@weld/biome/base"],
+  "files": {
+    "includes": [
+      "**",
+      "!!**/dist",
+      "!!**/documentation",
+      "!!**/initialize-d-app-connector-bridge.ts"
+    ]
+  }
+}

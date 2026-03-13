@@ -1,0 +1,170 @@
+{
+  "name": "@ada-anvil/weld",
+  "private": false,
+  "version": "0.7.0",
+  "type": "module",
+  "main": "./main.cjs",
+  "module": "./main.js",
+  "types": "./main.d.ts",
+  "exports": {
+    ".": {
+      "import": "./main.js",
+      "require": "./main.cjs",
+      "types": "./main.d.ts"
+    },
+    "./core": {
+      "import": "./core.js",
+      "require": "./core.cjs",
+      "types": "./core.d.ts"
+    },
+    "./react": {
+      "import": "./react.js",
+      "require": "./react.cjs",
+      "types": "./react.d.ts"
+    },
+    "./server": {
+      "import": "./server.js",
+      "require": "./server.cjs",
+      "types": "./server.d.ts"
+    },
+    "./sol": {
+      "import": "./sol.js",
+      "require": "./sol.cjs",
+      "types": "./sol.d.ts"
+    },
+    "./sol/react": {
+      "import": "./sol-react.js",
+      "require": "./sol-react.cjs",
+      "types": "./sol-react.d.ts"
+    },
+    "./eth": {
+      "import": "./eth.js",
+      "require": "./eth.cjs",
+      "types": "./eth.d.ts"
+    },
+    "./eth/react": {
+      "import": "./eth-react.js",
+      "require": "./eth-react.cjs",
+      "types": "./eth-react.d.ts"
+    },
+    "./plugins": {
+      "import": "./plugins.js",
+      "require": "./plugins.cjs",
+      "types": "./plugins.d.ts"
+    },
+    "./poly": {
+      "import": "./poly.js",
+      "require": "./poly.cjs",
+      "types": "./poly.d.ts"
+    },
+    "./poly/react": {
+      "import": "./poly-react.js",
+      "require": "./poly-react.cjs",
+      "types": "./poly-react.d.ts"
+    },
+    "./btc": {
+      "import": "./btc.js",
+      "require": "./btc.cjs",
+      "types": "./btc.d.ts"
+    },
+    "./btc/react": {
+      "import": "./btc-react.js",
+      "require": "./btc-react.cjs",
+      "types": "./btc-react.d.ts"
+    }
+  },
+  "files": [
+    "**"
+  ],
+  "scripts": {
+    "build:client": "vite build --config ./vite.client.ts",
+    "build:server": "vite build --config ./vite.server.ts",
+    "build:cdn": "vite build --config ./vite.cdn.ts",
+    "build": "tsc && npm run build:client && npm run build:server && npm run build:cdn",
+    "check": "biome check --write .",
+    "dev": "vite --config ./vite.client.ts",
+    "format": "biome format --write .",
+    "lint": "biome lint --write .",
+    "pre": "npm run check && npm run build && npm run test",
+    "pack": "cd dist && npm pack && mv *.tgz ..",
+    "test": "vitest --run",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui --coverage.enabled=true",
+    "test:watch": "vitest --watch"
+  },
+  "devDependencies": {
+    "@actions/core": "^1.10.1",
+    "@biomejs/biome": "^2.4.6",
+    "@solana/spl-token": "^0.4.8",
+    "@solana/web3.js": "^1.95.2",
+    "@tailwindcss/typography": "^0.5.13",
+    "@types/cbor-js": "^0.1.1",
+    "@types/jsdom": "^21.1.7",
+    "@types/node": "^20.12.7",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.0",
+    "@types/use-sync-external-store": "^0.0.6",
+    "@vitest/coverage-istanbul": "^2.1.3",
+    "@vitest/coverage-v8": "^2.1.3",
+    "@vitest/ui": "^2.1.3",
+    "@weld/biome": "*",
+    "@weld/tsconfig": "*",
+    "autoprefixer": "^10.4.19",
+    "buffer": "^6.0.3",
+    "clsx": "^2.1.1",
+    "daisyui": "^4.10.5",
+    "ethers": "^6.13.4",
+    "jsdom": "^25.0.1",
+    "postcss": "^8.4.38",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-toastify": "^10.0.5",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.0",
+    "vite-plugin-dts": "^2.3.0",
+    "vite-plugin-node-polyfills": "^0.22.0",
+    "vitest": "^2.0.5"
+  },
+  "peerDependencies": {
+    "@solana/spl-token": ">=0.4.8",
+    "@solana/web3.js": ">=1.95.2",
+    "@types/react": ">=17.0.0",
+    "ethers": "^6.13.4",
+    "react": ">=17.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@types/react": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "@solana/web3.js": {
+      "optional": true
+    },
+    "@solana/spl-token": {
+      "optional": true
+    },
+    "ethers": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "bech32": "^2.0.0",
+    "cbor-js": "^0.1.0",
+    "use-sync-external-store": "^1.2.2"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "homepage": "https://github.com/Cardano-Forge/weld",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Cardano-Forge/weld.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Cardano-Forge/weld/issues"
+  }
+}
