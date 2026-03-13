@@ -1,8 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { App } from "./app";
-
 import { ToastContainer } from "react-toastify";
+import { App } from "./app";
 
 import "react-toastify/dist/ReactToastify.min.css";
 import { weld } from "@ada-anvil/weld";

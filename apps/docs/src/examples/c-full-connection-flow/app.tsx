@@ -1,5 +1,5 @@
-import { ExampleContainer } from "@/commons/example-container";
 import { useWallet } from "@ada-anvil/weld/react";
+import { ExampleContainer } from "@/commons/example-container";
 
 const WalletInfoLine = ({
   prefix,

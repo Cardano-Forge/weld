@@ -1,6 +1,6 @@
 import icon from "./icon.png";
-import logoH from "./logo-h.png";
 import logo from "./logo.png";
+import logoH from "./logo-h.png";
 
 const imgSrc = {
   icon,

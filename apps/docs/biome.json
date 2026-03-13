@@ -1,6 +1,6 @@
 {
-	"extends": ["@weld/biome/base"],
-	"files": {
-		"includes": ["**", "!!**/dist"]
-	}
+  "extends": ["@weld/biome/base"],
+  "files": {
+    "includes": ["**", "!!**/dist", "!!**/*.css"]
+  }
 }

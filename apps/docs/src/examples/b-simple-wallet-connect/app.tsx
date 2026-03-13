@@ -1,7 +1,8 @@
-import { ExampleContainer } from "@/commons/example-container";
 import { SUPPORTED_WALLETS, weld } from "@ada-anvil/weld";
-import { WeldProvider, useExtensions, useWallet } from "@ada-anvil/weld/react";
+import { useExtensions, useWallet, WeldProvider } from "@ada-anvil/weld/react";
 import { useState } from "react";
+import { ExampleContainer } from "@/commons/example-container";
+
 // import { useEffect } from "react";
 
 const Connected = () => {

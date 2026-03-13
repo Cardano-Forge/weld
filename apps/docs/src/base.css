@@ -15,9 +15,10 @@
   }
 
   html {
-    font-family: ui-rounded, "Hiragino Maru Gothic ProN", Quicksand, Comfortaa,
-      Manjari, "Arial Rounded MT", "Arial Rounded MT Bold", Calibri,
-      source-sans-pro, sans-serif;
+    font-family:
+      ui-rounded, "Hiragino Maru Gothic ProN", Quicksand, Comfortaa, Manjari,
+      "Arial Rounded MT", "Arial Rounded MT Bold", Calibri, source-sans-pro,
+      sans-serif;
     font-weight: normal;
   }
 
@@ -27,7 +28,8 @@
   h4,
   h5,
   h6 {
-    font-family: Bahnschrift, "DIN Alternate", "Franklin Gothic Medium",
+    font-family:
+      Bahnschrift, "DIN Alternate", "Franklin Gothic Medium",
       "Nimbus Sans Narrow", sans-serif-condensed, sans-serif;
     font-weight: normal;
   }

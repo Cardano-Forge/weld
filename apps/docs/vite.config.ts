@@ -4,20 +4,18 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 const examples = Object.fromEntries(
-	globSync("src/examples/*/index.html").map((file) => [
-		file.replace("src/examples/", "").replace("/index.html", ""),
-		fileURLToPath(new URL(file, import.meta.url)),
-	]),
+  globSync("src/examples/*/index.html").map((file) => [
+    file.replace("src/examples/", "").replace("/index.html", ""),
+    fileURLToPath(new URL(file, import.meta.url)),
+  ]),
 );
 
 export default defineConfig({
   root: "src",
-	plugins: [react()],
+  plugins: [react()],
   server: {
     fs: {
-      allow: [
-        fileURLToPath(new URL("../..", import.meta.url)),
-      ],
+      allow: [fileURLToPath(new URL("../..", import.meta.url))],
     },
   },
   resolve: {
