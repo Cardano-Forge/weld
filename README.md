@@ -8,11 +8,11 @@
 
 ```
 weld/
-├── core/
-│   └── weld/          # @ada-anvil/weld — universal wallet connector
+├── core/              # @ada-anvil/weld — universal wallet connector     
 ├── packages/
 │   ├── biome/         # @weld/biome — shared biome config
-│   └── tsconfig/      # @weld/tsconfig — shared TypeScript config
+│   ├── tsconfig/      # @weld/tsconfig — shared TypeScript config
+│   └── utils/         # @weld/utils — shared utils
 ├── plugins/
 │   └── hodei/         # @ada-anvil/hodei-client — Hodei wallet plugin
 └── apps/

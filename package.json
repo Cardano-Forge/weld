@@ -2,7 +2,7 @@
 	"name": "weld-monorepo",
 	"private": true,
 	"workspaces": [
-		"core/*",
+		"core",
 		"packages/*",
 		"plugins/*",
 		"apps/*"
