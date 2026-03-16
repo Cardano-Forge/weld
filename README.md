@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="core/weld/images/logo.png" alt="Logo" width="150" height="120">
+  <img src="images/logo.png" alt="Logo" width="150" height="120" />
   <h3 align="center">Weld</h3>
   <p align="center">The last wallet connector you will need</p>
 </div>
@@ -16,7 +16,7 @@ weld/
 ├── plugins/
 │   └── hodei/         # @ada-anvil/hodei-client — Hodei wallet plugin
 └── apps/
-    └── playground/          # local dev & examples app
+    └── playground/    # local dev & examples app
 ```
 
 ## Packages
