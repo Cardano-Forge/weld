@@ -1,5 +1,5 @@
+import { getFailureReason } from "@weld/utils/errors";
 import type { WeldInstance } from "@/lib/main";
-import { getFailureReason } from "../utils/errors";
 
 export async function initPlugins(weld: WeldInstance): Promise<void> {
   await Promise.all(

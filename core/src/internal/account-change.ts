@@ -1,6 +1,6 @@
 import { getFailureReason } from "@weld/utils/errors";
+import type { MaybePromise } from "@weld/utils/types";
 import { WalletDisconnectAccountError } from "@/lib/main";
-import type { MaybePromise } from "./utils/types";
 
 function defaultIsAccountChangeError(error: unknown): error is Error {
   return getFailureReason(error) === "account changed";

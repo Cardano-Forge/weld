@@ -1,4 +1,4 @@
-import { deferredPromise } from "@/internal/utils/deferred-promise";
+import { deferredPromise } from "./deferred-promise";
 
 type State = { status: "idle" | "initialized" } | { status: "loading"; promise: Promise<void> };
 

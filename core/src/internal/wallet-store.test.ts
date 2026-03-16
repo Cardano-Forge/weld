@@ -13,7 +13,7 @@ import {
   SubscriptionManager,
   type UnsubscribeFct,
 } from "./lifecycle";
-import type { MaybePromise, PartialWithDiscriminant } from "./utils/types";
+import type { MaybePromise, PartialWithDiscriminant } from "@weld/utils/types";
 import {
   type DefaultWalletStoreProps,
   newWalletStoreManagerSubscriptions,

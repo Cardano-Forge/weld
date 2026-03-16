@@ -1,7 +1,7 @@
 // adapted from https://github.com/pmndrs/zustand/blob/main/src/vanilla.ts
 
 import { compare } from "@weld/utils/compare";
-import type { MaybePromise } from "./utils/types";
+import type { MaybePromise } from "@weld/utils/types";
 
 export type StoreListener<T> = (state: T, prevState: T | undefined) => void;
 
