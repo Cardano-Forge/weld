@@ -1,12 +1,12 @@
 import { defineConfig } from "vite";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import {
-  copyPackageJson,
   externalPackages,
   generateDts,
   generateDtsEntryPoints,
   getLibEntry,
   pathAliases,
+  writePackageJson,
 } from "./build.utils";
 import * as pkg from "./package.json";
 
@@ -24,5 +24,10 @@ export default defineConfig({
       output: { banner: () => '"use client";' },
     },
   },
-  plugins: [generateDts(), generateDtsEntryPoints(entryPoints), copyPackageJson(), nodePolyfills()],
+  plugins: [
+    generateDts(),
+    generateDtsEntryPoints(entryPoints),
+    writePackageJson(),
+    nodePolyfills(),
+  ],
 });
