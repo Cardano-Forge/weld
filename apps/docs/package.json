@@ -27,6 +27,8 @@
     "@weld/tsconfig": "*",
     "autoprefixer": "^10.4.19",
     "clsx": "^2.1.1",
+    "css-selector-tokenizer": "^0.8.0",
+    "culori": "^3.3.0",
     "daisyui": "^4.10.5",
     "postcss": "^8.4.38",
     "react": "^18.3.1",
