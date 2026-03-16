@@ -8,7 +8,6 @@ if (root) {
   ReactDOM.createRoot(root).render(
     <React.StrictMode>
       <WeldProvider>
-        {"test"}
         <App />
       </WeldProvider>
     </React.StrictMode>,
