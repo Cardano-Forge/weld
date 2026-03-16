@@ -28,7 +28,7 @@ export default defineConfig({
     ],
   },
   build: {
-    outDir: "../dist", // since root is now src/, output needs to go back up
+    outDir: "./dist",
     rollupOptions: {
       input: {
         main: fileURLToPath(new URL("src/index.html", import.meta.url)),
