@@ -16,14 +16,14 @@ weld/
 ├── plugins/
 │   └── hodei/         # @ada-anvil/hodei-client — Hodei wallet plugin
 └── apps/
-    └── docs/          # local dev & examples app
+    └── playground/          # local dev & examples app
 ```
 
 ## Packages
 
 | Package | Description |
 |---|---|
-| [`@ada-anvil/weld`](./core/weld) | Core library — wallet connections across Cardano, Ethereum, Polygon, Solana and Bitcoin |
+| [`@ada-anvil/weld`](./core) | Core library — wallet connections across Cardano, Ethereum, Polygon, Solana and Bitcoin |
 | [`@ada-anvil/hodei-client`](./plugins/hodei) | Plugin adding Hodei wallet support |
 
 ## Getting Started

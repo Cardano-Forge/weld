@@ -14,7 +14,7 @@ Join our discord channel <a href="https://discord.gg/RN4D7wzc"><img src=".github
 
 ## Adding a new wallet
 
-See here: [Add new wallet](./ADD_NEW_WALLET.md)
+See here: [Add new wallet](./core/ADD_NEW_WALLET.md)
 
 
 ## Contributing
@@ -27,7 +27,7 @@ See here: [Add new wallet](./ADD_NEW_WALLET.md)
 
 ### Local Development
 
-The project is divided into two directories: `src/`, which contains the core library code, and `documentation/`, which includes the code for testing and developing features.
+The project is divided into `core/`, which contains the core library code, and `apps/playground`, which includes the code for testing and developing features.
 
 *Install and start the development server*
 
@@ -37,4 +37,4 @@ npm run dev
 ```
 Then, navigate to : `http://localhost:5173`.
 
-This development environment launches a React app featuring examples found in `documentation/examples/`.
+This development environment launches a React app featuring examples found in `apps/playground/examples/`.

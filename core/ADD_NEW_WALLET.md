@@ -44,7 +44,7 @@ To add a new wallet, you will need the following:
 
 4. **Test Wallet Integration**
 
-- Update and test the examples in the `documentation/examples/` directory to ensure the wallet integrates correctly.
+- Update and test the examples in the `apps/playground/examples/` directory to ensure the wallet integrates correctly.
 
 ```bash
 npm install
