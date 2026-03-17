@@ -1,18 +1,11 @@
 import { initialize } from "@ada-anvil/hodei-client";
 import type { WeldInstance } from "@ada-anvil/weld";
-import {
-  DefaultWalletHandler,
-  getDefaultWalletConnector,
-  runOnce,
-} from "@ada-anvil/weld/core";
+import { DefaultWalletHandler, getDefaultWalletConnector, runOnce } from "@ada-anvil/weld/core";
 import type { WeldPlugin } from "@ada-anvil/weld/plugins";
 
 export class HodeiHandler extends DefaultWalletHandler {
   async disconnect(): Promise<void> {
-    if (
-      "disconnect" in this.enabledApi &&
-      typeof this.enabledApi.disconnect === "function"
-    ) {
+    if ("disconnect" in this.enabledApi && typeof this.enabledApi.disconnect === "function") {
       return this.enabledApi?.disconnect();
     }
   }

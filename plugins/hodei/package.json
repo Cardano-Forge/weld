@@ -6,6 +6,8 @@
     "@biomejs/biome": "2.4.4",
     "@microsoft/api-extractor": "^7.57.4",
     "@types/node": "^25.4.0",
+    "@weld/biome": "*",
+    "@weld/tsconfig": "*",
     "typescript": "~5.9.3",
     "unplugin-dts": "^1.0.0-beta.6",
     "vite": "^7.3.1",
@@ -15,13 +17,13 @@
     "dev": "vite",
     "build:client": "vite build --config ./vite.client.ts",
     "build:cdn": "vite build --config ./vite.cdn.ts",
-    "build": "tsc && bun run build:client && bun run build:cdn",
+    "build": "tsc && npm run build:client && npm run build:cdn",
     "preview": "vite preview",
     "check": "tsc --noEmit",
     "lint": "biome check --write .",
     "test:watch": "vitest --passWithNoTests",
     "test": "vitest run --passWithNoTests",
-    "pre": "bun run lint && bun run check && bun run build && bun run test"
+    "pre": "npm run lint && npm run check && npm run build && npm run test"
   },
   "type": "module",
   "peerDependencies": {
