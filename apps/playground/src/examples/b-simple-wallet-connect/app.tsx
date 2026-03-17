@@ -1,5 +1,7 @@
-import { SUPPORTED_WALLETS, weld } from "@ada-anvil/weld";
+import { weld } from "@ada-anvil/weld";
+import { builtinPlugins } from "@ada-anvil/weld/plugins";
 import { useExtensions, useWallet, WeldProvider } from "@ada-anvil/weld/react";
+import { hodeiPlugin } from "@ada-anvil/weld-plugin-hodei";
 import { useState } from "react";
 import { ExampleContainer } from "@/commons/example-container";
 
@@ -24,12 +26,13 @@ const Balance = () => {
 };
 
 export const Wallet = () => {
+  const wallets = useExtensions((state) => state.registeredArr);
   const connect = useWallet((state) => state.connect);
   return (
     <article className="card bg-base-100 shadow-xl max-w-[800px] mx-auto">
       <div className="card-body text-center">
         <div className="flex flex-wrap gap-4">
-          {SUPPORTED_WALLETS.map(({ key, displayName }) => (
+          {wallets.map(({ key, displayName }) => (
             <button
               key={key}
               type="button"
@@ -88,6 +91,7 @@ export const App = () => {
         updateInterval: 6000,
         updateOnWindowFocus,
       }}
+      plugins={[...builtinPlugins, hodeiPlugin()]}
     >
       <ExampleContainer>
         <Extensions />

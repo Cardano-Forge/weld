@@ -14,7 +14,7 @@ export const WalletBtn = ({
   installed?: boolean;
 }) => {
   const wallet = useWallet((s) => ({
-    isConnectingTo: s.isConnectingTo,
+    isConnecting: s.isConnecting,
     isLoading: info.key === s.isConnectingTo,
   }));
 
@@ -23,7 +23,7 @@ export const WalletBtn = ({
       <button
         type="button"
         onClick={() => window.open(info.website, "_blank", "noopener noreferrer")}
-        disabled={wallet.isLoading}
+        disabled={wallet.isConnecting || wallet.isLoading}
         className={clsx("btn py-4 h-full", className)}
       >
         <div className="flex flex-col items-center">
@@ -49,7 +49,7 @@ export const WalletBtn = ({
     <button
       type="button"
       aria-busy={wallet.isLoading}
-      disabled={!!wallet.isConnectingTo || wallet.isLoading}
+      disabled={wallet.isConnecting || wallet.isLoading}
       onClick={() => onClick(info.key)}
       key={info.key}
       className={clsx("btn py-4 h-full", className)}

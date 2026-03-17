@@ -1,4 +1,6 @@
+import { builtinPlugins } from "@ada-anvil/weld/plugins";
 import { WeldProvider } from "@ada-anvil/weld/react";
+import { hodeiPlugin } from "@ada-anvil/weld-plugin-hodei";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { ExampleContainer } from "@/commons/example-container";
@@ -7,7 +9,7 @@ const root = document.querySelector("#root");
 if (root) {
   ReactDOM.createRoot(root).render(
     <React.StrictMode>
-      <WeldProvider>
+      <WeldProvider plugins={[...builtinPlugins, hodeiPlugin()]}>
         <ExampleContainer>
           <h1 className="mt-8 text-center text-3xl">Examples</h1>
           <p className="max-w-[800px] mx-auto text-center my-8">

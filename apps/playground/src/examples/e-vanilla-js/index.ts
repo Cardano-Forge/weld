@@ -1,4 +1,6 @@
 import { weld } from "@ada-anvil/weld";
+import { builtinPlugins } from "@ada-anvil/weld/plugins";
+import { hodeiPlugin } from "@ada-anvil/weld-plugin-hodei";
 import { getFailureReason } from "@weld/utils/errors";
 
 weld.config.update({
@@ -12,6 +14,7 @@ weld.config.update({
   extensions: {
     // updateInterval: false,
   },
+  plugins: [...builtinPlugins, hodeiPlugin()],
 });
 
 weld.extensions.subscribeWithSelector(

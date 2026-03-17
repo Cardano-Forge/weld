@@ -1,4 +1,3 @@
-import { SUPPORTED_WALLETS } from "@ada-anvil/weld";
 import { useExtensions, useWallet } from "@ada-anvil/weld/react";
 import { useDialogContext } from "../hooks/dialog.context";
 import { WalletBtn } from "./wallet-btn";
@@ -15,13 +14,14 @@ const WalletDialog = () => {
       },
     });
   };
+  const wallets = useExtensions((state) => state.registeredArr);
 
   return (
     <dialog open={isOpen} className="modal modal-bottom sm:modal-middle">
       <div className="modal-box">
         <h3 className="font-bold text-lg mb-4">Connect wallet</h3>
         <div className="grid grid-cols-4 gap-4">
-          {SUPPORTED_WALLETS.map((info) => (
+          {wallets.map((info) => (
             <WalletBtn
               key={info.key}
               info={info}
