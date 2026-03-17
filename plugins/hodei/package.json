@@ -31,5 +31,17 @@
   },
   "dependencies": {
     "@ada-anvil/hodei-client": "^0.0.3"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "homepage": "https://github.com/Cardano-Forge/weld/core",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Cardano-Forge/weld.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Cardano-Forge/weld/issues"
   }
 }

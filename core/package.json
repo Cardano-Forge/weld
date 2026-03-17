@@ -151,7 +151,7 @@
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
-  "homepage": "https://github.com/Cardano-Forge/weld",
+  "homepage": "https://github.com/Cardano-Forge/weld/core",
   "repository": {
     "type": "git",
     "url": "https://github.com/Cardano-Forge/weld.git"

@@ -155,7 +155,7 @@ Weld has been thoroughly tested with the following wallet extensions:
 
 | key         | Name       | Website                                                                                          |
 | ----------- | ---------- | ------------------------------------------------------------------------------------------------ |
-| hodei (via plugin) | Hodei      | https://github.com/cardano-forge/weld-plugin-hodei |
+| hodei (via plugin) | Hodei      | [/plugins/hodei](/plugins/hodei) |
 | eternl      | Eternl     | https://chrome.google.com/webstore/detail/eternl/kmhcihpebfmpgmihbkipmjlmmioameka?hl=en-US       |
 | tokeo       | Tokeo      | https://tokeopay.io                                                                              |
 | flint       | Flint      | https://chrome.google.com/webstore/detail/flint-wallet/hnhobjmcibchnmglfbldbfabcgaknlkj?hl=en-US |
@@ -346,7 +346,7 @@ Weld ships with the following builtin plugins, registered by default:
 
 | Plugin | Package | Description | Link |
 |---|---|---|---|
-| Hodei | `@ada-anvil/hodei-client` | Hodei wallet integration | [GitHub](https://github.com/cardano-forge/weld-plugin-hodei) |
+| Hodei | `@ada-anvil/hodei-client` | Hodei wallet integration | [GitHub](/plugins/hodei) |
 
 #### Using Plugins
 
@@ -375,7 +375,7 @@ Without React:
 ```typescript
 import { weld } from "@ada-anvil/weld";
 import { builtinPlugins } from "@ada-anvil/weld/plugins";
-import { hodeiPlugin } from "@ada-anvil/hodei-client";
+import { hodeiPlugin } from "@ada-anvil/weld-plugin-hodei";
 
 weld.config.update({
   plugins: [...builtinPlugins, hodeiPlugin({ /* options */ })],
