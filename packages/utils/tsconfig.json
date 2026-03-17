@@ -2,6 +2,10 @@
   "extends": "@weld/tsconfig/base",
   "compilerOptions": {
     "baseUrl": ".",
+    "rootDir": "src",
+    "outDir": "dist",
+    "declaration": true,
+    "declarationDir": "dist",
     "paths": {
       "@weld/utils/*": ["./src/*"]
     }
