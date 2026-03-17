@@ -1,3 +1,4 @@
+import type { MaybePromise, PartialWithDiscriminant } from "@weld/utils/types";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   WalletConnectionAbortedError,
@@ -13,7 +14,6 @@ import {
   SubscriptionManager,
   type UnsubscribeFct,
 } from "./lifecycle";
-import type { MaybePromise, PartialWithDiscriminant } from "@weld/utils/types";
 import {
   type DefaultWalletStoreProps,
   newWalletStoreManagerSubscriptions,
