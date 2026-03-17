@@ -1,7 +1,7 @@
+import { readFileSync } from "node:fs";
 import { copyFile, writeFile } from "node:fs/promises";
 import dts from "unplugin-dts/vite";
 import { defineConfig, type PluginOption } from "vite";
-import pkg from "./package.json" with { type: "json" };
 
 export default defineConfig({
   build: {
@@ -19,45 +19,44 @@ export default defineConfig({
     dts({
       bundleTypes: true,
     }),
-    copyPackageJson(),
+    writePackageJson(),
   ],
 });
 
-function copyPackageJson(): PluginOption {
+// biome-ignore lint/suspicious/noExplicitAny: no need to declare type for package.json content
+function stripDist(pkg: any) {
+  // Strip ./dist/ prefix from all fields
+  pkg.main = pkg.main.replace("./dist/", "./");
+  pkg.module = pkg.module.replace("./dist/", "./");
+  pkg.types = pkg.types.replace("./dist/", "./");
+
+  for (const key of Object.keys(pkg.exports)) {
+    for (const condition of Object.keys(pkg.exports[key])) {
+      pkg.exports[key][condition] = pkg.exports[key][condition].replace("./dist/", "./");
+    }
+  }
+
+  delete pkg.scripts;
+  delete pkg.devDependencies;
+  return JSON.stringify(pkg, null, 2);
+}
+
+export function writePackageJson(): PluginOption {
   let hasGenerated = false;
   return {
-    name: "copy-package-json",
+    name: "write-package-json",
     async writeBundle() {
-      if (hasGenerated) {
+      if (!process.env.PUBLISH) {
         return;
       }
+      if (hasGenerated) return;
       hasGenerated = true;
-      await Promise.all([
-        writeFile(
-          "dist/package.json",
-          JSON.stringify(
-            {
-              ...pkg,
-              files: ["**"],
-              type: "module",
-              main: "./lib.cjs",
-              module: "./lib.js",
-              types: "./lib.d.ts",
-              exports: {
-                ".": {
-                  types: "./lib.d.ts",
-                  import: "./lib.js",
-                  require: "./lib.cjs",
-                },
-              },
-            },
-            null,
-            2,
-          ),
-        ),
-        copyFile("./README.md", "dist/README.md"),
-        copyFile("./LICENSE", "dist/LICENSE"),
-      ]);
+      await writeFile(
+        "dist/package.json",
+        stripDist(JSON.parse(readFileSync("./package.json", "utf-8"))),
+      );
+      await copyFile("./README.md", "dist/README.md");
+      await copyFile("./LICENSE", "dist/LICENSE");
     },
   };
 }

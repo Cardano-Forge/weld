@@ -1,6 +1,21 @@
 {
   "name": "@ada-anvil/weld-plugin-hodei",
   "version": "0.0.2",
+  "files": [
+    "**"
+  ],
+  "type": "module",
+
+  "main": "./dist/lib.cjs",
+  "module": "./dist/lib.js",
+  "types": "./dist/lib.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/lib.d.ts",
+      "import": "./dist/lib.js",
+      "require": "./dist/lib.cjs"
+    }
+  },
   "devDependencies": {
     "@ada-anvil/weld": "*",
     "@biomejs/biome": "2.4.4",
@@ -14,10 +29,10 @@
     "vitest": "^4.0.18"
   },
   "scripts": {
-    "dev": "vite",
     "build:client": "vite build --config ./vite.client.ts",
     "build:cdn": "vite build --config ./vite.cdn.ts",
     "build": "tsc && npm run build:client && npm run build:cdn",
+    "publish": "PUBLISH=true npm run build",
     "preview": "vite preview",
     "check": "tsc --noEmit",
     "lint": "biome check --write .",
@@ -25,7 +40,6 @@
     "test": "vitest run --passWithNoTests",
     "pre": "npm run lint && npm run check && npm run build && npm run test"
   },
-  "type": "module",
   "peerDependencies": {
     "@ada-anvil/weld": ">=0.7.0"
   },
