@@ -1,0 +1,23 @@
+{
+  "name": "@weld/vite-plugins",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./*": {
+      "types": "./src/*.ts",
+      "default": "./dist/*.js"
+    }
+  },
+  "scripts": {
+    "check": "biome check --write .",
+    "pre": "npm run check && npm run build",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.6",
+    "@weld/biome": "*",
+    "@weld/tsconfig": "*",
+    "vite": "^5.2.0",
+    "vite-plugin-dts": "^4.5.4"
+  }
+}
