@@ -5,5 +5,6 @@
     /* Linting */
     "erasableSyntaxOnly": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/dev.ts"]
 }
