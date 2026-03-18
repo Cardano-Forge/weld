@@ -28,6 +28,7 @@
     "vitest": "^2.0.5"
   },
   "scripts": {
+    "dev": "vite",
     "build:client": "vite build --config ./vite.client.ts",
     "build:cdn": "vite build --config ./vite.cdn.ts",
     "build": "tsc && npm run build:client && npm run build:cdn",
