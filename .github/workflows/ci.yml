@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Lint, check & test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # biome ci is read-only — fails on issues, never auto-fixes.
+      # We can't use `turbo run lint` here because the lint task calls
+      # `biome check --write` which would silently fix and pass in CI.
+      - name: Lint (read-only)
+        run: |
+          npx biome ci . --reporter=github --working-directory=core &
+          npx biome ci . --reporter=github --working-directory=plugins/hodei &
+          wait
+
+      # tsc --noEmit — not a turbo task so called directly per package.
+      # Runs in parallel with lint above once npm ci is done.
+      - name: Type check
+        run: |
+          npm run check --workspace=core &
+          npm run check --workspace=plugins/hodei &
+          wait
+
+      # turbo handles the ^build dependency chain before running tests
+      - name: Test
+        run: |
+          npx turbo run test \
+            --filter=@ada-anvil/weld \
+            --filter=@ada-anvil/weld-plugin-hodei

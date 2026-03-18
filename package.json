@@ -17,6 +17,7 @@
 		"sherif": "sherif --fix"
 	},
 	"devDependencies": {
+		"@changesets/cli": "^2.30.0",
 		"sherif": "^1.10.0",
 		"turbo": "latest"
 	},
