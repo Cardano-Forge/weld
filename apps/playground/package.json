@@ -6,10 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "biome lint --write .",
-    "format": "biome format --write .",
-    "check": "biome check --write .",
-    "pre": "npm run check && npm run build",
+    "lint": "biome check --write .",
+    "check": "tsc --noEmit",
+    "pre": "npm run lint && npm run check && npm run build",
     "preview": "vite preview"
   },
   "dependencies": {
