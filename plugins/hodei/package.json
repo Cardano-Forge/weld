@@ -7,7 +7,7 @@
   "type": "module",
   "main": "./dist/lib.cjs",
   "module": "./dist/lib.js",
-  "types": "./dist/lib.d.ts",
+  "types": "./dist/types/lib.d.ts",
   "exports": {
     ".": {
       "types": "./dist/types/lib.d.ts",
