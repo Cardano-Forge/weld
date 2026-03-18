@@ -1,12 +1,7 @@
+import { generateDts } from "@weld/vite-plugins/generate-dts";
 import { defineConfig } from "vite";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
-import {
-  externalPackages,
-  generateDts,
-  generateDtsEntryPoints,
-  getLibEntry,
-  pathAliases,
-} from "./build.utils";
+import { externalPackages, generateDtsEntryPoints, getLibEntry, pathAliases } from "./build.utils";
 
 const entryPoints = ["server"];
 
