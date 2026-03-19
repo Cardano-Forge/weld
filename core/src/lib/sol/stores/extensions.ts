@@ -1,23 +1,27 @@
 import { get } from "@weld/utils/get";
 import { setupAutoUpdate } from "@/internal/auto-update";
 import { LifeCycleManager } from "@/internal/lifecycle";
-import { createStoreFactory, type Store, type StoreSetupFunctions } from "@/internal/store";
 import {
-  isSolApi,
-  SOL_EXTENSIONS,
-  type SolApi,
-  type SolExtension,
-  type SolExtensionInfo,
+	createStoreFactory,
+	type Store,
+	type StoreSetupFunctions,
+} from "@/internal/store";
+import {
+	isSolApi,
+	SOL_EXTENSIONS,
+	type SolApi,
+	type SolExtension,
+	type SolExtensionInfo,
 } from "../types";
 import { weldSol } from ".";
 
 export type SolExtensionsProps = {
-  installedArr: SolExtension[];
-  installedMap: Map<string, SolExtension>;
+	installedArr: SolExtension[];
+	installedMap: Map<string, SolExtension>;
 };
 
 export type SolExtensionsApi = {
-  updateExtensions(opts?: { caching?: boolean }): void;
+	updateExtensions(opts?: { caching?: boolean }): void;
 };
 
 export type SolExtensionsState = SolExtensionsProps & SolExtensionsApi;
@@ -25,74 +29,74 @@ export type SolExtensionsState = SolExtensionsProps & SolExtensionsApi;
 export type SolExtensionsStore = Store<SolExtensionsState> & SolExtensionsState;
 
 function newInitialSolState(): SolExtensionsProps {
-  return {
-    installedArr: [],
-    installedMap: new Map(),
-  };
+	return {
+		installedArr: [],
+		installedMap: new Map(),
+	};
 }
 
 export const createSolExtensionsStore = createStoreFactory<
-  SolExtensionsState,
-  undefined,
-  | []
-  | [
-      {
-        supportedExtensionInfos?: SolExtensionInfo[];
-        lifecycle?: LifeCycleManager;
-        config?: typeof weldSol.config;
-      },
-    ]
+	SolExtensionsState,
+	undefined,
+	| []
+	| [
+			{
+				supportedExtensionInfos?: SolExtensionInfo[];
+				lifecycle?: LifeCycleManager;
+				config?: typeof weldSol.config;
+			},
+	  ]
 >(
-  (
-    setState,
-    _getState,
-    {
-      supportedExtensionInfos = SOL_EXTENSIONS,
-      lifecycle = new LifeCycleManager(),
-      config = weldSol.config,
-    } = {},
-  ) => {
-    const cache = new Map<SolApi, SolExtension>();
+	(
+		setState,
+		_getState,
+		{
+			supportedExtensionInfos = SOL_EXTENSIONS,
+			lifecycle = new LifeCycleManager(),
+			config = weldSol.config,
+		} = {},
+	) => {
+		const cache = new Map<SolApi, SolExtension>();
 
-    const updateExtensions = ({ caching = true } = {}) => {
-      if (typeof window === "undefined") {
-        return;
-      }
-      const newState = newInitialSolState();
-      for (const info of supportedExtensionInfos) {
-        const api = get(window, info.path);
-        if (!isSolApi(api)) {
-          continue;
-        }
-        let extension: SolExtension;
-        if (caching) {
-          extension = cache.get(api) ?? { info, api };
-        } else {
-          extension = { info, api };
-        }
-        cache.set(api, extension);
-        newState.installedArr.push(extension);
-        newState.installedMap.set(info.key, extension);
-      }
-      setState(newState);
-    };
+		const updateExtensions = ({ caching = true } = {}) => {
+			if (typeof window === "undefined") {
+				return;
+			}
+			const newState = newInitialSolState();
+			for (const info of supportedExtensionInfos) {
+				const api = get(window, info.path);
+				if (!isSolApi(api)) {
+					continue;
+				}
+				let extension: SolExtension;
+				if (caching) {
+					extension = cache.get(api) ?? { info, api };
+				} else {
+					extension = { info, api };
+				}
+				cache.set(api, extension);
+				newState.installedArr.push(extension);
+				newState.installedMap.set(info.key, extension);
+			}
+			setState(newState);
+		};
 
-    const __init = () => {
-      updateExtensions();
-      setupAutoUpdate(() => updateExtensions(), lifecycle, config);
-    };
+		const __init = () => {
+			updateExtensions();
+			setupAutoUpdate(() => updateExtensions(), lifecycle, config);
+		};
 
-    const __cleanup = () => {
-      lifecycle.cleanup();
-    };
+		const __cleanup = () => {
+			lifecycle.cleanup();
+		};
 
-    const initialState: SolExtensionsState & StoreSetupFunctions = {
-      ...newInitialSolState(),
-      updateExtensions,
-      __init,
-      __cleanup,
-    };
+		const initialState: SolExtensionsState & StoreSetupFunctions = {
+			...newInitialSolState(),
+			updateExtensions,
+			__init,
+			__cleanup,
+		};
 
-    return initialState as SolExtensionsState;
-  },
+		return initialState as SolExtensionsState;
+	},
 );

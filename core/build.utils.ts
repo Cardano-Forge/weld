@@ -3,43 +3,46 @@ import { resolve } from "node:path";
 import type { LibraryOptions, PluginOption } from "vite";
 
 export function generateDtsEntryPoints(entryPoints: string[]): PluginOption {
-  let hasGenerated = false;
-  return {
-    name: "generate-dts-entry-points",
-    async writeBundle(opts) {
-      if (hasGenerated) return;
-      hasGenerated = true;
-      await Promise.all(
-        entryPoints.map((file) =>
-          writeFile(`${opts.dir}/${file}.d.ts`, `export * from "./types/src/lib/${file}";`),
-        ),
-      );
-    },
-  };
+	let hasGenerated = false;
+	return {
+		name: "generate-dts-entry-points",
+		async writeBundle(opts) {
+			if (hasGenerated) return;
+			hasGenerated = true;
+			await Promise.all(
+				entryPoints.map((file) =>
+					writeFile(
+						`${opts.dir}/${file}.d.ts`,
+						`export * from "./types/src/lib/${file}";`,
+					),
+				),
+			);
+		},
+	};
 }
 
 export function getLibEntry(entryPoints: string[]) {
-  return entryPoints.reduce(
-    (acc, file) => {
-      const ext = file.includes("react") ? "tsx" : "ts";
-      acc[file] = resolve(__dirname, `src/lib/${file}/index.${ext}`);
-      return acc;
-    },
-    {} as Extract<LibraryOptions["entry"], Record<string, unknown>>,
-  );
+	return entryPoints.reduce(
+		(acc, file) => {
+			const ext = file.includes("react") ? "tsx" : "ts";
+			acc[file] = resolve(__dirname, `src/lib/${file}/index.${ext}`);
+			return acc;
+		},
+		{} as Extract<LibraryOptions["entry"], Record<string, unknown>>,
+	);
 }
 
 export const externalPackages = [
-  "react",
-  /^react\/.*/,
-  "react-dom",
-  /react-dom\/.*/,
-  "@types/react",
-  "@types/react-dom",
-  "@solana/web3.js",
-  "ethers",
+	"react",
+	/^react\/.*/,
+	"react-dom",
+	/react-dom\/.*/,
+	"@types/react",
+	"@types/react-dom",
+	"@solana/web3.js",
+	"ethers",
 ];
 
 export const pathAliases = {
-  "@": resolve(__dirname, "src"),
+	"@": resolve(__dirname, "src"),
 };

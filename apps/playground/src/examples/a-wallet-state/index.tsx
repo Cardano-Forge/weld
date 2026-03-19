@@ -7,11 +7,11 @@ import { App } from "./app";
 
 const root = document.querySelector("#root");
 if (root) {
-  ReactDOM.createRoot(root).render(
-    <React.StrictMode>
-      <WeldProvider plugins={[...builtinPlugins, hodeiPlugin()]}>
-        <App />
-      </WeldProvider>
-    </React.StrictMode>,
-  );
+	ReactDOM.createRoot(root).render(
+		<React.StrictMode>
+			<WeldProvider plugins={[...builtinPlugins, hodeiPlugin()]}>
+				<App />
+			</WeldProvider>
+		</React.StrictMode>,
+	);
 }

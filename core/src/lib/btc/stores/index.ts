@@ -3,58 +3,61 @@ export * from "./wallet";
 
 import { type ConfigStore, createConfigStore } from "@/lib/main/stores/config";
 import type { BtcConfig } from "../types";
-import { type BtcExtensionsStore, createBtcExtensionsStore } from "./extensions";
+import {
+	type BtcExtensionsStore,
+	createBtcExtensionsStore,
+} from "./extensions";
 import { type BtcWalletStore, createBtcWalletStore } from "./wallet";
 
 export function createWeldBtcInstance() {
-  let configStore: ConfigStore<BtcConfig>;
-  let walletStore: BtcWalletStore;
-  let extensionsStore: BtcExtensionsStore;
-  return {
-    get config() {
-      if (!configStore) {
-        configStore = createConfigStore();
-      }
-      return configStore;
-    },
-    get wallet() {
-      if (!walletStore) {
-        walletStore = createBtcWalletStore({ config: this.config });
-      }
-      return walletStore;
-    },
-    get extensions() {
-      if (!extensionsStore) {
-        extensionsStore = createBtcExtensionsStore({ config: this.config });
-      }
-      return extensionsStore;
-    },
-    persist(config?: Partial<BtcConfig>) {
-      this.config.persist();
-      const tryToReconnectTo =
-        typeof config?.wallet?.tryToReconnectTo === "string"
-          ? config?.wallet?.tryToReconnectTo
-          : config?.wallet?.tryToReconnectTo?.wallet;
-      this.wallet.persist({ tryToReconnectTo });
-      this.extensions.persist();
-    },
-    init({ persist = true }: { persist?: boolean | Partial<BtcConfig> } = {}) {
-      if (typeof persist === "object") {
-        this.persist(persist);
-      } else if (persist) {
-        this.persist();
-      }
+	let configStore: ConfigStore<BtcConfig>;
+	let walletStore: BtcWalletStore;
+	let extensionsStore: BtcExtensionsStore;
+	return {
+		get config() {
+			if (!configStore) {
+				configStore = createConfigStore();
+			}
+			return configStore;
+		},
+		get wallet() {
+			if (!walletStore) {
+				walletStore = createBtcWalletStore({ config: this.config });
+			}
+			return walletStore;
+		},
+		get extensions() {
+			if (!extensionsStore) {
+				extensionsStore = createBtcExtensionsStore({ config: this.config });
+			}
+			return extensionsStore;
+		},
+		persist(config?: Partial<BtcConfig>) {
+			this.config.persist();
+			const tryToReconnectTo =
+				typeof config?.wallet?.tryToReconnectTo === "string"
+					? config?.wallet?.tryToReconnectTo
+					: config?.wallet?.tryToReconnectTo?.wallet;
+			this.wallet.persist({ tryToReconnectTo });
+			this.extensions.persist();
+		},
+		init({ persist = true }: { persist?: boolean | Partial<BtcConfig> } = {}) {
+			if (typeof persist === "object") {
+				this.persist(persist);
+			} else if (persist) {
+				this.persist();
+			}
 
-      this.config.init();
-      this.wallet.init();
-      this.extensions.init();
-    },
-    cleanup() {
-      this.config.cleanup();
-      this.wallet.cleanup();
-      this.extensions.cleanup();
-    },
-  };
+			this.config.init();
+			this.wallet.init();
+			this.extensions.init();
+		},
+		cleanup() {
+			this.config.cleanup();
+			this.wallet.cleanup();
+			this.extensions.cleanup();
+		},
+	};
 }
 
 export const weldBtc = createWeldBtcInstance();

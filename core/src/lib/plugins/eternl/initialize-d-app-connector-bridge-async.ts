@@ -3,14 +3,14 @@ import type { DefaultWalletApi } from "@/lib/main";
 import { initializeDAppConnectorBridge } from "./initialize-d-app-connector-bridge";
 
 export function initializeDAppConnectorBridgeAsync() {
-  const { promise, resolve, reject } = deferredPromise<DefaultWalletApi>();
+	const { promise, resolve, reject } = deferredPromise<DefaultWalletApi>();
 
-  const timeout = setTimeout(() => reject("Request took too long"), 10_000);
+	const timeout = setTimeout(() => reject("Request took too long"), 10_000);
 
-  initializeDAppConnectorBridge((api) => {
-    clearTimeout(timeout);
-    resolve(api);
-  });
+	initializeDAppConnectorBridge((api) => {
+		clearTimeout(timeout);
+		resolve(api);
+	});
 
-  return promise;
+	return promise;
 }

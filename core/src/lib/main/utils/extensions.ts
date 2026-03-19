@@ -1,6 +1,10 @@
 import { deferredPromise } from "@weld/utils/deferred-promise";
 
-import type { AddressHex, ChangeAddressHex, StakeAddressHex } from "@/lib/server/address";
+import type {
+	AddressHex,
+	ChangeAddressHex,
+	StakeAddressHex,
+} from "@/lib/server/address";
 
 export type Bytes = string;
 
@@ -19,49 +23,52 @@ export type NetworkType = "mainnet" | "preprod";
 export type NetworkId = 0 | 1;
 
 export type EnabledWalletApi = {
-  getNetworkId(): Promise<NetworkId>;
-  getUtxos(amount?: Cbor, paginate?: number): Promise<UnspentTxOutput[] | undefined>;
-  getBalance(): Promise<Cbor>;
-  getUsedAddresses(paginate?: number): Promise<AddressHex[]>;
-  getUnusedAddresses(): Promise<AddressHex[]>;
-  getChangeAddress(): Promise<ChangeAddressHex>;
-  getRewardAddresses(): Promise<StakeAddressHex[]>;
-  signTx(tx: Cbor, partialSign?: boolean): Promise<Cbor>;
-  signData(addr: AddressHex, payload: Bytes): Promise<Signature>;
-  submitTx(tx: Cbor): Promise<Hash32>;
-  experimental?: {
-    getCollateral(): Promise<string[]>;
-    signTxs?(txs: { cbor: Cbor; partialSign?: boolean }[]): Promise<Cbor[]>;
-  };
+	getNetworkId(): Promise<NetworkId>;
+	getUtxos(
+		amount?: Cbor,
+		paginate?: number,
+	): Promise<UnspentTxOutput[] | undefined>;
+	getBalance(): Promise<Cbor>;
+	getUsedAddresses(paginate?: number): Promise<AddressHex[]>;
+	getUnusedAddresses(): Promise<AddressHex[]>;
+	getChangeAddress(): Promise<ChangeAddressHex>;
+	getRewardAddresses(): Promise<StakeAddressHex[]>;
+	signTx(tx: Cbor, partialSign?: boolean): Promise<Cbor>;
+	signData(addr: AddressHex, payload: Bytes): Promise<Signature>;
+	submitTx(tx: Cbor): Promise<Hash32>;
+	experimental?: {
+		getCollateral(): Promise<string[]>;
+		signTxs?(txs: { cbor: Cbor; partialSign?: boolean }[]): Promise<Cbor[]>;
+	};
 };
 
 export type DefaultWalletApi = {
-  name: string;
-  icon: string;
-  apiVersion: string;
-  enable(): Promise<EnabledWalletApi>;
-  isEnabled(): Promise<boolean>;
+	name: string;
+	icon: string;
+	apiVersion: string;
+	enable(): Promise<EnabledWalletApi>;
+	isEnabled(): Promise<boolean>;
 };
 
 export type FullWalletApi = DefaultWalletApi & EnabledWalletApi;
 
 export function isDefaultWalletApi(obj: unknown): obj is DefaultWalletApi {
-  return typeof obj === "object" && obj !== null && "apiVersion" in obj;
+	return typeof obj === "object" && obj !== null && "apiVersion" in obj;
 }
 
 export type WindowCardano = {
-  [key: string]: DefaultWalletApi;
+	[key: string]: DefaultWalletApi;
 };
 
 declare global {
-  interface Window {
-    cardano?: WindowCardano;
-  }
+	interface Window {
+		cardano?: WindowCardano;
+	}
 }
 
 export type GetWindowCardanoOpts = {
-  maxRetryCount?: number;
-  retryIntervalMs?: number;
+	maxRetryCount?: number;
+	retryIntervalMs?: number;
 };
 
 /** Tries to retrieve the window.cardano object every `retryIntervalMs` ms.
@@ -74,91 +81,93 @@ export type GetWindowCardanoOpts = {
  * @default 1000
  */
 export async function getWindowCardano(
-  opts?: GetWindowCardanoOpts,
+	opts?: GetWindowCardanoOpts,
 ): Promise<WindowCardano | undefined>;
 export async function getWindowCardano(
-  opts: { key: string } & GetWindowCardanoOpts,
+	opts: { key: string } & GetWindowCardanoOpts,
 ): Promise<DefaultWalletApi | undefined>;
 export async function getWindowCardano({
-  key,
-  maxRetryCount = 5,
-  retryIntervalMs = 1000,
+	key,
+	maxRetryCount = 5,
+	retryIntervalMs = 1000,
 }: { key?: string } & GetWindowCardanoOpts = {}): Promise<
-  DefaultWalletApi | WindowCardano | undefined
+	DefaultWalletApi | WindowCardano | undefined
 > {
-  const { promise, resolve } = deferredPromise<DefaultWalletApi | WindowCardano | undefined>();
+	const { promise, resolve } = deferredPromise<
+		DefaultWalletApi | WindowCardano | undefined
+	>();
 
-  let retryCount = 0;
+	let retryCount = 0;
 
-  function evaluate() {
-    let result: DefaultWalletApi | WindowCardano | undefined;
+	function evaluate() {
+		let result: DefaultWalletApi | WindowCardano | undefined;
 
-    if (key && typeof window.cardano === "object" && key in window.cardano) {
-      const api = window.cardano[key];
-      if (isDefaultWalletApi(api)) {
-        result = api;
-      }
-    } else if (window.cardano) {
-      result = window.cardano;
-    }
+		if (key && typeof window.cardano === "object" && key in window.cardano) {
+			const api = window.cardano[key];
+			if (isDefaultWalletApi(api)) {
+				result = api;
+			}
+		} else if (window.cardano) {
+			result = window.cardano;
+		}
 
-    if (result) {
-      resolve(result);
-    } else if (++retryCount > maxRetryCount) {
-      resolve(undefined);
-    } else {
-      setTimeout(evaluate, retryIntervalMs);
-    }
-  }
+		if (result) {
+			resolve(result);
+		} else if (++retryCount > maxRetryCount) {
+			resolve(undefined);
+		} else {
+			setTimeout(evaluate, retryIntervalMs);
+		}
+	}
 
-  evaluate();
+	evaluate();
 
-  return promise;
+	return promise;
 }
 
 const walletExtensionBlacklist = ["ccvault"] as const;
 
 export type WalletExtension = {
-  key: string;
-  defaultApi: DefaultWalletApi;
+	key: string;
+	defaultApi: DefaultWalletApi;
 };
 
 export async function getWalletExtensions(
-  opts?: GetWindowCardanoOpts & { blacklist?: string[] },
+	opts?: GetWindowCardanoOpts & { blacklist?: string[] },
 ): Promise<WalletExtension[]> {
-  const windowCardano = await getWindowCardano(opts);
+	const windowCardano = await getWindowCardano(opts);
 
-  if (!windowCardano) return [];
+	if (!windowCardano) return [];
 
-  const blacklist = opts?.blacklist ?? walletExtensionBlacklist;
-  for (const walletKey of blacklist) {
-    if (walletKey in windowCardano) {
-      delete windowCardano[walletKey];
-    }
-  }
+	const blacklist = opts?.blacklist ?? walletExtensionBlacklist;
+	for (const walletKey of blacklist) {
+		if (walletKey in windowCardano) {
+			delete windowCardano[walletKey];
+		}
+	}
 
-  return Object.entries(windowCardano)
-    .flatMap(([key, defaultApi]) => {
-      if (isDefaultWalletApi(defaultApi)) {
-        return {
-          key,
-          defaultApi,
-        };
-      }
-      return [];
-    })
-    .sort((a, b) => {
-      const keyA = a.key.toLowerCase();
-      const keyB = b.key.toLowerCase();
-      if (keyA < keyB) return -1;
-      if (keyB < keyA) return 1;
-      return 0;
-    });
+	return Object.entries(windowCardano)
+		.flatMap(([key, defaultApi]) => {
+			if (isDefaultWalletApi(defaultApi)) {
+				return {
+					key,
+					defaultApi,
+				};
+			}
+			return [];
+		})
+		.sort((a, b) => {
+			const keyA = a.key.toLowerCase();
+			const keyB = b.key.toLowerCase();
+			if (keyA < keyB) return -1;
+			if (keyB < keyA) return 1;
+			return 0;
+		});
 }
 
 export type EnableWalletOpts = {
-  maxRetryCount?: number;
-  retryIntervalMs?: number;
+	maxRetryCount?: number;
+	retryIntervalMs?: number;
 };
 
 /** Tries to enable a wallet extension every `retryIntervalMs` ms.
@@ -169,32 +178,32 @@ export type EnableWalletOpts = {
  * @default 1000
  */
 export async function enableWallet(
-  defaultApi: DefaultWalletApi,
-  { maxRetryCount = 5, retryIntervalMs = 1000 }: EnableWalletOpts = {},
+	defaultApi: DefaultWalletApi,
+	{ maxRetryCount = 5, retryIntervalMs = 1000 }: EnableWalletOpts = {},
 ): Promise<EnabledWalletApi | undefined> {
-  const { promise, resolve } = deferredPromise<EnabledWalletApi | undefined>();
+	const { promise, resolve } = deferredPromise<EnabledWalletApi | undefined>();
 
-  let retryCount = 0;
+	let retryCount = 0;
 
-  async function evaluate() {
-    try {
-      if ("enable" in defaultApi) {
-        const resp = await defaultApi.enable();
-        resolve(resp);
-        return;
-      }
+	async function evaluate() {
+		try {
+			if ("enable" in defaultApi) {
+				const resp = await defaultApi.enable();
+				resolve(resp);
+				return;
+			}
 
-      if (++retryCount > maxRetryCount) {
-        throw new Error("API not found");
-      }
+			if (++retryCount > maxRetryCount) {
+				throw new Error("API not found");
+			}
 
-      setTimeout(evaluate, retryIntervalMs);
-    } catch {
-      resolve(undefined);
-    }
-  }
+			setTimeout(evaluate, retryIntervalMs);
+		} catch {
+			resolve(undefined);
+		}
+	}
 
-  evaluate();
+	evaluate();
 
-  return promise;
+	return promise;
 }

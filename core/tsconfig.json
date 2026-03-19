@@ -1,11 +1,11 @@
 {
-  "extends": "@weld/tsconfig/react",
-  "compilerOptions": {
-    "resolveJsonModule": true,
-    "baseUrl": ".",
-    "paths": { "@/*": ["src/*"] },
-    "types": ["vitest/jsdom"]
-  },
-  "include": ["src", "*.ts"],
-  "exclude": ["node_modules", "dist"]
+	"extends": "@weld/tsconfig/react",
+	"compilerOptions": {
+		"resolveJsonModule": true,
+		"baseUrl": ".",
+		"paths": { "@/*": ["src/*"] },
+		"types": ["vitest/jsdom"]
+	},
+	"include": ["src", "*.ts"],
+	"exclude": ["node_modules", "dist"]
 }
