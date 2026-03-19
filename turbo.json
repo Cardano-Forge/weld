@@ -13,6 +13,9 @@
 			"persistent": true,
 			"interruptible": true
 		},
+		"check": {
+			"dependsOn": ["^build"]
+		},
 		"lint": {
 			"dependsOn": ["^lint"]
 		},

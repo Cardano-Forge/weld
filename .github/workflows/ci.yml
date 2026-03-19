@@ -24,26 +24,35 @@ jobs:
           node-version: 20
           cache: npm
 
-      - run: npm ci
-
-      # biome ci is read-only — fails on issues, never auto-fixes.
-      # We can't use `turbo run lint` here because the lint task calls
-      # `biome check --write` which would silently fix and pass in CI.
-      - name: Lint (read-only)
+      # npm ci has a known bug with optional dependencies in workspaces
+      # (https://github.com/npm/cli/issues/4828) that causes rollup's
+      # platform-specific binary (@rollup/rollup-linux-x64-gnu) to be
+      # missing. The fix is to run npm install after npm ci.
+      - name: Install dependencies
         run: |
-          npx biome ci . --reporter=github --working-directory=core &
-          npx biome ci . --reporter=github --working-directory=plugins/hodei &
+          npm ci
+          npm install
+
+      # Use the official Biome action — avoids the platform binary resolution
+      # issue that occurs when running npx biome directly in workspace CI.
+      # Read-only: never auto-fixes, annotates GitHub with errors inline.
+      - name: Lint (read-only)
+        uses: biomejs/setup-biome@v2
+        with:
+          version: latest
+      - run: |
+          biome ci --reporter=github core &
+          biome ci --reporter=github plugins/hodei &
           wait
 
-      # tsc --noEmit — not a turbo task so called directly per package.
-      # Runs in parallel with lint above once npm ci is done.
+      # turbo resolves ^build dependencies automatically before running
+      # check and test in each package — no manual build step needed.
       - name: Type check
         run: |
-          npm run check --workspace=core &
-          npm run check --workspace=plugins/hodei &
-          wait
+          npx turbo run check \
+            --filter=@ada-anvil/weld \
+            --filter=@ada-anvil/weld-plugin-hodei
 
-      # turbo handles the ^build dependency chain before running tests
       - name: Test
         run: |
           npx turbo run test \
