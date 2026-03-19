@@ -23,19 +23,8 @@ jobs:
         with:
           node-version: 20
           cache: npm
+      - run: npm ci
 
-      # npm ci has a known bug with optional dependencies in workspaces
-      # (https://github.com/npm/cli/issues/4828) that causes rollup's
-      # platform-specific binary to be missing. Deleting node_modules and
-      # using npm install (not npm ci) is the reliable fix.
-      - name: Install dependencies
-        run: |
-          npm install
-
-      # Use the official Biome action for the CLI binary.
-      # Run from inside each package directory so Biome uses that package's
-      # own biome.json — avoids the "nested root configuration" error that
-      # occurs when running from the repo root with Biome v2.
       - name: Setup Biome
         uses: biomejs/setup-biome@v2
         with:
@@ -47,7 +36,6 @@ jobs:
           (cd plugins/hodei && biome ci --reporter=github .) &
           wait
 
-      # turbo resolves ^build dependencies automatically before running check
       - name: Type check
         run: |
           npx turbo run check \
