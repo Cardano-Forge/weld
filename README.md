@@ -10,9 +10,9 @@
 weld/
 ├── core/              # @ada-anvil/weld — universal wallet connector     
 ├── packages/
-│   ├── biome/         # @weld/biome — shared biome config
 │   ├── tsconfig/      # @weld/tsconfig — shared TypeScript config
-│   └── utils/         # @weld/utils — shared utils
+│   ├── utils/         # @weld/utils — shared utils
+│   └── vite-plugins/  # @weld/vite-plugins — shared vite config plugins
 ├── plugins/
 │   └── hodei/         # @ada-anvil/hodei-client — Hodei wallet plugin
 └── apps/
