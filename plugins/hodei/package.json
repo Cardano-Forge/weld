@@ -17,10 +17,8 @@
   },
   "devDependencies": {
     "@ada-anvil/weld": "*",
-    "@biomejs/biome": "^2.4.6",
     "@microsoft/api-extractor": "^7.57.4",
     "@types/node": "^25.5.0",
-    "@weld/biome": "*",
     "@weld/tsconfig": "*",
     "@weld/vite-plugins": "*",
     "typescript": "^5.4.5",

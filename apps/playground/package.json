@@ -1,41 +1,39 @@
 {
-  "name": "@weld/playground",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "biome check --write .",
-    "check": "tsc --noEmit",
-    "pre": "npm run lint && npm run check && npm run build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@ada-anvil/weld": "*",
-    "@ada-anvil/weld-plugin-hodei": "*",
-    "@weld/utils": "*"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^2.4.6",
-    "@tailwindcss/typography": "^0.5.19",
-    "@types/node": "^25.5.0",
-    "@types/react": "^18.3.1",
-    "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.7.0",
-    "@weld/biome": "*",
-    "@weld/tsconfig": "*",
-    "autoprefixer": "^10.4.19",
-    "clsx": "^2.1.1",
-    "css-selector-tokenizer": "^0.8.0",
-    "culori": "^3.3.0",
-    "daisyui": "^4.10.5",
-    "postcss": "^8.4.38",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-toastify": "^10.0.5",
-    "tailwindcss": "^3.4.3",
-    "typescript": "^5.4.5",
-    "vite": "^5.2.0"
-  }
+	"name": "@weld/playground",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"lint": "biome check --write .",
+		"check": "tsc --noEmit",
+		"pre": "npm run lint && npm run check && npm run build",
+		"preview": "vite preview"
+	},
+	"dependencies": {
+		"@ada-anvil/weld": "*",
+		"@ada-anvil/weld-plugin-hodei": "*",
+		"@weld/utils": "*"
+	},
+	"devDependencies": {
+		"@tailwindcss/typography": "^0.5.19",
+		"@types/node": "^25.5.0",
+		"@types/react": "^18.3.1",
+		"@types/react-dom": "^18.3.0",
+		"@vitejs/plugin-react": "^4.7.0",
+		"@weld/tsconfig": "*",
+		"autoprefixer": "^10.4.19",
+		"clsx": "^2.1.1",
+		"css-selector-tokenizer": "^0.8.0",
+		"culori": "^3.3.0",
+		"daisyui": "^4.10.5",
+		"postcss": "^8.4.38",
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1",
+		"react-toastify": "^10.0.5",
+		"tailwindcss": "^3.4.3",
+		"typescript": "^5.4.5",
+		"vite": "^5.2.0"
+	}
 }
