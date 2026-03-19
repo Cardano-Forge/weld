@@ -41,9 +41,7 @@ run("npm run test");
 run("npm run publish");
 
 if (!existsSync(distDir)) {
-  throw new Error(
-    `dist/ not found at ${distDir} after running 'npm run publish'`
-  );
+  throw new Error(`dist/ not found at ${distDir} after running 'npm run publish'`);
 }
 
 // Publish from the self-contained dist/ using OIDC trusted publishing.

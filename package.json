@@ -1,29 +1,29 @@
 {
-	"name": "weld-monorepo",
-	"private": true,
-	"workspaces": [
-		"core",
-		"packages/*",
-		"plugins/*",
-		"apps/*"
-	],
-	"scripts": {
-		"build": "turbo run build",
-		"dev": "turbo watch build & turbo run dev",
-		"lint": "turbo run lint",
-		"pre": "turbo run pre",
-		"test": "turbo run test",
-		"clean": "turbo run clean",
-		"sherif": "sherif --fix"
-	},
-	"devDependencies": {
-    "@biomejs/biome": "^2.4.6",
-		"@changesets/cli": "^2.30.0",
-		"sherif": "^1.10.0",
-		"turbo": "latest"
-	},
-	"optionalDependencies": {
-		"@rollup/rollup-linux-x64-gnu": "~4.59.0"
-	},
-	"packageManager": "npm@10.9.2"
+  "name": "weld-monorepo",
+  "private": true,
+  "workspaces": [
+    "core",
+    "packages/*",
+    "plugins/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo watch build & turbo run dev",
+    "lint": "turbo run lint",
+    "pre": "turbo run pre",
+    "test": "turbo run test",
+    "clean": "turbo run clean",
+    "sherif": "sherif --fix"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.8",
+    "@changesets/cli": "^2.30.0",
+    "sherif": "^1.10.0",
+    "turbo": "latest"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "~4.59.0"
+  },
+  "packageManager": "npm@10.9.2"
 }
