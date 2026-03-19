@@ -1,0 +1,6 @@
+{
+	"root": false,
+	"files": {
+		"includes": ["**", "!!**/dist", "!!**/*.css"]
+	}
+}

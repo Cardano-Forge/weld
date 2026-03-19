@@ -1,0 +1,6 @@
+{
+	"root": false,
+	"files": {
+		"includes": ["**", "!!**/dist", "!!**/initialize-d-app-connector-bridge.ts"]
+	}
+}

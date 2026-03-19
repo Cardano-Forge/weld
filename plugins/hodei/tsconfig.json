@@ -1,0 +1,10 @@
+{
+  "extends": "@weld/tsconfig/base",
+  "compilerOptions": {
+    "types": ["vite/client"],
+    /* Linting */
+    "erasableSyntaxOnly": true
+  },
+  "include": ["src"],
+  "exclude": ["src/dev.ts"]
+}

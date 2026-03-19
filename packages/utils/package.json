@@ -1,0 +1,25 @@
+{
+  "name": "@weld/utils",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./*": {
+      "types": "./src/*.ts",
+      "default": "./dist/*.js"
+    }
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "lint": "biome check --write .",
+    "build": "vite build --config ./vite.config.ts",
+    "test": "vitest --run",
+    "test:watch": "vitest --watch"
+  },
+  "devDependencies": {
+    "@weld/tsconfig": "*",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.0",
+    "vitest": "^2.0.5"
+  }
+}

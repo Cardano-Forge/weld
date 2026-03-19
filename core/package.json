@@ -1,0 +1,160 @@
+{
+	"name": "@ada-anvil/weld",
+	"private": false,
+	"version": "0.7.0",
+	"type": "module",
+	"main": "./dist/main.cjs",
+	"module": "./dist/main.js",
+	"types": "./dist/main.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/main.js",
+			"require": "./dist/main.cjs",
+			"types": "./dist/main.d.ts"
+		},
+		"./core": {
+			"import": "./dist/core.js",
+			"require": "./dist/core.cjs",
+			"types": "./dist/core.d.ts"
+		},
+		"./react": {
+			"import": "./dist/react.js",
+			"require": "./dist/react.cjs",
+			"types": "./dist/react.d.ts"
+		},
+		"./server": {
+			"import": "./dist/server.js",
+			"require": "./dist/server.cjs",
+			"types": "./dist/server.d.ts"
+		},
+		"./sol": {
+			"import": "./dist/sol.js",
+			"require": "./dist/sol.cjs",
+			"types": "./dist/sol.d.ts"
+		},
+		"./sol/react": {
+			"import": "./dist/sol-react.js",
+			"require": "./dist/sol-react.cjs",
+			"types": "./dist/sol-react.d.ts"
+		},
+		"./eth": {
+			"import": "./dist/eth.js",
+			"require": "./dist/eth.cjs",
+			"types": "./dist/eth.d.ts"
+		},
+		"./eth/react": {
+			"import": "./dist/eth-react.js",
+			"require": "./dist/eth-react.cjs",
+			"types": "./dist/eth-react.d.ts"
+		},
+		"./plugins": {
+			"import": "./dist/plugins.js",
+			"require": "./dist/plugins.cjs",
+			"types": "./dist/plugins.d.ts"
+		},
+		"./poly": {
+			"import": "./dist/poly.js",
+			"require": "./dist/poly.cjs",
+			"types": "./dist/poly.d.ts"
+		},
+		"./poly/react": {
+			"import": "./dist/poly-react.js",
+			"require": "./dist/poly-react.cjs",
+			"types": "./dist/poly-react.d.ts"
+		},
+		"./btc": {
+			"import": "./dist/btc.js",
+			"require": "./dist/btc.cjs",
+			"types": "./dist/btc.d.ts"
+		},
+		"./btc/react": {
+			"import": "./dist/btc-react.js",
+			"require": "./dist/btc-react.cjs",
+			"types": "./dist/btc-react.d.ts"
+		}
+	},
+	"files": [
+		"**"
+	],
+	"scripts": {
+		"build:client": "vite build --config ./vite.client.ts",
+		"build:server": "vite build --config ./vite.server.ts",
+		"build:cdn": "vite build --config ./vite.cdn.ts",
+		"build": "tsc && npm run build:client && npm run build:server && npm run build:cdn",
+		"publish": "PUBLISH=true npm run build",
+		"check": "tsc --noEmit",
+		"lint": "biome check --write .",
+		"pack": "npm pack && mv *.tgz ..",
+		"test": "vitest --run",
+		"test:coverage": "vitest run --coverage",
+		"test:ui": "vitest --ui --coverage.enabled=true",
+		"test:watch": "vitest --watch"
+	},
+	"devDependencies": {
+		"@actions/core": "^1.10.1",
+		"@solana/spl-token": "^0.4.8",
+		"@solana/web3.js": "^1.95.2",
+		"@types/cbor-js": "^0.1.1",
+		"@types/jsdom": "^21.1.7",
+		"@types/node": "^25.5.0",
+		"@types/react": "^18.3.1",
+		"@types/use-sync-external-store": "^0.0.6",
+		"@vitest/coverage-istanbul": "^2.1.3",
+		"@vitest/coverage-v8": "^2.1.3",
+		"@vitest/ui": "^2.1.3",
+		"@weld/tsconfig": "*",
+		"@weld/utils": "*",
+		"@weld/vite-plugins": "*",
+		"buffer": "^6.0.3",
+		"ethers": "^6.13.4",
+		"jsdom": "^25.0.1",
+		"react": "^18.3.1",
+		"typescript": "^5.4.5",
+		"vite": "^5.2.0",
+		"vite-plugin-node-polyfills": "^0.22.0",
+		"vitest": "^2.0.5"
+	},
+	"peerDependencies": {
+		"@solana/spl-token": ">=0.4.8",
+		"@solana/web3.js": ">=1.95.2",
+		"@types/react": ">=17.0.0",
+		"ethers": "^6.13.4",
+		"react": ">=17.0.0"
+	},
+	"peerDependenciesMeta": {
+		"@types/react": {
+			"optional": true
+		},
+		"react": {
+			"optional": true
+		},
+		"@solana/web3.js": {
+			"optional": true
+		},
+		"@solana/spl-token": {
+			"optional": true
+		},
+		"ethers": {
+			"optional": true
+		}
+	},
+	"dependencies": {
+		"bech32": "^2.0.0",
+		"cbor-js": "^0.1.0",
+		"use-sync-external-store": "^1.2.2"
+	},
+	"license": "MIT",
+	"publishConfig": {
+		"registry": "https://registry.npmjs.org/",
+		"directory": "dist"
+	},
+	"homepage": "https://github.com/Cardano-Forge/weld/core",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Cardano-Forge/weld.git",
+		"directory": "core"
+	},
+	"bugs": {
+		"url": "https://github.com/Cardano-Forge/weld/issues"
+	}
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@weld/vite-plugins",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./*": {
+      "types": "./src/*.ts",
+      "default": "./dist/*.js"
+    }
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "lint": "biome check --write .",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "@weld/tsconfig": "*",
+    "vite": "^5.2.0",
+    "vite-plugin-dts": "^4.5.4"
+  }
+}

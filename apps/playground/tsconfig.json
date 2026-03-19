@@ -1,0 +1,12 @@
+{
+	"extends": "@weld/tsconfig/react",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["src/*"]
+		},
+		"types": ["node"]
+	},
+	"include": ["src", "*.ts"],
+	"exclude": ["node_modules", "dist"]
+}

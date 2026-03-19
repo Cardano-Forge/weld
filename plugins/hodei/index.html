@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>weld-plugin-hodei</title>
+</head>
+
+<body>
+  <select>
+    <option value="">select wallet</option>
+  </select>
+  <button type="button" id="connect">Connect</button>
+  <button type="button" id="disconnect">disconnect</button>
+  <div id="status">disconnected</div>
+  <div id="name">-</div>
+  <div id="balance">-</div>
+  <script type="module" src="/src/dev.ts"></script>
+</body>
+
+<style>
+  @media (prefers-color-scheme: dark) {
+    :root {
+      background-color: #1a1a1a;
+      color: #fff;
+    }
+
+    button {
+      background-color: #333;
+      color: #fff;
+    }
+  }
+
+  button {
+    position: relative;
+  }
+
+  dialog {
+    position: fixed;
+    top: 0;
+    background-color: pink;
+    z-index: 9999;
+  }
+</style>
+
+</html>

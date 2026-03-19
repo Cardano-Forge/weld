@@ -1,0 +1,97 @@
+import type { WeldPlugin } from "@/internal/plugins/types";
+import { createStoreFactory, type Store } from "@/internal/store";
+import { builtinPlugins } from "@/lib/plugins";
+import type { StorageKeysType } from "@/lib/server";
+import { defaultStorage, type WeldStorage } from "../persistence";
+
+export type UpdateConfig = {
+	debug: boolean;
+	/**
+	 * How frequently properties should get updated
+	 *
+	 * @default 30_000ms
+	 */
+	updateInterval: number | false;
+	updateOnWindowFocus: boolean;
+};
+
+export type WalletConfig = UpdateConfig & {
+	connectTimeout: number | false;
+	tryToReconnectTo:
+		| string
+		| { wallet: string; change?: string; stake?: string };
+	onUpdateError(error: unknown): void;
+};
+
+export type ExtensionsConfig = UpdateConfig & {
+	onUpdateError(error: unknown): void;
+};
+
+export type StoreConfig = {
+	wallet: Partial<WalletConfig>;
+	extensions: Partial<ExtensionsConfig>;
+};
+
+export type WeldConfig = UpdateConfig &
+	StoreConfig & {
+		ignoreUnsafeUsageError: boolean;
+		enablePersistence: boolean;
+		storage: WeldStorage;
+		onUpdateError?(context: string, error: unknown): void;
+		plugins?: WeldPlugin[];
+	};
+
+const initialConfigState: WeldConfig = {
+	debug: false,
+	updateInterval: 30_000,
+	updateOnWindowFocus: true,
+	ignoreUnsafeUsageError: false,
+	enablePersistence: true,
+	storage: defaultStorage,
+	plugins: [...builtinPlugins],
+	wallet: {},
+	extensions: {},
+};
+
+export type ConfigApi<TConfig extends WeldConfig = WeldConfig> = {
+	update(values: Partial<TConfig>): void;
+	getPersistedValue(key: StorageKeysType): string | undefined;
+};
+
+export type ConfigStoreState<TConfig extends WeldConfig = WeldConfig> =
+	TConfig & ConfigApi<TConfig>;
+
+export type ConfigStore<TConfig extends WeldConfig = WeldConfig> = Store<
+	ConfigStoreState<TConfig>
+> &
+	ConfigStoreState<TConfig>;
+
+export const createConfigStore = <TConfig extends WeldConfig = WeldConfig>() =>
+	createStoreFactory<ConfigStoreState<TConfig>>((setState, getState) => {
+		const update: ConfigApi<TConfig>["update"] = (values) => {
+			setState({
+				...getState(),
+				...values,
+				wallet: {
+					...getState().wallet,
+					...values.wallet,
+				},
+				extensions: {
+					...getState().extensions,
+					...values.extensions,
+				},
+			});
+		};
+
+		const getPersistedValue: ConfigApi<TConfig>["getPersistedValue"] = (
+			key,
+		): string | undefined => {
+			return getState().storage.get(key) ?? undefined;
+		};
+
+		return {
+			...initialConfigState,
+			update,
+			getPersistedValue,
+		} as unknown as ConfigStoreState<TConfig>;
+	})();

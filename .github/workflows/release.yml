@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release:
+    name: Version or publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write      # push version bump commits & tags
+      pull-requests: write # open/update the Version Packages PR
+      id-token: write      # OIDC token for npm trusted publishing
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org/
+
+      - run: npm ci
+
+      # Quality gates — run before publishing to catch anything that
+      # slipped through. turbo resolves ^build dependencies automatically.
+      - name: Check & test
+        run: |
+          npx turbo run check test \
+            --filter=@ada-anvil/weld \
+            --filter=@ada-anvil/weld-plugin-hodei
+
+      # -----------------------------------------------------------------------
+      # Scenario A — .changeset files exist on main:
+      #   Opens/updates a "Version Packages" PR that bumps package.json
+      #   versions and writes CHANGELOGs. Nothing is published yet.
+      #
+      # Scenario B — Version Packages PR was just merged:
+      #   No .changeset files remain. Runs `npm run release` which:
+      #     1. turbo run publish — PUBLISH=true build per package, prepares
+      #        self-contained dist/ (package.json copied in, paths rewritten)
+      #     2. changeset publish — iterates changed packages, runs
+      #        npm publish from dist/ (via publishConfig.directory)
+      #        using OIDC trusted publishing, no NPM_TOKEN needed
+      # -----------------------------------------------------------------------
+      - name: Version or publish
+        uses: changesets/action@v1
+        with:
+          version: npx changeset version
+          publish: npm run release
+          commit: "chore: version packages"
+          title: "chore: version packages"
+          createGithubReleases: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
