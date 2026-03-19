@@ -8,6 +8,8 @@
     "apps/*"
   ],
   "scripts": {
+    "build:packages": "npm run publish --workspace=core && npm run publish --workspace=plugins/hodei",
+    "release": "npm run build:packages && changeset publish",
     "build": "turbo run build",
     "dev": "turbo watch build & turbo run dev",
     "lint": "turbo run lint",

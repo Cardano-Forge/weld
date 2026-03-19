@@ -13,7 +13,7 @@ jobs:
   release:
     name: Version or publish
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     permissions:
       contents: write      # push version bump commits & tags
       pull-requests: write # open/update the Version Packages PR
@@ -22,42 +22,45 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Changesets needs full history to detect what changed
           fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-          # registry-url is required even for trusted publishing —
-          # setup-node uses it to configure the .npmrc that enables
-          # the OIDC token exchange with npm
           registry-url: https://registry.npmjs.org/
 
       - run: npm ci
 
-      # -------------------------------------------------------------------------
-      # How Changesets works in this repo:
+      # Quality gates — run before publishing to catch anything that
+      # slipped through. turbo resolves ^build dependencies automatically.
+      - name: Check & test
+        run: |
+          npx turbo run check test \
+            --filter=@ada-anvil/weld \
+            --filter=@ada-anvil/weld-plugin-hodei
+
+      # -----------------------------------------------------------------------
+      # Scenario A — .changeset files exist on main:
+      #   Opens/updates a "Version Packages" PR that bumps package.json
+      #   versions and writes CHANGELOGs. Nothing is published yet.
       #
-      # Scenario A — PR with .changeset files was just merged to main:
-      #   Changesets opens (or updates) a "Version Packages" PR that bumps
-      #   package.json versions and writes CHANGELOGs. Nothing is published yet.
-      #
-      # Scenario B — the "Version Packages" PR itself was merged:
-      #   No .changeset files remain, so Changesets runs the `publish` command
-      #   below for every package whose version changed.
-      #
-      # Publishing uses npm trusted publishing (OIDC) — no NPM_TOKEN secret
-      # needed. Each package must be registered on npmjs.com with this repo
-      # and workflow file (.github/workflows/release.yml) as a trusted publisher.
-      # -------------------------------------------------------------------------
+      # Scenario B — Version Packages PR was just merged:
+      #   No .changeset files remain. Runs `npm run release` which:
+      #     1. turbo run publish — PUBLISH=true build per package, prepares
+      #        self-contained dist/ (package.json copied in, paths rewritten)
+      #     2. changeset publish — iterates changed packages, runs
+      #        npm publish from dist/ (via publishConfig.directory)
+      #        using OIDC trusted publishing, no NPM_TOKEN needed
+      # -----------------------------------------------------------------------
       - name: Version or publish
         uses: changesets/action@v1
         with:
           version: npx changeset version
-          publish: node ${{ github.workspace }}/.github/scripts/publish.mjs
+          publish: npm run release
           commit: "chore: version packages"
           title: "chore: version packages"
           createGithubReleases: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true

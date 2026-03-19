@@ -17,6 +17,7 @@ function stripDist(pkg: any) {
 
   delete pkg.scripts;
   delete pkg.devDependencies;
+  delete pkg.publishConfig.directory;
   return JSON.stringify(pkg, null, 2);
 }
 

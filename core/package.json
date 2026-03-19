@@ -146,7 +146,8 @@
 	},
 	"license": "MIT",
 	"publishConfig": {
-		"registry": "https://registry.npmjs.org/"
+		"registry": "https://registry.npmjs.org/",
+		"directory": "dist"
 	},
 	"homepage": "https://github.com/Cardano-Forge/weld/core",
 	"repository": {
