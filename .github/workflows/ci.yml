@@ -23,6 +23,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
+
       - run: npm ci
 
       - name: Setup Biome
@@ -31,10 +32,7 @@ jobs:
           version: latest
 
       - name: Lint (read-only)
-        run: |
-          (cd core && biome ci --reporter=github .) &
-          (cd plugins/hodei && biome ci --reporter=github .) &
-          wait
+        run: biome ci --reporter=github .
 
       - name: Type check
         run: |
