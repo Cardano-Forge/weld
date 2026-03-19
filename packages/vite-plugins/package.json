@@ -12,7 +12,6 @@
   "scripts": {
     "check": "tsc --noEmit",
     "lint": "biome check --write .",
-    "pre": "npm run lint && npm run check && npm run build",
     "build": "vite build"
   },
   "devDependencies": {

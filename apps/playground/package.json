@@ -8,7 +8,6 @@
 		"build": "vite build",
 		"lint": "biome check --write .",
 		"check": "tsc --noEmit",
-		"pre": "npm run lint && npm run check && npm run build",
 		"preview": "vite preview"
 	},
 	"dependencies": {

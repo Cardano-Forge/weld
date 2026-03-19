@@ -19,9 +19,6 @@
     "lint": {
       "dependsOn": ["^lint"]
     },
-    "pre": {
-      "dependsOn": ["^pre"]
-    },
     "test": {
       "dependsOn": ["^build"]
     },

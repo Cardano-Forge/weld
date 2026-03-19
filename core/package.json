@@ -84,7 +84,6 @@
 		"publish": "PUBLISH=true npm run build",
 		"check": "tsc --noEmit",
 		"lint": "biome check --write .",
-		"pre": "npm run lint && npm run check && npm run build && npm run test",
 		"pack": "npm pack && mv *.tgz ..",
 		"test": "vitest --run",
 		"test:coverage": "vitest run --coverage",

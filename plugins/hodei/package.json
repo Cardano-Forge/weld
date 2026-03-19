@@ -35,8 +35,7 @@
     "check": "tsc --noEmit",
     "lint": "biome check --write .",
     "test:watch": "vitest --passWithNoTests",
-    "test": "vitest run --passWithNoTests",
-    "pre": "npm run lint && npm run check && npm run build && npm run test"
+    "test": "vitest run --passWithNoTests"
   },
   "peerDependencies": {
     "@ada-anvil/weld": ">=0.7.0"
