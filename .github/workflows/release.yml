@@ -29,10 +29,12 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          registry-url: https://registry.npmjs.org/
 
       - run: npm ci
 
+      - name: Update npm to 11.5.1+
+        run: npm install -g npm@latest
+        
       - name: Check & test
         run: |
           npx turbo run check test \
