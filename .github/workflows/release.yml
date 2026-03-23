@@ -40,17 +40,16 @@ jobs:
 
       # -----------------------------------------------------------------------
       # Version packages and optionally open a PR
-      # Uses a temporary branch so GITHUB_TOKEN can create PR safely
       # -----------------------------------------------------------------------
       - name: Version or publish
         uses: changesets/action@v1
         with:
           version: npx changeset version
+          publish: npm run release
           commit: "chore: version packages"
           title: "chore: version packages"
           createGithubReleases: true
-          branch: "changeset-release"
-          publish: npm run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Default OIDC setup for npm publishing
           NPM_CONFIG_PROVENANCE: true
