@@ -50,7 +50,6 @@ jobs:
           title: "chore: version packages"
           createGithubReleases: true
         env:
-          # Use bot token to bypass GITHUB_TOKEN PR restrictions
-          GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Default OIDC setup for npm publishing
           NPM_CONFIG_PROVENANCE: true
