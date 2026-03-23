@@ -44,7 +44,7 @@ jobs:
       - name: Version or publish
         uses: changesets/action@v1
         with:
-          version: npx changeset version
+          version: npm run version
           publish: npm run release
           commit: "chore: version packages"
           title: "chore: version packages"
