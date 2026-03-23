@@ -20,9 +20,6 @@ jobs:
       id-token: write # OIDC token for npm trusted publishing
 
     steps:
-      # -----------------------------------------------------------------------
-      # Checkout full history
-      # -----------------------------------------------------------------------
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -35,9 +32,6 @@ jobs:
 
       - run: npm ci
 
-      # -----------------------------------------------------------------------
-      # Run quality checks
-      # -----------------------------------------------------------------------
       - name: Check & test
         run: |
           npx turbo run check test \
@@ -51,10 +45,10 @@ jobs:
         uses: changesets/action@v1
         with:
           version: npx changeset version
+          publish: npm run release
           commit: "chore: version packages"
           title: "chore: version packages"
           createGithubReleases: true
-          publish: npm run release
         env:
           # Use bot token to bypass GITHUB_TOKEN PR restrictions
           GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
