@@ -33,8 +33,8 @@ jobs:
       - run: npm ci
 
       - name: Update npm to 11.5.1+
-        run: npm install -g npm@latest
-        
+        run: npm install -g npm@11
+
       - name: Check & test
         run: |
           npx turbo run check test \
