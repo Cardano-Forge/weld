@@ -52,4 +52,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Default OIDC setup for npm publishing
+          NPM_TOKEN: '' #https://github.com/changesets/changesets/issues/1152#issuecomment-3190884868
           NPM_CONFIG_PROVENANCE: true
