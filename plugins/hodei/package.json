@@ -51,7 +51,8 @@
   "homepage": "https://github.com/Cardano-Forge/weld/plugins/hodei",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Cardano-Forge/weld.git"
+    "url": "git+https://github.com/Cardano-Forge/weld.git",
+    "directory": "plugins/hodei"
   },
   "bugs": {
     "url": "https://github.com/Cardano-Forge/weld/issues"
