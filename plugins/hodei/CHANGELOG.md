@@ -1,5 +1,11 @@
 # @ada-anvil/weld-plugin-hodei
 
+## 0.0.5
+
+### Patch Changes
+
+- df44e25: Update hodei client lib to v0.0.7
+
 ## 0.0.4
 
 ### Patch Changes
