@@ -1,5 +1,11 @@
 # @ada-anvil/weld-plugin-hodei
 
+## 0.0.6
+
+### Patch Changes
+
+- 4c70dc1: Improve ws connection handling, fix signature request unresolved promises
+
 ## 0.0.5
 
 ### Patch Changes
