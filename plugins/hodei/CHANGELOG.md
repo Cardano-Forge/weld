@@ -1,5 +1,11 @@
 # @ada-anvil/weld-plugin-hodei
 
+## 0.0.7
+
+### Patch Changes
+
+- c0cd068: Fix disconnection issue
+
 ## 0.0.6
 
 ### Patch Changes
