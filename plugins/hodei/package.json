@@ -1,6 +1,6 @@
 {
   "name": "@ada-anvil/weld-plugin-hodei",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "files": [
     "**"
   ],
