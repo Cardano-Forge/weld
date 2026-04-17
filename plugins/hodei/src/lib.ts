@@ -11,21 +11,29 @@ export class HodeiHandler extends DefaultWalletHandler {
   }
 }
 
+export type RetryConfig = {
+  baseDelay: number;
+  maxRetries?: number;
+  maxDelay?: number;
+  backoff?: boolean;
+  skipImmediate?: boolean;
+};
+
+export type WalletUpdateData = {
+  baseAddress: string;
+  stakeAddress: string;
+  network: "mainnet" | "preprod";
+};
+
 export type HodeiPluginConfig = {
   bridge: { baseUrl: string };
   anvil: Record<"mainnet" | "preprod", { baseUrl: string; apiKey: string }>;
   debug: boolean;
   waitForPairing: boolean;
+  retry: RetryConfig | boolean;
   onError(data: { error?: string }, weld: WeldInstance): void;
   onClose(data: { code: number; reason: string }, weld: WeldInstance): void;
-  onWalletUpdate(
-    wallet: {
-      baseAddress: string;
-      stakeAddress: string;
-      network: "mainnet" | "preprod";
-    },
-    weld: WeldInstance,
-  ): void;
+  onWalletUpdate(data: WalletUpdateData, weld: WeldInstance): void;
 };
 
 export function hodeiPlugin(config?: Partial<HodeiPluginConfig>): WeldPlugin {
