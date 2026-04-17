@@ -45,25 +45,31 @@ export function hodeiPlugin(config?: Partial<HodeiPluginConfig>): WeldPlugin {
         debug: weld.config.debug,
         ...config,
         onError: (data) => {
-          if (weld.config.debug) {
-            console.error("[WELD] Hodei socket error, disconnecting.", data);
+          if (weld.wallet.key === "hodei") {
+            if (weld.config.debug) {
+              console.error("[WELD] Hodei socket error, disconnecting.", data);
+            }
+            config?.onError?.(data, weld);
+            weld.wallet.disconnect();
           }
-          config?.onError?.(data, weld);
-          weld.wallet.disconnect();
         },
         onClose: (data) => {
-          if (weld.config.debug) {
-            console.error("[WELD] Hodei socket closed, disconnecting.", data);
+          if (weld.wallet.key === "hodei") {
+            if (weld.config.debug) {
+              console.error("[WELD] Hodei socket closed, disconnecting.", data);
+            }
+            config?.onClose?.(data, weld);
+            weld.wallet.disconnect();
           }
-          config?.onClose?.(data, weld);
-          weld.wallet.disconnect();
         },
         onWalletUpdate: (wallet) => {
-          if (weld.config.debug) {
-            console.log("[WELD] Hodei wallet updated, updating state.", wallet);
+          if (weld.wallet.key === "hodei") {
+            if (weld.config.debug) {
+              console.log("[WELD] Hodei wallet updated, updating state.", wallet);
+            }
+            config?.onWalletUpdate?.(wallet, weld);
+            weld.wallet.updateState();
           }
-          config?.onWalletUpdate?.(wallet, weld);
-          weld.wallet.updateState();
         },
       });
 
