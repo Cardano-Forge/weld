@@ -1,4 +1,4 @@
-import { initialize } from "@ada-anvil/hodei-client";
+import { initialize as defaultInitialize } from "@ada-anvil/hodei-client";
 import type { WeldInstance } from "@ada-anvil/weld";
 import { DefaultWalletHandler, getDefaultWalletConnector, runOnce } from "@ada-anvil/weld/core";
 import type { WeldPlugin } from "@ada-anvil/weld/plugins";
@@ -34,6 +34,7 @@ export type HodeiPluginConfig = {
   onError(data: { error?: string }, weld: WeldInstance): void;
   onClose(data: { code: number; reason: string }, weld: WeldInstance): void;
   onWalletUpdate(data: WalletUpdateData, weld: WeldInstance): void;
+  initialize: typeof defaultInitialize;
 };
 
 export function hodeiPlugin(config?: Partial<HodeiPluginConfig>): WeldPlugin {
@@ -41,7 +42,8 @@ export function hodeiPlugin(config?: Partial<HodeiPluginConfig>): WeldPlugin {
     key: "hodei",
     connector: getDefaultWalletConnector(HodeiHandler),
     initialize: runOnce((weld) => {
-      const walletApi = initialize({
+      const initFn = config?.initialize ?? defaultInitialize;
+      const walletApi = initFn({
         debug: weld.config.debug,
         ...config,
         onError: (data) => {
