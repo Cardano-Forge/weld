@@ -1,5 +1,12 @@
 # @ada-anvil/weld-plugin-hodei
 
+## 0.0.8
+
+### Patch Changes
+
+- 401b14a: Make hodei's initialize function overridable
+- 6ebe6e6: Update hodei client to v0.0.9
+
 ## 0.0.7
 
 ### Patch Changes
