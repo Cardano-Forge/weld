@@ -41,7 +41,7 @@
     "@ada-anvil/weld": ">=0.7.0"
   },
   "dependencies": {
-    "@ada-anvil/hodei-client": "^0.0.8"
+    "@ada-anvil/hodei-client": "^0.0.9"
   },
   "license": "MIT",
   "publishConfig": {
