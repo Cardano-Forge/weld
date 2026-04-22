@@ -37,41 +37,58 @@ export type HodeiPluginConfig = {
   initialize: typeof defaultInitialize;
 };
 
+const hodeiWalletKey = "hodei";
+
 export function hodeiPlugin(config?: Partial<HodeiPluginConfig>): WeldPlugin {
   return {
-    key: "hodei",
+    key: hodeiWalletKey,
     connector: getDefaultWalletConnector(HodeiHandler),
     initialize: runOnce((weld) => {
+      const shouldHandleCallback = (): boolean => {
+        if (weld.wallet.key === hodeiWalletKey || weld.wallet.isConnectingTo === hodeiWalletKey) {
+          return true;
+        }
+        if (weld.config.debug) {
+          console.warn(
+            "[WELD] Ignoring Hodei socket error. Weld isn't connected nor connecting to Hodei",
+          );
+        }
+        return false;
+      };
+
       const initFn = config?.initialize ?? defaultInitialize;
       const walletApi = initFn({
         debug: weld.config.debug,
         ...config,
-        onError: (data) => {
-          if (weld.wallet.key === "hodei") {
-            if (weld.config.debug) {
-              console.error("[WELD] Hodei socket error, disconnecting.", data);
-            }
-            config?.onError?.(data, weld);
-            weld.wallet.disconnect();
+        onError: (state) => {
+          if (!shouldHandleCallback()) {
+            return;
           }
+          if (weld.config.debug) {
+            console.error("[WELD] Hodei socket error, disconnecting.", state);
+          }
+          config?.onError?.(state, weld);
+          weld.wallet.disconnect();
         },
         onClose: (data) => {
-          if (weld.wallet.key === "hodei") {
-            if (weld.config.debug) {
-              console.error("[WELD] Hodei socket closed, disconnecting.", data);
-            }
-            config?.onClose?.(data, weld);
-            weld.wallet.disconnect();
+          if (!shouldHandleCallback()) {
+            return;
           }
+          if (weld.config.debug) {
+            console.error("[WELD] Hodei socket closed, disconnecting.", data);
+          }
+          config?.onClose?.(data, weld);
+          weld.wallet.disconnect();
         },
         onWalletUpdate: (wallet) => {
-          if (weld.wallet.key === "hodei") {
-            if (weld.config.debug) {
-              console.log("[WELD] Hodei wallet updated, updating state.", wallet);
-            }
-            config?.onWalletUpdate?.(wallet, weld);
-            weld.wallet.updateState();
+          if (!shouldHandleCallback()) {
+            return;
           }
+          if (weld.config.debug) {
+            console.log("[WELD] Hodei wallet updated, updating state.", wallet);
+          }
+          config?.onWalletUpdate?.(wallet, weld);
+          weld.wallet.updateState();
         },
       });
 
@@ -82,7 +99,7 @@ export function hodeiPlugin(config?: Partial<HodeiPluginConfig>): WeldPlugin {
       weld.extensions.registerWallets([
         {
           supported: true,
-          key: "hodei",
+          key: hodeiWalletKey,
           displayName: "Hodei",
           icon: "https://raw.githubusercontent.com/cardano-forge/weld/main/images/wallets/hodei.png",
           website: "https://github.com/cardano-forge/hodei-client",
