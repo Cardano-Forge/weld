@@ -1,5 +1,11 @@
 # @ada-anvil/weld-plugin-hodei
 
+## 0.0.9
+
+### Patch Changes
+
+- 9df2bd7: Fix connection dead lock when using hodei plugin
+
 ## 0.0.8
 
 ### Patch Changes
