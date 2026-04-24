@@ -1,5 +1,11 @@
 # @ada-anvil/weld-plugin-hodei
 
+## 0.0.10
+
+### Patch Changes
+
+- 38bc706: Update hodei client to v0.0.11
+
 ## 0.0.9
 
 ### Patch Changes
