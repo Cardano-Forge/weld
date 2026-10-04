@@ -105,6 +105,15 @@ export const SUPPORTED_WALLETS: WalletInfo[] = [
 		website: "https://www.chainlensnft.info/",
 		supportsTxChaining: false,
 	},
+	{
+		supported: true,
+		key: "1am",
+		displayName: "1AM",
+		icon: "https://raw.githubusercontent.com/cardano-forge/weld/main/images/wallets/1am.svg",
+		website:
+			"https://chromewebstore.google.com/detail/bphnkdkcnfhompoegfpgnkidcjfbojjp",
+		supportsTxChaining: false,
+	},
 ];
 
 export const supportedWalletsMap = new Map<string, WalletInfo>(
